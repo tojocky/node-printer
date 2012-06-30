@@ -1,0 +1,4 @@
+build/*
+*~
+.settings
+.c9*
