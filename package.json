@@ -19,7 +19,7 @@
         "nodeunit": "*"
     },
     "engines": {
-        "node": ">= 0.8.0 && < 0.9.0"
+        "node": ">= 0.8.0"
     },
     "scripts": {
         "test": "nodeunit -I lib test/*.test.js"
