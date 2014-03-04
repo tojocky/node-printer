@@ -12,7 +12,7 @@
 // 
 // RawDataToPrinter - sends binary data directly to a printer 
 //  
-// data:        String, mandatory, raw data bytes
+// data:        String/NativeBuffer, mandatory, raw data bytes
 // printername: String, mandatory, specifying printer name
 // docname:     String, mandatory, specifying document name
 // type        	String, mandatory, specifying data type. E.G.: RAW, TEXT, ...
@@ -22,7 +22,30 @@
 v8::Handle<v8::Value> PrintDirect(const v8::Arguments& args) {
 	v8::HandleScope scope;
 	REQUIRE_ARGUMENTS(4);
-	REQUIRE_ARGUMENT_STRING(0, data);
+    // can be string or buffer
+    if(args.Length()<=0)
+    {
+        return v8::ThrowException(v8::Exception::TypeError(v8::String::New("Argument 0 missing")));
+    }
+    char* data(NULL);
+    size_t data_len(0);
+    v8::Handle<v8::Value> arg0(args[0]);
+    if(arg0->IsString())
+    {
+        v8::String::Utf8Value data_str(arg0->ToString());
+        data = *data_str;
+        data_len = data_str.length();
+    }
+    else if(arg0->IsObject() && arg0.As<v8::Object>()->HasIndexedPropertiesInExternalArrayData())
+    {
+        data = static_cast<char*>(arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayData());
+        data_len = arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayDataLength();
+    }
+    else
+    {
+        return v8::ThrowException(v8::Exception::TypeError(v8::String::New("Argument 0 must be a string or NativeBuffer")));
+    }
+
 	REQUIRE_ARGUMENT_STRING(1, printername);
 	REQUIRE_ARGUMENT_STRING(2, docname);
 	REQUIRE_ARGUMENT_STRING(3, type);
@@ -51,7 +74,7 @@ v8::Handle<v8::Value> PrintDirect(const v8::Arguments& args) {
             if (bStatus) {
                 // Send the data to the printer. 
 				//TODO: check with sizeof(LPTSTR) is the same as sizeof(char)
-                bStatus = WritePrinter( hPrinter, (LPTSTR)(*data), data.length(), &dwBytesWritten);
+                bStatus = WritePrinter( hPrinter, (LPTSTR)(data), data_len, &dwBytesWritten);
                 EndPagePrinter (hPrinter);
             }else{
 				RETURN_EXCEPTION_STR("StartPagePrinter error");
