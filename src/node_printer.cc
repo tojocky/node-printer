@@ -90,7 +90,7 @@ v8::Handle<v8::Value> PrintDirect(const v8::Arguments& args) {
 		RETURN_EXCEPTION(v8::String::Concat(v8::String::New("OpenPrinter error "), args[1]->ToString()))
     }
     // Check to see if correct number of bytes were written. 
-    if (!bStatus || (dwBytesWritten != data.length())) {
+    if (!bStatus || (dwBytesWritten != data_len)) {
         bStatus = false;
 		RETURN_EXCEPTION_STR("not sent all bytes");
     } else {
