@@ -13,7 +13,7 @@ return v8::ThrowException(v8::Exception::TypeError(                    \
 #define V8_STR_CONC(left, right)                              \
 	v8::String::Concat(v8::String::New(left), v8::String::New(right))
 		
-#define REQUIRE_ARGUMENTS(n)                                                   \
+#define REQUIRE_ARGUMENTS(args, n)                                                   \
     if (args.Length() < (n)) {                                                 \
         return v8::ThrowException(                                                 \
             v8::Exception::TypeError(v8::String::New("Expected " #n " arguments"))      \
@@ -39,15 +39,15 @@ return v8::ThrowException(v8::Exception::TypeError(                    \
     v8::Local<v8::Function> var = v8::Local<v8::Function>::Cast(args[i]);
 
 
-#define ARG_CHECK_STRING(i)                                        \
+#define ARG_CHECK_STRING(args, i)                                        \
     if (args.Length() <= (i) || !args[i]->IsString()) {                        \
         return v8::ThrowException(v8::Exception::TypeError(                            \
             v8::String::New("Argument " #i " must be a string"))                   \
         );                                                                     \
     }                                                                          \
 
-#define REQUIRE_ARGUMENT_STRING(i, var)                                        \
-    ARG_CHECK_STRING(i);                                                       \
+#define REQUIRE_ARGUMENT_STRING(args, i, var)                                        \
+    ARG_CHECK_STRING(args, i);                                                       \
     v8::String::Utf8Value var(args[i]->ToString());
 
 
