@@ -10,6 +10,7 @@
 
 #include <string>
 #include <map>
+#include <utility>
 
 namespace{
     typedef std::map<std::string, DWORD> StatusMapType;
@@ -53,7 +54,7 @@ namespace{
     }
     const AttributeMapType& getAttributeMap()
     {
-        static AttributeType result;
+        static StatusMapType result;
         if(!result.empty())
         {
             return result;
@@ -63,7 +64,7 @@ namespace{
         ATTRIBUTE_PRINTER_ADD("DIRECT", PRINTER_ATTRIBUTE_DIRECT);
         ATTRIBUTE_PRINTER_ADD("DO-COMPLETE-FIRST", PRINTER_ATTRIBUTE_DO_COMPLETE_FIRST);
         ATTRIBUTE_PRINTER_ADD("ENABLE-DEVQ", PRINTER_ATTRIBUTE_ENABLE_DEVQ);
-        ATTRIBUTE_PRINTER_ADD("HIDDEN", HIDDEN);
+        ATTRIBUTE_PRINTER_ADD("HIDDEN", PRINTER_ATTRIBUTE_HIDDEN);
         ATTRIBUTE_PRINTER_ADD("KEEPPRINTEDJOBS", PRINTER_ATTRIBUTE_KEEPPRINTEDJOBS);
         ATTRIBUTE_PRINTER_ADD("LOCAL", PRINTER_ATTRIBUTE_LOCAL);
         ATTRIBUTE_PRINTER_ADD("NETWORK", PRINTER_ATTRIBUTE_NETWORK);
@@ -99,7 +100,7 @@ v8::Handle<v8::Value> getPrinters(const v8::Arguments& iArgs)
     DWORD printers_size = 0;
     DWORD printers_size_bytes = 0;
     DWORD Level = 2;
-    DWORD flags = PRINTER_ENUM_LOCAL | PRINTER_ENUM_NETWORK | PRINTER_ENUM_NAME;
+    DWORD flags = PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS | PRINTER_ENUM_NAME;
     // First try to retrieve the number of printers
     BOOL bError = EnumPrinters(flags, NULL, 2, NULL, 0, &printers_size_bytes, &printers_size);
     if(bError)
@@ -112,14 +113,16 @@ v8::Handle<v8::Value> getPrinters(const v8::Arguments& iArgs)
         return v8::ThrowException(v8::Exception::TypeError(v8::String::New("Error on allocate memmory for printers")));
     }
 
-    bError = EnumPrinters(flags, NULL, 2, (LPBYTE)printers, printers_size_bytes, &printers_size_bytes, &printers_size_bytes, &printers_size);
+    bError = EnumPrinters(flags, NULL, 2, (LPBYTE)printers, printers_size_bytes, &printers_size_bytes, &printers_size);
     if(bError)
     {
         free(printers);
         return v8::ThrowException(v8::Exception::TypeError(v8::String::New("Error on EnumPrinters")));
     }
     v8::Local<v8::Array> result = v8::Array::New(printers_size);
-    for(int i = 0, PRINTER_INFO_2 *printer = printers; i < printers_size; ++i, ++printer)
+	PRINTER_INFO_2 *printer = printers;
+	DWORD i = 0;
+    for(; i < printers_size; ++i, ++printer)
     {
         v8::Local<v8::Object> result_printer = v8::Object::New();
         //LPTSTR               pPrinterName;
@@ -129,11 +132,11 @@ v8::Handle<v8::Value> getPrinters(const v8::Arguments& iArgs)
         // statuses from:
         // http://msdn.microsoft.com/en-gb/library/windows/desktop/dd162845(v=vs.85).aspx
         int i_status = 0;
-        for(StatusMapType::const_iterator itStatus = getStatusMap().begin(); itStatus < getStatusMap().end(); ++itStatus, ++i_status)
+        for(StatusMapType::const_iterator itStatus = getStatusMap().begin(); itStatus != getStatusMap().end(); ++itStatus, ++i_status)
         {
             if(printer->Status & itStatus->second)
             {
-                result_printer_status.Set(i_status, v8::String::New(itStatus->first));
+                result_printer_status->Set(i_status, v8::String::New(itStatus->first.c_str()));
             }
         }
         result_printer->Set(v8::String::NewSymbol("status"), result_printer_status);
@@ -190,11 +193,11 @@ v8::Handle<v8::Value> getPrinters(const v8::Arguments& iArgs)
         //DWORD                Attributes;
         v8::Local<v8::Array> result_printer_attributes = v8::Array::New();
         int i_attribute = 0;
-        for(AttributeMapType::const_iterator itAttribute = getAttributeMap().begin(); itAttribute < getAttributeMap().end(); ++itAttribute, ++i_attribute)
+        for(AttributeMapType::const_iterator itAttribute = getAttributeMap().begin(); itAttribute != getAttributeMap().end(); ++itAttribute, ++i_attribute)
         {
             if(printer->Attributes & itAttribute->second)
             {
-                result_printer_attributes.Set(i_attribute, v8::String::New(itAttribute->first));
+                result_printer_attributes->Set(i_attribute, v8::String::New(itAttribute->first.c_str()));
             }
         }
         result_printer->Set(v8::String::NewSymbol("attributes"), result_printer_attributes);
@@ -248,7 +251,7 @@ v8::Handle<v8::Value> PrintDirect(const v8::Arguments& iArgs) {
     if(arg0->IsString())
     {
         v8::String::Utf8Value data_str_v8(arg0->ToString());
-        data.assign(*data_str, data_str.length());
+        data.assign(*data_str_v8, data_str_v8.length());
     }
     else if(arg0->IsObject() && arg0.As<v8::Object>()->HasIndexedPropertiesInExternalArrayData())
     {
@@ -286,7 +289,7 @@ v8::Handle<v8::Value> PrintDirect(const v8::Arguments& iArgs) {
             if (bStatus) {
                 // Send the data to the printer.
                 //TODO: check with sizeof(LPTSTR) is the same as sizeof(char)
-                bStatus = WritePrinter( hPrinter, (LPTSTR)(data._c_str()), data.size(), &dwBytesWritten);
+                bStatus = WritePrinter( hPrinter, (LPTSTR)(data.c_str()), (DWORD)data.size(), &dwBytesWritten);
                 EndPagePrinter (hPrinter);
             }else{
                 RETURN_EXCEPTION_STR("StartPagePrinter error");
@@ -299,14 +302,11 @@ v8::Handle<v8::Value> PrintDirect(const v8::Arguments& iArgs) {
         // Close the printer handle.
         ClosePrinter( hPrinter );
     }else{
-        RETURN_EXCEPTION(v8::String::Concat(v8::String::New("OpenPrinter error "), args[1]->ToString()))
+        RETURN_EXCEPTION(v8::String::Concat(v8::String::New("OpenPrinter error "), iArgs[1]->ToString()))
     }
     // Check to see if correct number of bytes were written.
-    if (!bStatus || (dwBytesWritten != data_len)) {
-        bStatus = false;
+    if (dwBytesWritten != data.size()) {
         RETURN_EXCEPTION_STR("not sent all bytes");
-    } else {
-        bStatus = true;
     }
     bool ret_sttaus = false||bStatus;
     return scope.Close(v8::Number::New(dwJob));

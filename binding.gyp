@@ -7,7 +7,7 @@
         'src/node_printer_win.cc'
       ],
       'conditions': [
-        ['OS == "win32"', {
+        ['OS == "win"', {
           'sources!': [
             # posixx-only; exclude on other platforms.
             'src/node_printer_posix.cc'
