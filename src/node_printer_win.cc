@@ -8,6 +8,90 @@
 #error "Unsupported compiler for windows. Feel free to add it."
 #endif
 
+#include <string>
+#include <map>
+
+namespace{
+    typedef std::map<std::string, DWORD> StatusMapType;
+    typedef std::map<std::string, DWORD> AttributeMapType;
+    const StatusMapType& getStatusMap()
+    {
+        static StatusMapType result;
+        if(!result.empty())
+        {
+            return result;
+        }
+        // add only first time
+#define STATUS_PRINTER_ADD(value, type) result.insert(std::make_pair(#type, type))
+        STATUS_PRINTER_ADD("BUSY", PRINTER_STATUS_BUSY);
+        STATUS_PRINTER_ADD("DOOR-OPEN", PRINTER_STATUS_DOOR_OPEN);
+        STATUS_PRINTER_ADD("ERROR", PRINTER_STATUS_ERROR);
+        STATUS_PRINTER_ADD("INITIALIZING", PRINTER_STATUS_INITIALIZING);
+        STATUS_PRINTER_ADD("IO-ACTIVE", PRINTER_STATUS_IO_ACTIVE);
+        STATUS_PRINTER_ADD("MANUAL-FEED", PRINTER_STATUS_MANUAL_FEED);
+        STATUS_PRINTER_ADD("NO-TONER", PRINTER_STATUS_NO_TONER);
+        STATUS_PRINTER_ADD("NOT-AVAILABLE", PRINTER_STATUS_NOT_AVAILABLE);
+        STATUS_PRINTER_ADD("OFFLINE", PRINTER_STATUS_OFFLINE);
+        STATUS_PRINTER_ADD("OUT-OF-MEMORY", PRINTER_STATUS_OUT_OF_MEMORY);
+        STATUS_PRINTER_ADD("OUTPUT-BIN-FULL", PRINTER_STATUS_OUTPUT_BIN_FULL);
+        STATUS_PRINTER_ADD("PAGE-PUNT", PRINTER_STATUS_PAGE_PUNT);
+        STATUS_PRINTER_ADD("PAPER-JAM", PRINTER_STATUS_PAPER_JAM);
+        STATUS_PRINTER_ADD("PAPER-OUT", PRINTER_STATUS_PAPER_OUT);
+        STATUS_PRINTER_ADD("PAPER-PROBLEM", PRINTER_STATUS_PAPER_PROBLEM);
+        STATUS_PRINTER_ADD("PAUSED", PRINTER_STATUS_PAUSED);
+        STATUS_PRINTER_ADD("PENDING-DELETION", PRINTER_STATUS_PENDING_DELETION);
+        STATUS_PRINTER_ADD("POWER-SAVE", PRINTER_STATUS_POWER_SAVE);
+        STATUS_PRINTER_ADD("PRINTING", PRINTER_STATUS_PRINTING);
+        STATUS_PRINTER_ADD("PROCESSING", PRINTER_STATUS_PROCESSING);
+        STATUS_PRINTER_ADD("SERVER-UNKNOWN", PRINTER_STATUS_SERVER_UNKNOWN);
+        STATUS_PRINTER_ADD("TONER-LOW", PRINTER_STATUS_TONER_LOW);
+        STATUS_PRINTER_ADD("USER-INTERVENTION", PRINTER_STATUS_USER_INTERVENTION);
+        STATUS_PRINTER_ADD("WAITING", PRINTER_STATUS_WAITING);
+        STATUS_PRINTER_ADD("WARMING-UP", PRINTER_STATUS_WARMING_UP);
+#undef STATUS_PRINTER_ADD
+        return result;
+    }
+    const AttributeMapType& getAttributeMap()
+    {
+        static AttributeType result;
+        if(!result.empty())
+        {
+            return result;
+        }
+        // add only first time
+#define ATTRIBUTE_PRINTER_ADD(value, type) result.insert(std::make_pair(value, type))
+        ATTRIBUTE_PRINTER_ADD("DIRECT", PRINTER_ATTRIBUTE_DIRECT);
+        ATTRIBUTE_PRINTER_ADD("DO-COMPLETE-FIRST", PRINTER_ATTRIBUTE_DO_COMPLETE_FIRST);
+        ATTRIBUTE_PRINTER_ADD("ENABLE-DEVQ", PRINTER_ATTRIBUTE_ENABLE_DEVQ);
+        ATTRIBUTE_PRINTER_ADD("HIDDEN", HIDDEN);
+        ATTRIBUTE_PRINTER_ADD("KEEPPRINTEDJOBS", PRINTER_ATTRIBUTE_KEEPPRINTEDJOBS);
+        ATTRIBUTE_PRINTER_ADD("LOCAL", PRINTER_ATTRIBUTE_LOCAL);
+        ATTRIBUTE_PRINTER_ADD("NETWORK", PRINTER_ATTRIBUTE_NETWORK);
+        ATTRIBUTE_PRINTER_ADD("PUBLISHED", PRINTER_ATTRIBUTE_PUBLISHED);
+        ATTRIBUTE_PRINTER_ADD("QUEUED", PRINTER_ATTRIBUTE_QUEUED);
+        ATTRIBUTE_PRINTER_ADD("RAW-ONLY", PRINTER_ATTRIBUTE_RAW_ONLY);
+        ATTRIBUTE_PRINTER_ADD("SHARED", PRINTER_ATTRIBUTE_SHARED);
+        // XP
+#ifdef PRINTER_ATTRIBUTE_FAX
+        ATTRIBUTE_PRINTER_ADD("FAX", PRINTER_ATTRIBUTE_FAX);
+#endif
+        // vista
+#ifdef PRINTER_ATTRIBUTE_FRIENDLY_NAME
+        ATTRIBUTE_PRINTER_ADD("FRIENDLY-NAME", PRINTER_ATTRIBUTE_FRIENDLY_NAME);
+        ATTRIBUTE_PRINTER_ADD("MACHINE", PRINTER_ATTRIBUTE_MACHINE);
+        ATTRIBUTE_PRINTER_ADD("PUSHED-USER", PRINTER_ATTRIBUTE_PUSHED_USER);
+        ATTRIBUTE_PRINTER_ADD("PUSHED-MACHINE", PRINTER_ATTRIBUTE_PUSHED_MACHINE);
+#endif
+        // server 2003
+#ifdef PRINTER_ATTRIBUTE_TS
+        ATTRIBUTE_PRINTER_ADD("TS", PRINTER_ATTRIBUTE_TS);
+#endif
+#undef STATUS_PRINTER_ADD
+        return result;
+    }
+#undef COMBINE__
+}
+
 v8::Handle<v8::Value> getPrinters(const v8::Arguments& iArgs)
 {
     v8::HandleScope scope;
@@ -40,70 +124,98 @@ v8::Handle<v8::Value> getPrinters(const v8::Arguments& iArgs)
         v8::Local<v8::Object> result_printer = v8::Object::New();
         //LPTSTR               pPrinterName;
         result_printer->Set(v8::String::NewSymbol("name"), v8::String::New(printer->pPrinterName));
+        v8::Local<v8::Array> result_printer_status = v8::Array::New();
         //DWORD                Status;
         // statuses from:
         // http://msdn.microsoft.com/en-gb/library/windows/desktop/dd162845(v=vs.85).aspx
-        if(printer->Status & PRINTER_STATUS_WAITING)
+        int i_status = 0;
+        for(StatusMapType::const_iterator itStatus = getStatusMap().begin(); itStatus < getStatusMap().end(); ++itStatus, ++i_status)
         {
-            result_printer->Set(v8::String::NewSymbol("status"), v8::String::New("IDLE"));
-        }
-        else if(printer->Status & PRINTER_STATUS_PRINTING)
-        {
-            result_printer->Set(v8::String::NewSymbol("status"), v8::String::New("PRINTING"));
-        }
-        else if(printer->Status & PRINTER_STATUS_OFFLINE)
-        {
-            result_printer->Set(v8::String::NewSymbol("status"), v8::String::New("STOPPED"));
-        }
-        else if(printer->Status & PRINTER_STATUS_BUSY)
-        {
-            result_printer->Set(v8::String::NewSymbol("status"), v8::String::New("BUSY"));
-        }
-        else if(printer->Status & PRINTER_STATUS_ERROR)
-        {
-            result_printer->Set(v8::String::NewSymbol("status"), v8::String::New("ERROR"));
-            if(printer->Status & PRINTER_STATUS_NO_TONER)
+            if(printer->Status & itStatus->second)
             {
-                result_printer->Set(v8::String::NewSymbol("statusReason"), v8::String::New("NO-TONER"));
-            }
-            else if(printer->Status & PRINTER_STATUS_OUT_OF_MEMORY)
-            {
-                result_printer->Set(v8::String::NewSymbol("statusReason"), v8::String::New("OUT-OF-MEMORY"));
-            }
-            else if(printer->Status & PRINTER_STATUS_PAPER_JAM)
-            {
-                result_printer->Set(v8::String::NewSymbol("statusReason"), v8::String::New("PAPER-JAM"));
-            }
-            else if(printer->Status & PRINTER_STATUS_PAPER_OUT)
-            {
-                result_printer->Set(v8::String::NewSymbol("statusReason"), v8::String::New("PAPER-OUT"));
-            }
-            else if(printer->Status & PRINTER_STATUS_PAPER_PROBLEM)
-            {
-                result_printer->Set(v8::String::NewSymbol("statusReason"), v8::String::New("PAPER-PROBLEM"));
+                result_printer_status.Set(i_status, v8::String::New(itStatus->first));
             }
         }
-        //TODO: to finish to extract all data
+        result_printer->Set(v8::String::NewSymbol("status"), result_printer_status);
         //LPTSTR               pServerName;
+        if(printer->pServerName != NULL)
+        {
+            result_printer->Set(v8::String::NewSymbol("serverName"), v8::String::New(printer->pServerName));
+        }
         //LPTSTR               pShareName;
+        if(printer->pShareName != NULL)
+        {
+            result_printer->Set(v8::String::NewSymbol("serverName"), v8::String::New(printer->pShareName));
+        }
         //LPTSTR               pPortName;
+        if(printer->pPortName != NULL)
+        {
+            result_printer->Set(v8::String::NewSymbol("serverName"), v8::String::New(printer->pPortName));
+        }
         //LPTSTR               pDriverName;
+        if(printer->pDriverName != NULL)
+        {
+            result_printer->Set(v8::String::NewSymbol("serverName"), v8::String::New(printer->pDriverName));
+        }
         //LPTSTR               pComment;
+        if(printer->pComment != NULL)
+        {
+            result_printer->Set(v8::String::NewSymbol("serverName"), v8::String::New(printer->pComment));
+        }
         //LPTSTR               pLocation;
-        //LPDEVMODE            pDevMode;
+        if(printer->pLocation != NULL)
+        {
+            result_printer->Set(v8::String::NewSymbol("serverName"), v8::String::New(printer->pLocation));
+        }
         //LPTSTR               pSepFile;
+        if(printer->pSepFile != NULL)
+        {
+            result_printer->Set(v8::String::NewSymbol("sepFile"), v8::String::New(printer->pSepFile));
+        }
         //LPTSTR               pPrintProcessor;
+        if(printer->pPrintProcessor != NULL)
+        {
+            result_printer->Set(v8::String::NewSymbol("printProcessor"), v8::String::New(printer->pPrintProcessor));
+        }
         //LPTSTR               pDatatype;
+        if(printer->pDatatype != NULL)
+        {
+            result_printer->Set(v8::String::NewSymbol("datatype"), v8::String::New(printer->pDatatype));
+        }
         //LPTSTR               pParameters;
-        //PSECURITY_DESCRIPTOR pSecurityDescriptor;
+        if(printer->pParameters != NULL)
+        {
+            result_printer->Set(v8::String::NewSymbol("parameters"), v8::String::New(printer->pParameters));
+        }
         //DWORD                Attributes;
+        v8::Local<v8::Array> result_printer_attributes = v8::Array::New();
+        int i_attribute = 0;
+        for(AttributeMapType::const_iterator itAttribute = getAttributeMap().begin(); itAttribute < getAttributeMap().end(); ++itAttribute, ++i_attribute)
+        {
+            if(printer->Attributes & itAttribute->second)
+            {
+                result_printer_attributes.Set(i_attribute, v8::String::New(itAttribute->first));
+            }
+        }
+        result_printer->Set(v8::String::NewSymbol("attributes"), result_printer_attributes);
         //DWORD                Priority;
+        result_printer->Set(v8::String::NewSymbol("priority"), v8::Number::New(printer->Priority));
         //DWORD                DefaultPriority;
-        //DWORD                StartTime;
-        //DWORD                UntilTime;
+        result_printer->Set(v8::String::NewSymbol("defaultPriority"), v8::Number::New(printer->DefaultPriority));
         //DWORD                cJobs;
-        //DWORD
-        //AveragePPM;
+        result_printer->Set(v8::String::NewSymbol("cJobs"), v8::Number::New(printer->cJobs));
+        //DWORD                AveragePPM;
+        result_printer->Set(v8::String::NewSymbol("averagePPM"), v8::Number::New(printer->AveragePPM));
+
+        //DWORD                StartTime;
+        result_printer->Set(v8::String::NewSymbol("startTime"), v8::Date::New(printer->StartTime));
+        //DWORD                UntilTime;
+        result_printer->Set(v8::String::NewSymbol("untilTime"), v8::Date::New(printer->UntilTime));
+
+        //TODO: to finish to extract all data
+        //LPDEVMODE            pDevMode;
+        //PSECURITY_DESCRIPTOR pSecurityDescriptor;
+
         result->Set(i, result_printer);
     }
     free(printers);
@@ -121,6 +233,7 @@ v8::Handle<v8::Value> getSupportedFormats(const v8::Arguments& iArgs) {
 
 v8::Handle<v8::Value> PrintDirect(const v8::Arguments& iArgs) {
     v8::HandleScope scope;
+    //TODO: to move in an unique place win and posix input parameters processing
     REQUIRE_ARGUMENTS(iArgs, 4);
 
     // can be string or buffer
@@ -129,20 +242,18 @@ v8::Handle<v8::Value> PrintDirect(const v8::Arguments& iArgs) {
         return v8::ThrowException(v8::Exception::TypeError(v8::String::New("Argument 0 missing")));
     }
 
-    char* data(NULL);
-    size_t data_len(0);
+    std::string data;
     v8::Handle<v8::Value> arg0(iArgs[0]);
 
     if(arg0->IsString())
     {
-        v8::String::Utf8Value data_str(arg0->ToString());
-        data = *data_str;
-        data_len = data_str.length();
+        v8::String::Utf8Value data_str_v8(arg0->ToString());
+        data.assign(*data_str, data_str.length());
     }
     else if(arg0->IsObject() && arg0.As<v8::Object>()->HasIndexedPropertiesInExternalArrayData())
     {
-        data = static_cast<char*>(arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayData());
-        data_len = arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayDataLength();
+        data.assign(static_cast<char*>(arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayData()),
+                    arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayDataLength());
     }
     else
     {
@@ -152,7 +263,6 @@ v8::Handle<v8::Value> PrintDirect(const v8::Arguments& iArgs) {
     REQUIRE_ARGUMENT_STRING(iArgs, 1, printername);
     REQUIRE_ARGUMENT_STRING(iArgs, 2, docname);
     REQUIRE_ARGUMENT_STRING(iArgs, 3, type);
-    int args_length = iArgs.Length();
 
     BOOL     bStatus = true;
     HANDLE     hPrinter = NULL;
@@ -176,7 +286,7 @@ v8::Handle<v8::Value> PrintDirect(const v8::Arguments& iArgs) {
             if (bStatus) {
                 // Send the data to the printer.
                 //TODO: check with sizeof(LPTSTR) is the same as sizeof(char)
-                bStatus = WritePrinter( hPrinter, (LPTSTR)(data), data_len, &dwBytesWritten);
+                bStatus = WritePrinter( hPrinter, (LPTSTR)(data._c_str()), data.size(), &dwBytesWritten);
                 EndPagePrinter (hPrinter);
             }else{
                 RETURN_EXCEPTION_STR("StartPagePrinter error");
@@ -199,5 +309,5 @@ v8::Handle<v8::Value> PrintDirect(const v8::Arguments& iArgs) {
         bStatus = true;
     }
     bool ret_sttaus = false||bStatus;
-    return scope.Close(v8::Boolean::New(ret_sttaus));
+    return scope.Close(v8::Number::New(dwJob));
 }

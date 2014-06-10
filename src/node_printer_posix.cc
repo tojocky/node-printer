@@ -27,26 +27,6 @@ v8::Handle<v8::Value> getPrinters(const v8::Arguments& iArgs)
         for(j = 0, dest_option = printer->options; j < printer->num_options; ++j, ++dest_option)
         {
             result_printer_options->Set(v8::String::NewSymbol(dest_option->name), v8::String::New(dest_option->value));
-
-            if(!strcmp(dest_option->name, "printer-state"))
-            {
-                if(!strcmp(dest_option->value, "3"))
-                {
-                    result_printer->Set(v8::String::NewSymbol("status"), v8::String::New("IDLE"));
-                }
-                else if(!strcmp(dest_option->value, "4"))
-                {
-                    result_printer->Set(v8::String::NewSymbol("status"), v8::String::New("PRINTING"));
-                }
-                else if(!strcmp(dest_option->value, "5"))
-                {
-                    result_printer->Set(v8::String::NewSymbol("status"), v8::String::New("STOPPED"));
-                }
-            }
-            if(!strcmp(dest_option->name, "printer-state-reasons"))
-            {
-                result_printer->Set(v8::String::NewSymbol("statusReason"), v8::String::New(dest_option->value));
-            }
         }
         result_printer->Set(v8::String::NewSymbol("options"), result_printer_options);
         result->Set(i, result_printer);
@@ -79,24 +59,22 @@ v8::Handle<v8::Value> PrintDirect(const v8::Arguments& iArgs) {
         return v8::ThrowException(v8::Exception::TypeError(v8::String::New("Argument 0 missing")));
     }
 
-    char* data(NULL);
-    size_t data_len(0);
+    std::string data;
     v8::Handle<v8::Value> arg0(iArgs[0]);
 
     if(arg0->IsString())
     {
-        v8::String::Utf8Value data_str(arg0->ToString());
-        data = *data_str;
-        data_len = data_str.length();
+        v8::String::Utf8Value data_str_v8(arg0->ToString());
+        data.assign(*data_str_v8, data_str_v8.length());
     }
     else if(arg0->IsObject() && arg0.As<v8::Object>()->HasIndexedPropertiesInExternalArrayData())
     {
-        data = static_cast<char*>(arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayData());
-        data_len = arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayDataLength();
+        data.assign(static_cast<char*>(arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayData()),
+                    arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayDataLength());
     }
     else
     {
-        return v8::ThrowException(v8::Exception::TypeError(v8::String::New("Argument 0 must be a string or NativeBuffer")));
+        return v8::ThrowException(v8::Exception::TypeError(v8::String::New("Argument 0 must be a string or Buffer")));
     }
 
     REQUIRE_ARGUMENT_STRING(iArgs, 1, printername);
@@ -140,9 +118,10 @@ v8::Handle<v8::Value> PrintDirect(const v8::Arguments& iArgs) {
     int job_id = cupsCreateJob(CUPS_HTTP_DEFAULT, *printername, *docname, num_options, options);
     if(job_id > 0)
     {
-        cupsStartDocument(CUPS_HTTP_DEFAULT, *printername, job_id, *docname, type_str.c_str(), true /*last document*/);
+        cupsStartDocument(CUPS_HTTP_DEFAULT, *printername, job_id, *docname, type_str.c_str(), 1 /*last document*/);
         /* cupsWriteRequestData can be called as many times as needed */
-        cupsWriteRequestData(CUPS_HTTP_DEFAULT, data, data_len);
+        //TODO: to split big buffer
+        cupsWriteRequestData(CUPS_HTTP_DEFAULT, data.c_str(), data.size());
         cupsFinishDocument(CUPS_HTTP_DEFAULT, *printername);
     }
     return scope.Close(v8::Number::New(job_id));
