@@ -23,7 +23,7 @@ namespace{
             return result;
         }
         // add only first time
-#define STATUS_PRINTER_ADD(value, type) result.insert(std::make_pair(#type, type))
+#define STATUS_PRINTER_ADD(value, type) result.insert(std::make_pair(value, type))
         STATUS_PRINTER_ADD("BUSY", PRINTER_STATUS_BUSY);
         STATUS_PRINTER_ADD("DOOR-OPEN", PRINTER_STATUS_DOOR_OPEN);
         STATUS_PRINTER_ADD("ERROR", PRINTER_STATUS_ERROR);
@@ -87,7 +87,7 @@ namespace{
 #ifdef PRINTER_ATTRIBUTE_TS
         ATTRIBUTE_PRINTER_ADD("TS", PRINTER_ATTRIBUTE_TS);
 #endif
-#undef STATUS_PRINTER_ADD
+#undef ATTRIBUTE_PRINTER_ADD
         return result;
     }
 #undef COMBINE__
@@ -96,108 +96,82 @@ namespace{
 v8::Handle<v8::Value> getPrinters(const v8::Arguments& iArgs)
 {
     v8::HandleScope scope;
-    PRINTER_INFO_2 *printers = NULL;
     DWORD printers_size = 0;
     DWORD printers_size_bytes = 0;
     DWORD Level = 2;
-    DWORD flags = PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS | PRINTER_ENUM_NAME;
+    DWORD flags = PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS;
     // First try to retrieve the number of printers
-    BOOL bError = EnumPrinters(flags, NULL, 2, NULL, 0, &printers_size_bytes, &printers_size);
-    if(bError)
-    {
-        return v8::ThrowException(v8::Exception::TypeError(v8::String::New("Error on EnumPrinters to retrieve the number of printers")));
-    }
+    BOOL bError = EnumPrintersW(flags, NULL, 2, NULL, 0, &printers_size_bytes, &printers_size);
     // allocate the required memmory
-    if((printers = (PRINTER_INFO_2*) malloc(printers_size_bytes)) == 0)
+    PRINTER_INFO_2W *printers = (PRINTER_INFO_2W*) malloc(printers_size_bytes);
+    if(printers == NULL)
     {
         return v8::ThrowException(v8::Exception::TypeError(v8::String::New("Error on allocate memmory for printers")));
     }
 
-    bError = EnumPrinters(flags, NULL, 2, (LPBYTE)printers, printers_size_bytes, &printers_size_bytes, &printers_size);
-    if(bError)
+    bError = EnumPrintersW(flags, NULL, 2, (LPBYTE)printers, printers_size_bytes, &printers_size_bytes, &printers_size);
+    if(!bError)
     {
         free(printers);
         return v8::ThrowException(v8::Exception::TypeError(v8::String::New("Error on EnumPrinters")));
     }
     v8::Local<v8::Array> result = v8::Array::New(printers_size);
-	PRINTER_INFO_2 *printer = printers;
+    // http://msdn.microsoft.com/en-gb/library/windows/desktop/dd162845(v=vs.85).aspx
+	PRINTER_INFO_2W *printer = printers;
 	DWORD i = 0;
     for(; i < printers_size; ++i, ++printer)
     {
         v8::Local<v8::Object> result_printer = v8::Object::New();
-        //LPTSTR               pPrinterName;
-        result_printer->Set(v8::String::NewSymbol("name"), v8::String::New(printer->pPrinterName));
-        v8::Local<v8::Array> result_printer_status = v8::Array::New();
+#define ADD_V8_STRING_PROPERTY(name, key) if((printer->##key != NULL) && (*printer->##key != L'\0'))    \
+        {                                   \
+            result_printer->Set(v8::String::NewSymbol(#name), v8::String::New((uint16_t*)printer->##key)); \
+        }
+		//LPTSTR               pPrinterName;
+        ADD_V8_STRING_PROPERTY(name, pPrinterName)
+        //LPTSTR               pServerName;
+        ADD_V8_STRING_PROPERTY(serverName, pServerName)
+        //LPTSTR               pShareName;
+        ADD_V8_STRING_PROPERTY(shareName, pShareName)
+        //LPTSTR               pPortName;
+        ADD_V8_STRING_PROPERTY(portName, pPortName)
+        //LPTSTR               pDriverName;
+        ADD_V8_STRING_PROPERTY(driverName, pDriverName)
+        //LPTSTR               pComment;
+        ADD_V8_STRING_PROPERTY(comment, pComment)
+        //LPTSTR               pLocation;
+        ADD_V8_STRING_PROPERTY(location, pLocation)
+        //LPTSTR               pSepFile;
+        ADD_V8_STRING_PROPERTY(sepFile, pSepFile)
+        //LPTSTR               pPrintProcessor;
+        ADD_V8_STRING_PROPERTY(printProcessor, pPrintProcessor)
+        //LPTSTR               pDatatype;
+        ADD_V8_STRING_PROPERTY(datatype, pDatatype)
+        //LPTSTR               pParameters;
+        ADD_V8_STRING_PROPERTY(parameters, pParameters)
+#undef ADD_V8_STRING_PROPERTY
         //DWORD                Status;
         // statuses from:
         // http://msdn.microsoft.com/en-gb/library/windows/desktop/dd162845(v=vs.85).aspx
+        v8::Local<v8::Array> result_printer_status = v8::Array::New();
         int i_status = 0;
-        for(StatusMapType::const_iterator itStatus = getStatusMap().begin(); itStatus != getStatusMap().end(); ++itStatus, ++i_status)
+        for(StatusMapType::const_iterator itStatus = getStatusMap().begin(); itStatus != getStatusMap().end(); ++itStatus)
         {
             if(printer->Status & itStatus->second)
             {
                 result_printer_status->Set(i_status, v8::String::New(itStatus->first.c_str()));
+				++i_status;
             }
         }
-        result_printer->Set(v8::String::NewSymbol("status"), result_printer_status);
-        //LPTSTR               pServerName;
-        if(printer->pServerName != NULL)
-        {
-            result_printer->Set(v8::String::NewSymbol("serverName"), v8::String::New(printer->pServerName));
-        }
-        //LPTSTR               pShareName;
-        if(printer->pShareName != NULL)
-        {
-            result_printer->Set(v8::String::NewSymbol("serverName"), v8::String::New(printer->pShareName));
-        }
-        //LPTSTR               pPortName;
-        if(printer->pPortName != NULL)
-        {
-            result_printer->Set(v8::String::NewSymbol("serverName"), v8::String::New(printer->pPortName));
-        }
-        //LPTSTR               pDriverName;
-        if(printer->pDriverName != NULL)
-        {
-            result_printer->Set(v8::String::NewSymbol("serverName"), v8::String::New(printer->pDriverName));
-        }
-        //LPTSTR               pComment;
-        if(printer->pComment != NULL)
-        {
-            result_printer->Set(v8::String::NewSymbol("serverName"), v8::String::New(printer->pComment));
-        }
-        //LPTSTR               pLocation;
-        if(printer->pLocation != NULL)
-        {
-            result_printer->Set(v8::String::NewSymbol("serverName"), v8::String::New(printer->pLocation));
-        }
-        //LPTSTR               pSepFile;
-        if(printer->pSepFile != NULL)
-        {
-            result_printer->Set(v8::String::NewSymbol("sepFile"), v8::String::New(printer->pSepFile));
-        }
-        //LPTSTR               pPrintProcessor;
-        if(printer->pPrintProcessor != NULL)
-        {
-            result_printer->Set(v8::String::NewSymbol("printProcessor"), v8::String::New(printer->pPrintProcessor));
-        }
-        //LPTSTR               pDatatype;
-        if(printer->pDatatype != NULL)
-        {
-            result_printer->Set(v8::String::NewSymbol("datatype"), v8::String::New(printer->pDatatype));
-        }
-        //LPTSTR               pParameters;
-        if(printer->pParameters != NULL)
-        {
-            result_printer->Set(v8::String::NewSymbol("parameters"), v8::String::New(printer->pParameters));
-        }
+        result_printer->Set(v8::String::NewSymbol("statusNumber"), v8::Number::New(printer->Status));
         //DWORD                Attributes;
         v8::Local<v8::Array> result_printer_attributes = v8::Array::New();
         int i_attribute = 0;
-        for(AttributeMapType::const_iterator itAttribute = getAttributeMap().begin(); itAttribute != getAttributeMap().end(); ++itAttribute, ++i_attribute)
+        for(AttributeMapType::const_iterator itAttribute = getAttributeMap().begin(); itAttribute != getAttributeMap().end(); ++itAttribute)
         {
             if(printer->Attributes & itAttribute->second)
             {
                 result_printer_attributes->Set(i_attribute, v8::String::New(itAttribute->first.c_str()));
+				++i_attribute;
             }
         }
         result_printer->Set(v8::String::NewSymbol("attributes"), result_printer_attributes);
@@ -206,14 +180,20 @@ v8::Handle<v8::Value> getPrinters(const v8::Arguments& iArgs)
         //DWORD                DefaultPriority;
         result_printer->Set(v8::String::NewSymbol("defaultPriority"), v8::Number::New(printer->DefaultPriority));
         //DWORD                cJobs;
-        result_printer->Set(v8::String::NewSymbol("cJobs"), v8::Number::New(printer->cJobs));
+        result_printer->Set(v8::String::NewSymbol("jobs"), v8::Number::New(printer->cJobs));
         //DWORD                AveragePPM;
         result_printer->Set(v8::String::NewSymbol("averagePPM"), v8::Number::New(printer->AveragePPM));
 
         //DWORD                StartTime;
-        result_printer->Set(v8::String::NewSymbol("startTime"), v8::Date::New(printer->StartTime));
+		if(printer->StartTime > 0)
+		{
+			result_printer->Set(v8::String::NewSymbol("startTime"), v8::Number::New(printer->StartTime));
+		}
         //DWORD                UntilTime;
-        result_printer->Set(v8::String::NewSymbol("untilTime"), v8::Date::New(printer->UntilTime));
+		if(printer->UntilTime > 0)
+		{
+            result_printer->Set(v8::String::NewSymbol("untilTime"), v8::Number::New(printer->UntilTime));
+        }
 
         //TODO: to finish to extract all data
         //LPDEVMODE            pDevMode;
@@ -274,35 +254,35 @@ v8::Handle<v8::Value> PrintDirect(const v8::Arguments& iArgs) {
     DWORD      dwBytesWritten = 0L;
 
     // Open a handle to the printer.
-    bStatus = OpenPrinter( (LPTSTR)(*printername), &hPrinter, NULL );
+    bStatus = OpenPrinter( (LPSTR)(*printername), &hPrinter, NULL );
     if (bStatus) {
         // Fill in the structure with info about this "document."
-        DocInfo.pDocName = (LPTSTR)(*docname);
+        DocInfo.pDocName = (LPSTR)(*docname);
         DocInfo.pOutputFile = NULL;
-        DocInfo.pDatatype = (LPTSTR)(*type);
+        DocInfo.pDatatype = (LPSTR)(*type);
 
         // Inform the spooler the document is beginning.
         dwJob = StartDocPrinter( hPrinter, 1, (LPBYTE)&DocInfo );
         if (dwJob > 0) {
             // Start a page.
-            bStatus = StartPagePrinter( hPrinter );
+            bStatus = StartPagePrinter(hPrinter);
             if (bStatus) {
                 // Send the data to the printer.
                 //TODO: check with sizeof(LPTSTR) is the same as sizeof(char)
-                bStatus = WritePrinter( hPrinter, (LPTSTR)(data.c_str()), (DWORD)data.size(), &dwBytesWritten);
-                EndPagePrinter (hPrinter);
+                bStatus = WritePrinter( hPrinter, (LPVOID)(data.c_str()), (DWORD)data.size(), &dwBytesWritten);
+                EndPagePrinter(hPrinter);
             }else{
                 RETURN_EXCEPTION_STR("StartPagePrinter error");
             }
             // Inform the spooler that the document is ending.
-            EndDocPrinter( hPrinter );
+            EndDocPrinter(hPrinter);
         }else{
             RETURN_EXCEPTION_STR("StartDocPrinter error");
         }
         // Close the printer handle.
-        ClosePrinter( hPrinter );
+        ClosePrinter(hPrinter);
     }else{
-        RETURN_EXCEPTION(v8::String::Concat(v8::String::New("OpenPrinter error "), iArgs[1]->ToString()))
+        RETURN_EXCEPTION(v8::String::Concat(v8::String::New("OpenPrinter error: "), iArgs[1]->ToString()))
     }
     // Check to see if correct number of bytes were written.
     if (dwBytesWritten != data.size()) {
