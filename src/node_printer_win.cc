@@ -46,22 +46,22 @@ namespace{
     {
         PrinterHandle(LPWSTR iPrinterName)
         {
-            _error = OpenPrinterW(iPrinterName, &_printer, NULL);
+            _ok = OpenPrinterW(iPrinterName, &_printer, NULL);
         }
         ~PrinterHandle()
         {
-            if(!_error)
+            if(!_ok)
             {
                 ClosePrinter(_printer);
             }
         }
         operator HANDLE() {return _printer;}
-        operator bool() { return !_error;}
+        operator bool() { return (!!_ok);}
         HANDLE & operator *() { return _printer;}
         HANDLE * operator ->() { return &_printer;}
         const HANDLE & operator ->() const { return _printer;}
         HANDLE _printer;
-        BOOL _error; 
+        BOOL _ok; 
     };
     
     const StatusMapType& getStatusMap()
@@ -525,6 +525,17 @@ v8::Handle<v8::Value> setJob(const v8::Arguments& iArgs)
     // http://msdn.microsoft.com/en-us/library/windows/desktop/dd162978(v=vs.85).aspx
     BOOL bError = SetJobW(*printerHandle, (DWORD)jobId, 0, NULL, jobCommand);
     return scope.Close(v8::Boolean::New(!!bError));
+}
+
+v8::Handle<v8::Value> getJobCommands(const v8::Arguments& iArgs) {
+    v8::HandleScope scope;
+    v8::Local<v8::Array> result = v8::Array::New();
+    int i = 0;
+    for(StatusMapType::const_iterator itJob = getJobCommandMap().begin(); itJob != getJobCommandMap().end(); ++itJob)
+    {
+        result->Set(i++, v8::String::New(itJob->first.c_str()));
+    }
+    return scope.Close(result);
 }
 
 v8::Handle<v8::Value> getSupportedFormats(const v8::Arguments& iArgs) {

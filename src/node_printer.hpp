@@ -50,6 +50,10 @@ v8::Handle<v8::Value> setJob(const v8::Arguments& iArgs);
  */
 v8::Handle<v8::Value> getSupportedFormats(const v8::Arguments& iArgs);
 
+/** Get Supported format array depends on the system
+ */
+v8::Handle<v8::Value> getJobCommands(const v8::Arguments& iArgs);
+
 //TODO:
 // to see if the printer is already printing
 // optional ability to get printer spool
