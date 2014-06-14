@@ -50,6 +50,10 @@ return v8::ThrowException(v8::Exception::TypeError(                    \
     ARG_CHECK_STRING(args, i);                                                       \
     v8::String::Utf8Value var(args[i]->ToString());
 
+#define REQUIRE_ARGUMENT_STRINGW(args, i, var)                                        \
+    ARG_CHECK_STRING(args, i);                                                       \
+    v8::String::Value var(args[i]->ToString());
+
 
 #define OPTIONAL_ARGUMENT_FUNCTION(i, var)                                     \
     v8::Local<v8::Function> var;                                                       \
@@ -63,7 +67,18 @@ return v8::ThrowException(v8::Exception::TypeError(                    \
     }
 
 
-#define OPTIONAL_ARGUMENT_INTEGER(i, var, default)                             \
+#define REQUIRE_ARGUMENT_INTEGER(args, i, var)                             \
+    int var;                                                                   \
+    if (args[i]->IsInt32()) {                                             \
+        var = args[i]->Int32Value();                                           \
+    }                                                                          \
+    else {                                                                     \
+        return v8::ThrowException(v8::Exception::TypeError(                            \
+            v8::String::New("Argument " #i " must be an integer"))                 \
+        );                                                                     \
+    }
+
+#define OPTIONAL_ARGUMENT_INTEGER(args, i, var, default)                             \
     int var;                                                                   \
     if (args.Length() <= (i)) {                                                \
         var = (default);                                                       \

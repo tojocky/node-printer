@@ -18,10 +18,33 @@
  */
 v8::Handle<v8::Value> PrintDirect(const v8::Arguments& iArgs);
 
-/**
+/** Retrieve all printers and jobs
  * posix: minimum version: CUPS 1.1.21/OS X 10.4
  */
 v8::Handle<v8::Value> getPrinters(const v8::Arguments& iArgs);
+
+/** Retrieve printer info and jobs
+ */
+v8::Handle<v8::Value> getPrinter(const v8::Arguments& iArgs);
+
+/** Retrieve job info
+ */
+v8::Handle<v8::Value> getJob(const v8::Arguments& iArgs);
+
+//TODO
+/** Set job command. 
+ * Possible command:
+ *      "CANCEL"
+ *      "PAUSE"
+ *      "RESTART"
+ *      "RESUME"
+ *      "DELETE"
+ *      "SENT-TO-PRINTER"
+ *      "LAST-PAGE-EJECTED"
+ *      "RETAIN"
+ *      "RELEASE"
+ */
+v8::Handle<v8::Value> setJob(const v8::Arguments& iArgs);
 
 /** Get Supported format array depends on the system
  */

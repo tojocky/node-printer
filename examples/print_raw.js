@@ -1,7 +1,7 @@
 ﻿var printer = require("../lib");
 
-printer.printDirect({data:new Buffer("print from Node.JS buffer") // or simple String: "some text"
-	, printer:'raw_printer' // printer name
+printer.printDirect({data:"print from Node.JS buffer" // or simple String: "some text"
+	, printer:'Foxit Reader PDF Printer' // printer name
 	, type: 'RAW' // type: RAW, TEXT, PDF, JPEG, .. depends on platform
 	, success:function(jobID){
 		console.log("sent to printer with ID: "+jobID);

@@ -14,7 +14,56 @@
 
 namespace{
     typedef std::map<std::string, DWORD> StatusMapType;
-    typedef std::map<std::string, DWORD> AttributeMapType;
+
+    /** Memory value class management to avoid memory leak
+    */
+    template<typename Type>
+    struct MemValue
+    {
+        /** Constructor of allocating iSizeKbytes bytes memory;
+        * @param iSizeKbytes size in bytes of required allocating memory
+        */
+        MemValue(const DWORD iSizeKbytes): _value(NULL)
+        {
+            _value = (Type*)malloc(iSizeKbytes);
+        }
+        /** Destructor. The allocated memory will be deallocated
+        */
+        ~MemValue()
+        {
+            if(_value != NULL)
+            {
+                free(_value);
+            }
+        }
+        Type * get() {return _value; }
+        Type * operator ->() { return &_value; }
+        operator bool() const { return (_value != NULL); }
+        Type *_value;
+    };
+    
+    struct PrinterHandle
+    {
+        PrinterHandle(LPWSTR iPrinterName)
+        {
+            _error = OpenPrinterW(iPrinterName, &_printer, NULL);
+        }
+        ~PrinterHandle()
+        {
+            if(!_error)
+            {
+                ClosePrinter(_printer);
+            }
+        }
+        operator HANDLE() {return _printer;}
+        operator bool() { return !_error;}
+        HANDLE & operator *() { return _printer;}
+        HANDLE * operator ->() { return &_printer;}
+        const HANDLE & operator ->() const { return _printer;}
+        HANDLE _printer;
+        BOOL _error; 
+    };
+    
     const StatusMapType& getStatusMap()
     {
         static StatusMapType result;
@@ -52,7 +101,41 @@ namespace{
 #undef STATUS_PRINTER_ADD
         return result;
     }
-    const AttributeMapType& getAttributeMap()
+
+    const StatusMapType& getJobStatusMap()
+    {
+        static StatusMapType result;
+        if(!result.empty())
+        {
+            return result;
+        }
+        // add only first time
+#define STATUS_PRINTER_ADD(value, type) result.insert(std::make_pair(value, type))
+        STATUS_PRINTER_ADD("BLOCKED-DEVQ", JOB_STATUS_BLOCKED_DEVQ);
+        STATUS_PRINTER_ADD("DELETED", JOB_STATUS_DELETED);
+        STATUS_PRINTER_ADD("DELETING", JOB_STATUS_DELETING);
+        STATUS_PRINTER_ADD("ERROR", JOB_STATUS_ERROR);
+        STATUS_PRINTER_ADD("OFFLINE", JOB_STATUS_OFFLINE);
+        STATUS_PRINTER_ADD("PAPEROUT", JOB_STATUS_PAPEROUT);
+        STATUS_PRINTER_ADD("PAUSED", JOB_STATUS_PAUSED);
+        STATUS_PRINTER_ADD("PRINTED", JOB_STATUS_PRINTED);
+        STATUS_PRINTER_ADD("PRINTING", JOB_STATUS_PRINTING);
+        STATUS_PRINTER_ADD("RESTART", JOB_STATUS_RESTART);
+        STATUS_PRINTER_ADD("SPOOLING", JOB_STATUS_SPOOLING);
+        STATUS_PRINTER_ADD("USER-INTERVENTION", JOB_STATUS_USER_INTERVENTION);
+        // XP and later
+#ifdef JOB_STATUS_COMPLETE
+        STATUS_PRINTER_ADD("COMPLETE", JOB_STATUS_COMPLETE);
+#endif
+#ifdef JOB_STATUS_RETAINED
+        STATUS_PRINTER_ADD("RETAINED", JOB_STATUS_RETAINED);
+#endif
+
+#undef STATUS_PRINTER_ADD
+        return result;
+    }
+
+    const StatusMapType& getAttributeMap()
     {
         static StatusMapType result;
         if(!result.empty())
@@ -90,43 +173,136 @@ namespace{
 #undef ATTRIBUTE_PRINTER_ADD
         return result;
     }
-#undef COMBINE__
-}
-
-v8::Handle<v8::Value> getPrinters(const v8::Arguments& iArgs)
-{
-    v8::HandleScope scope;
-    DWORD printers_size = 0;
-    DWORD printers_size_bytes = 0;
-    DWORD Level = 2;
-    DWORD flags = PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS;
-    // First try to retrieve the number of printers
-    BOOL bError = EnumPrintersW(flags, NULL, 2, NULL, 0, &printers_size_bytes, &printers_size);
-    // allocate the required memmory
-    PRINTER_INFO_2W *printers = (PRINTER_INFO_2W*) malloc(printers_size_bytes);
-    if(printers == NULL)
+    
+    const StatusMapType& getJobCommandMap()
     {
-        return v8::ThrowException(v8::Exception::TypeError(v8::String::New("Error on allocate memmory for printers")));
+        static StatusMapType result;
+        if(!result.empty())
+        {
+            return result;
+        }
+        // add only first time
+#define COMMAND_JOB_ADD(value, type) result.insert(std::make_pair(value, type))
+        COMMAND_JOB_ADD("CANCEL", JOB_CONTROL_CANCEL);
+        COMMAND_JOB_ADD("PAUSE", JOB_CONTROL_PAUSE);
+        COMMAND_JOB_ADD("RESTART", JOB_CONTROL_RESTART);
+        COMMAND_JOB_ADD("RESUME", JOB_CONTROL_RESUME);
+        COMMAND_JOB_ADD("DELETE", JOB_CONTROL_DELETE);
+        COMMAND_JOB_ADD("SENT-TO-PRINTER", JOB_CONTROL_SENT_TO_PRINTER);
+        COMMAND_JOB_ADD("LAST-PAGE-EJECTED", JOB_CONTROL_LAST_PAGE_EJECTED);
+#ifdef JOB_CONTROL_RETAIN
+        COMMAND_JOB_ADD("RETAIN", JOB_CONTROL_RETAIN);
+#endif
+#ifdef JOB_CONTROL_RELEASE
+        COMMAND_JOB_ADD("RELEASE", JOB_CONTROL_RELEASE);
+#endif
+#undef COMMAND_JOB_ADD
+        return result;
     }
 
-    bError = EnumPrintersW(flags, NULL, 2, (LPBYTE)printers, printers_size_bytes, &printers_size_bytes, &printers_size);
-    if(!bError)
+    void parseJobObject(JOB_INFO_2W *job, v8::Handle<v8::Object> result_printer_job)
     {
-        free(printers);
-        return v8::ThrowException(v8::Exception::TypeError(v8::String::New("Error on EnumPrinters")));
+        //DWORD                JobId;
+        result_printer_job->Set(v8::String::NewSymbol("id"), v8::Number::New(job->JobId));
+#define ADD_V8_STRING_PROPERTY(name, key) if((job->##key != NULL) && (*job->##key != L'\0'))    \
+        {                                   \
+            result_printer_job->Set(v8::String::NewSymbol(#name), v8::String::New((uint16_t*)job->##key)); \
+        }
+        //LPTSTR               pPrinterName;
+        ADD_V8_STRING_PROPERTY(name, pPrinterName)
+        //LPTSTR               pPrinterName;
+        ADD_V8_STRING_PROPERTY(printerName, pPrinterName);
+        //LPTSTR               pMachineName;
+        ADD_V8_STRING_PROPERTY(machineName, pMachineName);
+        //LPTSTR               pUserName;
+        ADD_V8_STRING_PROPERTY(userName, pUserName);
+        //LPTSTR               pDocument;
+        ADD_V8_STRING_PROPERTY(document, pDocument);
+        //LPTSTR               pNotifyName;
+        ADD_V8_STRING_PROPERTY(notifyName, pNotifyName);
+        //LPTSTR               pDatatype;
+        ADD_V8_STRING_PROPERTY(datatype, pDatatype);
+        //LPTSTR               pPrintProcessor;
+        ADD_V8_STRING_PROPERTY(printProcessor, pPrintProcessor);
+        //LPTSTR               pParameters;
+        ADD_V8_STRING_PROPERTY(parameters, pParameters);
+        //LPTSTR               pDriverName;
+        ADD_V8_STRING_PROPERTY(driverName, pDriverName);
+#undef ADD_V8_STRING_PROPERTY
+        //LPDEVMODE            pDevMode;
+        //PSECURITY_DESCRIPTOR pSecurityDescriptor;
+        //DWORD                Status;
+        v8::Local<v8::Array> result_printer_job_status = v8::Array::New();
+        int i_status = 0;
+        for(StatusMapType::const_iterator itStatus = getJobStatusMap().begin(); itStatus != getJobStatusMap().end(); ++itStatus)
+        {
+            if(job->Status & itStatus->second)
+            {
+                result_printer_job_status->Set(i_status, v8::String::New(itStatus->first.c_str()));
+                ++i_status;
+            }
+        }
+        //LPTSTR               pStatus;
+        if((job->pStatus != NULL) && (*job->pStatus != L'\0'))
+        {
+            result_printer_job_status->Set(i_status, v8::String::New((uint16_t*)job->pStatus));
+            ++i_status;
+        }
+        result_printer_job->Set(v8::String::NewSymbol("status"), result_printer_job_status);
+        //DWORD                Priority;
+        result_printer_job->Set(v8::String::NewSymbol("priority"), v8::Number::New(job->Priority));
+        //DWORD                Position;
+        result_printer_job->Set(v8::String::NewSymbol("position"), v8::Number::New(job->Position));
+        //DWORD                StartTime;
+        result_printer_job->Set(v8::String::NewSymbol("startTime"), v8::Number::New(job->StartTime));
+        //DWORD                UntilTime;
+        result_printer_job->Set(v8::String::NewSymbol("untilTime"), v8::Number::New(job->UntilTime));
+        //DWORD                TotalPages;
+        result_printer_job->Set(v8::String::NewSymbol("totalPages"), v8::Number::New(job->TotalPages));
+        //DWORD                Size;
+        result_printer_job->Set(v8::String::NewSymbol("size"), v8::Number::New(job->Size));
+        //SYSTEMTIME           Submitted;
+        //DWORD                Time;
+        result_printer_job->Set(v8::String::NewSymbol("time"), v8::Number::New(job->Time));
+        //DWORD                PagesPrinted;
+        result_printer_job->Set(v8::String::NewSymbol("pagesPrinted"), v8::Number::New(job->PagesPrinted));
     }
-    v8::Local<v8::Array> result = v8::Array::New(printers_size);
-    // http://msdn.microsoft.com/en-gb/library/windows/desktop/dd162845(v=vs.85).aspx
-	PRINTER_INFO_2W *printer = printers;
-	DWORD i = 0;
-    for(; i < printers_size; ++i, ++printer)
+    
+    std::string retrieveAndParseJobs(const LPWSTR iPrinterName,
+                                     const DWORD& iTotalJobs,
+                                     v8::Handle<v8::Object> result_printer_jobs,
+                                     PrinterHandle& iPrinterHandle)
     {
-        v8::Local<v8::Object> result_printer = v8::Object::New();
-#define ADD_V8_STRING_PROPERTY(name, key) if((printer->##key != NULL) && (*printer->##key != L'\0'))    \
+        DWORD bytes_needed = 0, totalJobs = 0;
+        BOOL bError = EnumJobsW(*iPrinterHandle, 0, iTotalJobs, 2, NULL, bytes_needed, &bytes_needed, &totalJobs);
+        MemValue<JOB_INFO_2W> jobs(bytes_needed);
+        if(!jobs)
+        {
+            return std::string("Error on allocating memory for jobs");
+        }
+        DWORD dummy_bytes = 0;
+        bError = EnumJobsW(*iPrinterHandle, 0, iTotalJobs, 2, (LPBYTE)jobs.get(), bytes_needed, &dummy_bytes, &totalJobs);
+        if(!bError)
+        {
+            return std::string("Error on EnumJobsW");
+        }
+        JOB_INFO_2W *job = jobs.get();
+        for(DWORD i = 0; i < totalJobs; ++i, ++job)
+        {
+            v8::Local<v8::Object> result_printer_job = v8::Object::New();
+            parseJobObject(job, result_printer_job);
+            result_printer_jobs->Set(i, result_printer_job);
+        }
+        return std::string("");
+    }
+
+    std::string parsePrinterInfo(const PRINTER_INFO_2W *printer, v8::Handle<v8::Object> result_printer, PrinterHandle& iPrinterHandle)
+    {
+    #define ADD_V8_STRING_PROPERTY(name, key) if((printer->##key != NULL) && (*printer->##key != L'\0'))    \
         {                                   \
             result_printer->Set(v8::String::NewSymbol(#name), v8::String::New((uint16_t*)printer->##key)); \
         }
-		//LPTSTR               pPrinterName;
+        //LPTSTR               pPrinterName;
         ADD_V8_STRING_PROPERTY(name, pPrinterName)
         //LPTSTR               pServerName;
         ADD_V8_STRING_PROPERTY(serverName, pServerName)
@@ -148,7 +324,7 @@ v8::Handle<v8::Value> getPrinters(const v8::Arguments& iArgs)
         ADD_V8_STRING_PROPERTY(datatype, pDatatype)
         //LPTSTR               pParameters;
         ADD_V8_STRING_PROPERTY(parameters, pParameters)
-#undef ADD_V8_STRING_PROPERTY
+    #undef ADD_V8_STRING_PROPERTY
         //DWORD                Status;
         // statuses from:
         // http://msdn.microsoft.com/en-gb/library/windows/desktop/dd162845(v=vs.85).aspx
@@ -159,19 +335,20 @@ v8::Handle<v8::Value> getPrinters(const v8::Arguments& iArgs)
             if(printer->Status & itStatus->second)
             {
                 result_printer_status->Set(i_status, v8::String::New(itStatus->first.c_str()));
-				++i_status;
+                ++i_status;
             }
         }
+        result_printer->Set(v8::String::NewSymbol("status"), result_printer_status);
         result_printer->Set(v8::String::NewSymbol("statusNumber"), v8::Number::New(printer->Status));
         //DWORD                Attributes;
         v8::Local<v8::Array> result_printer_attributes = v8::Array::New();
         int i_attribute = 0;
-        for(AttributeMapType::const_iterator itAttribute = getAttributeMap().begin(); itAttribute != getAttributeMap().end(); ++itAttribute)
+        for(StatusMapType::const_iterator itAttribute = getAttributeMap().begin(); itAttribute != getAttributeMap().end(); ++itAttribute)
         {
             if(printer->Attributes & itAttribute->second)
             {
                 result_printer_attributes->Set(i_attribute, v8::String::New(itAttribute->first.c_str()));
-				++i_attribute;
+                ++i_attribute;
             }
         }
         result_printer->Set(v8::String::NewSymbol("attributes"), result_printer_attributes);
@@ -180,18 +357,18 @@ v8::Handle<v8::Value> getPrinters(const v8::Arguments& iArgs)
         //DWORD                DefaultPriority;
         result_printer->Set(v8::String::NewSymbol("defaultPriority"), v8::Number::New(printer->DefaultPriority));
         //DWORD                cJobs;
-        result_printer->Set(v8::String::NewSymbol("jobs"), v8::Number::New(printer->cJobs));
+        //result_printer->Set(v8::String::NewSymbol("jobs"), v8::Number::New(printer->cJobs));
         //DWORD                AveragePPM;
         result_printer->Set(v8::String::NewSymbol("averagePPM"), v8::Number::New(printer->AveragePPM));
 
         //DWORD                StartTime;
-		if(printer->StartTime > 0)
-		{
-			result_printer->Set(v8::String::NewSymbol("startTime"), v8::Number::New(printer->StartTime));
-		}
+        if(printer->StartTime > 0)
+        {
+            result_printer->Set(v8::String::NewSymbol("startTime"), v8::Number::New(printer->StartTime));
+        }
         //DWORD                UntilTime;
-		if(printer->UntilTime > 0)
-		{
+        if(printer->UntilTime > 0)
+        {
             result_printer->Set(v8::String::NewSymbol("untilTime"), v8::Number::New(printer->UntilTime));
         }
 
@@ -199,10 +376,155 @@ v8::Handle<v8::Value> getPrinters(const v8::Arguments& iArgs)
         //LPDEVMODE            pDevMode;
         //PSECURITY_DESCRIPTOR pSecurityDescriptor;
 
+        if(printer->cJobs > 0)
+        {
+            v8::Local<v8::Array> result_printer_jobs = v8::Array::New(printer->cJobs);
+            // get jobs
+            std::string error_str = retrieveAndParseJobs(printer->pPrinterName, printer->cJobs, result_printer_jobs, iPrinterHandle);
+            if(!error_str.empty())
+            {
+                return error_str;
+            }
+            result_printer->Set(v8::String::NewSymbol("jobs"), result_printer_jobs);
+        }
+        return "";
+    }
+}
+
+v8::Handle<v8::Value> getPrinters(const v8::Arguments& iArgs)
+{
+    v8::HandleScope scope;
+    DWORD printers_size = 0;
+    DWORD printers_size_bytes = 0, dummyBytes = 0;
+    DWORD Level = 2;
+    DWORD flags = PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS;
+    // First try to retrieve the number of printers
+    BOOL bError = EnumPrintersW(flags, NULL, 2, NULL, 0, &printers_size_bytes, &printers_size);
+    // allocate the required memmory
+    MemValue<PRINTER_INFO_2W> printers(printers_size_bytes);
+    if(!printers)
+    {
+        return v8::ThrowException(v8::Exception::TypeError(v8::String::New("Error on allocating memory for printers")));
+    }
+
+    bError = EnumPrintersW(flags, NULL, 2, (LPBYTE)(printers.get()), printers_size_bytes, &dummyBytes, &printers_size);
+    if(!bError)
+    {
+        return v8::ThrowException(v8::Exception::TypeError(v8::String::New("Error on EnumPrinters")));
+    }
+    v8::Local<v8::Array> result = v8::Array::New(printers_size);
+    // http://msdn.microsoft.com/en-gb/library/windows/desktop/dd162845(v=vs.85).aspx
+	PRINTER_INFO_2W *printer = printers.get();
+	DWORD i = 0;
+    for(; i < printers_size; ++i, ++printer)
+    {
+        v8::Local<v8::Object> result_printer = v8::Object::New();
+        PrinterHandle printerHandle((LPWSTR)(printer->pPrinterName));
+        std::string error_str = parsePrinterInfo(printer, result_printer, printerHandle);
+        if(!error_str.empty())
+        {
+            RETURN_EXCEPTION_STR(error_str.c_str());
+        }
         result->Set(i, result_printer);
     }
-    free(printers);
     return scope.Close(result);
+}
+
+v8::Handle<v8::Value> getPrinter(const v8::Arguments& iArgs)
+{
+    v8::HandleScope scope;
+    REQUIRE_ARGUMENTS(iArgs, 1);
+    REQUIRE_ARGUMENT_STRINGW(iArgs, 0, printername);
+
+    // Open a handle to the printer.
+    PrinterHandle printerHandle((LPWSTR)(*printername));
+    if(!printerHandle)
+    {
+        RETURN_EXCEPTION_STR("error on PrinterHandle");
+    }
+    DWORD printers_size_bytes = 0, dummyBytes = 0;
+    GetPrinter(*printerHandle, 2, NULL, printers_size_bytes, &printers_size_bytes);
+    MemValue<PRINTER_INFO_2W> printer(printers_size_bytes);
+    if(!printer)
+    {
+        return v8::ThrowException(v8::Exception::TypeError(v8::String::New("Error on allocating memory for printers")));
+    }
+    BOOL bError = GetPrinter(*printerHandle, 2, (LPBYTE)(printer.get()), printers_size_bytes, &printers_size_bytes);
+    if(!bError)
+    {
+        RETURN_EXCEPTION_STR("Error on GetPrinter");
+    }
+    v8::Local<v8::Object> result_printer = v8::Object::New();
+    std::string error_str = parsePrinterInfo(printer.get(), result_printer, printerHandle);
+    if(!error_str.empty())
+    {
+        RETURN_EXCEPTION_STR(error_str.c_str());
+    }
+    
+    return scope.Close(result_printer);
+}
+
+v8::Handle<v8::Value> getJob(const v8::Arguments& iArgs)
+{
+    v8::HandleScope scope;
+    REQUIRE_ARGUMENTS(iArgs, 2);
+    REQUIRE_ARGUMENT_STRINGW(iArgs, 0, printername);
+    REQUIRE_ARGUMENT_INTEGER(iArgs, 1, jobId);
+    if(jobId < 0)
+    {
+        RETURN_EXCEPTION_STR("Wrong job number");
+    }
+    // Open a handle to the printer.
+    PrinterHandle printerHandle((LPWSTR)(*printername));
+    if(!printerHandle)
+    {
+        RETURN_EXCEPTION_STR("error on PrinterHandle");
+    }
+    DWORD size_bytes = 0, dummyBytes = 0;
+    GetJobW(*printerHandle, static_cast<DWORD>(jobId), 2, NULL, size_bytes, &size_bytes);
+    MemValue<JOB_INFO_2W> job(size_bytes);
+    if(!job)
+    {
+        return v8::ThrowException(v8::Exception::TypeError(v8::String::New("Error on allocating memory for printers")));
+    }
+    BOOL bError = GetJobW(*printerHandle, static_cast<DWORD>(jobId), 2, (LPBYTE)job.get(), size_bytes, &dummyBytes);
+    if(!bError)
+    {
+        RETURN_EXCEPTION_STR("Error on GetPrinter");
+    }
+    v8::Local<v8::Object> result_printer_job = v8::Object::New();
+    parseJobObject(job.get(), result_printer_job);
+    return scope.Close(result_printer_job);
+}
+
+v8::Handle<v8::Value> setJob(const v8::Arguments& iArgs)
+{
+    v8::HandleScope scope;
+    REQUIRE_ARGUMENTS(iArgs, 3);
+    REQUIRE_ARGUMENT_STRINGW(iArgs, 0, printername);
+    REQUIRE_ARGUMENT_INTEGER(iArgs, 1, jobId);
+    REQUIRE_ARGUMENT_STRING(iArgs, 2, jobCommandV8);
+    if(jobId < 0)
+    {
+        RETURN_EXCEPTION_STR("Wrong job number");
+    }
+    std::string jobCommandStr(*jobCommandV8);
+    StatusMapType::const_iterator itJobCommand = getJobCommandMap().find(jobCommandStr);
+    if(itJobCommand == getJobCommandMap().end())
+    {
+        RETURN_EXCEPTION_STR("wrong job command. use getJobCommands to see the possible commands");
+    }
+    DWORD jobCommand = itJobCommand->second;
+    // Open a handle to the printer.
+    PrinterHandle printerHandle((LPWSTR)(*printername));
+    if(!printerHandle)
+    {
+        RETURN_EXCEPTION_STR("error on PrinterHandle");
+    }
+    // TODO: add the possibility to set job properties
+    // http://msdn.microsoft.com/en-us/library/windows/desktop/dd162978(v=vs.85).aspx
+    BOOL bError = SetJobW(*printerHandle, (DWORD)jobId, 0, NULL, jobCommand);
+    return scope.Close(v8::Boolean::New(!!bError));
 }
 
 v8::Handle<v8::Value> getSupportedFormats(const v8::Arguments& iArgs) {
@@ -243,51 +565,47 @@ v8::Handle<v8::Value> PrintDirect(const v8::Arguments& iArgs) {
         return v8::ThrowException(v8::Exception::TypeError(v8::String::New("Argument 0 must be a string or NativeBuffer")));
     }
 
-    REQUIRE_ARGUMENT_STRING(iArgs, 1, printername);
-    REQUIRE_ARGUMENT_STRING(iArgs, 2, docname);
-    REQUIRE_ARGUMENT_STRING(iArgs, 3, type);
+    REQUIRE_ARGUMENT_STRINGW(iArgs, 1, printername);
+    REQUIRE_ARGUMENT_STRINGW(iArgs, 2, docname);
+    REQUIRE_ARGUMENT_STRINGW(iArgs, 3, type);
 
     BOOL     bStatus = true;
-    HANDLE     hPrinter = NULL;
-    DOC_INFO_1 DocInfo;
+    // Open a handle to the printer.
+    PrinterHandle printerHandle((LPWSTR)(*printername));
+    DOC_INFO_1W DocInfo;
     DWORD      dwJob = 0L;
     DWORD      dwBytesWritten = 0L;
 
-    // Open a handle to the printer.
-    bStatus = OpenPrinter( (LPSTR)(*printername), &hPrinter, NULL );
-    if (bStatus) {
-        // Fill in the structure with info about this "document."
-        DocInfo.pDocName = (LPSTR)(*docname);
-        DocInfo.pOutputFile = NULL;
-        DocInfo.pDatatype = (LPSTR)(*type);
+    if (!printerHandle)
+    {
+        RETURN_EXCEPTION(v8::String::Concat(v8::String::New("OpenPrinter error: "), iArgs[1]->ToString()));
+    }
+    // Fill in the structure with info about this "document."
+    DocInfo.pDocName = (LPWSTR)(*docname);
+    DocInfo.pOutputFile =  NULL;
+    DocInfo.pDatatype = (LPWSTR)(*type);
 
-        // Inform the spooler the document is beginning.
-        dwJob = StartDocPrinter( hPrinter, 1, (LPBYTE)&DocInfo );
-        if (dwJob > 0) {
-            // Start a page.
-            bStatus = StartPagePrinter(hPrinter);
-            if (bStatus) {
-                // Send the data to the printer.
-                //TODO: check with sizeof(LPTSTR) is the same as sizeof(char)
-                bStatus = WritePrinter( hPrinter, (LPVOID)(data.c_str()), (DWORD)data.size(), &dwBytesWritten);
-                EndPagePrinter(hPrinter);
-            }else{
-                RETURN_EXCEPTION_STR("StartPagePrinter error");
-            }
-            // Inform the spooler that the document is ending.
-            EndDocPrinter(hPrinter);
+    // Inform the spooler the document is beginning.
+    dwJob = StartDocPrinterW(*printerHandle, 1, (LPBYTE)&DocInfo );
+    if (dwJob > 0) {
+        // Start a page.
+        bStatus = StartPagePrinter(*printerHandle);
+        if (bStatus) {
+            // Send the data to the printer.
+            //TODO: check with sizeof(LPTSTR) is the same as sizeof(char)
+            bStatus = WritePrinter( *printerHandle, (LPVOID)(data.c_str()), (DWORD)data.size(), &dwBytesWritten);
+            EndPagePrinter(*printerHandle);
         }else{
-            RETURN_EXCEPTION_STR("StartDocPrinter error");
+            RETURN_EXCEPTION_STR("StartPagePrinter error");
         }
-        // Close the printer handle.
-        ClosePrinter(hPrinter);
+        // Inform the spooler that the document is ending.
+        EndDocPrinter(*printerHandle);
     }else{
-        RETURN_EXCEPTION(v8::String::Concat(v8::String::New("OpenPrinter error: "), iArgs[1]->ToString()))
+        RETURN_EXCEPTION_STR("StartDocPrinter error");
     }
     // Check to see if correct number of bytes were written.
     if (dwBytesWritten != data.size()) {
         RETURN_EXCEPTION_STR("not sent all bytes");
     }
-    bool ret_sttaus = false||bStatus;
     return scope.Close(v8::Number::New(dwJob));
 }

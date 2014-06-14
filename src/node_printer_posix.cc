@@ -54,7 +54,7 @@ v8::Handle<v8::Value> PrintDirect(const v8::Arguments& iArgs) {
     REQUIRE_ARGUMENTS(iArgs, 4);
 
     // can be string or buffer
-    if(iArgs.Length()<=0)
+    if(iArgs.Length() <= 0)
     {
         return v8::ThrowException(v8::Exception::TypeError(v8::String::New("Argument 0 missing")));
     }
