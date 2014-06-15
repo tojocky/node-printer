@@ -1,10 +1,10 @@
 #ifndef NODE_PRINTER_HPP
 #define NODE_PRINTER_HPP
 
+#include "macros.h"
+
 #include <node.h>
 #include <v8.h>
-
-#include "macros.h"
 
 /**
  * Send data to printer
@@ -16,23 +16,23 @@
  *
  * @returns true for success, false for failure.
  */
-v8::Handle<v8::Value> PrintDirect(const v8::Arguments& iArgs);
+MY_NODE_MODULE_CALLBACK(PrintDirect);
 
 /** Retrieve all printers and jobs
  * posix: minimum version: CUPS 1.1.21/OS X 10.4
  */
-v8::Handle<v8::Value> getPrinters(const v8::Arguments& iArgs);
+MY_NODE_MODULE_CALLBACK(getPrinters);
 
 /** Retrieve printer info and jobs
  * @param printer name String
  */
-v8::Handle<v8::Value> getPrinter(const v8::Arguments& iArgs);
+MY_NODE_MODULE_CALLBACK(getPrinter);
 
 /** Retrieve job info
  *  @param printer name String
  *  @param job id Number
  */
-v8::Handle<v8::Value> getJob(const v8::Arguments& iArgs);
+MY_NODE_MODULE_CALLBACK(getJob);
 
 //TODO
 /** Set job command. 
@@ -51,15 +51,15 @@ v8::Handle<v8::Value> getJob(const v8::Arguments& iArgs);
  *      "RETAIN"
  *      "RELEASE"
  */
-v8::Handle<v8::Value> setJob(const v8::Arguments& iArgs);
+MY_NODE_MODULE_CALLBACK(setJob);
 
 /** Get supported print formats for printDirect. It depends on platform
  */
-v8::Handle<v8::Value> getSupportedPrintFormats(const v8::Arguments& iArgs);
+MY_NODE_MODULE_CALLBACK(getSupportedPrintFormats);
 
 /** Get supported job commands for setJob method
  */
-v8::Handle<v8::Value> getSupportedJobCommands(const v8::Arguments& iArgs);
+MY_NODE_MODULE_CALLBACK(getSupportedJobCommands);
 
 //TODO:
 // optional ability to get printer spool
