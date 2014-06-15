@@ -1,12 +1,12 @@
 var printer = require("../lib"),
     util = require('util'),
-    printerName = 'raw_printer',
-    printerFormat = 'RAW';
+    printerName = 'Foxit Reader PDF Printer',
+    printerFormat = 'TEXT';
 
 printer.printDirect({
     data:"print from Node.JS buffer", // or simple String: "some text"
 	printer:printerName, // printer name
-	type: 'RAW', // type: RAW, TEXT, PDF, JPEG, .. depends on platform
+	type: printerFormat, // type: RAW, TEXT, PDF, JPEG, .. depends on platform
 	success:function(jobID){
 		console.log("sent to printer with ID: "+jobID);
         var jobInfo = printer.getJob(printerName, jobID);
@@ -18,8 +18,12 @@ printer.printDirect({
         }
         console.log('cancelling...');
         var is_ok = printer.setJob(printerName, jobID, 'CANCEL');
-        console.log("cancelled: "+is_ok+", current job info:"+util.inspect(printer.getJob(printerName, jobID), {depth: 10, colors:true}));
+		console.log("cancelled: "+is_ok);
+		try{
+			console.log("current job info:"+util.inspect(printer.getJob(printerName, jobID), {depth: 10, colors:true}));
+		}catch(err){
+			console.log('job deleted. err:'+err);
+		}
 	},
 	error:function(err){console.log(err);}
 });
-

@@ -456,8 +456,8 @@ MY_NODE_MODULE_CALLBACK(getPrinter)
     {
         RETURN_EXCEPTION_STR("Error on allocating memory for printers");
     }
-    BOOL bError = GetPrinter(*printerHandle, 2, (LPBYTE)(printer.get()), printers_size_bytes, &printers_size_bytes);
-    if(!bError)
+    BOOL bOK = GetPrinter(*printerHandle, 2, (LPBYTE)(printer.get()), printers_size_bytes, &printers_size_bytes);
+    if(!bOK)
     {
         RETURN_EXCEPTION_STR("Error on GetPrinter");
     }
@@ -494,10 +494,10 @@ MY_NODE_MODULE_CALLBACK(getJob)
     {
         RETURN_EXCEPTION_STR("Error on allocating memory for printers");
     }
-    BOOL bError = GetJobW(*printerHandle, static_cast<DWORD>(jobId), 2, (LPBYTE)job.get(), size_bytes, &dummyBytes);
-    if(!bError)
+    BOOL bOK = GetJobW(*printerHandle, static_cast<DWORD>(jobId), 2, (LPBYTE)job.get(), size_bytes, &dummyBytes);
+    if(!bOK)
     {
-        RETURN_EXCEPTION_STR("Error on GetPrinter");
+        RETURN_EXCEPTION_STR("Error on GetJob. Wrong job id or it was deleted");
     }
     v8::Local<v8::Object> result_printer_job = V8_VALUE_NEW_DEFAULT(Object);
     parseJobObject(job.get(), result_printer_job);
