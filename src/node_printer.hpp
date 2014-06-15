@@ -24,16 +24,23 @@ v8::Handle<v8::Value> PrintDirect(const v8::Arguments& iArgs);
 v8::Handle<v8::Value> getPrinters(const v8::Arguments& iArgs);
 
 /** Retrieve printer info and jobs
+ * @param printer name String
  */
 v8::Handle<v8::Value> getPrinter(const v8::Arguments& iArgs);
 
 /** Retrieve job info
+ *  @param printer name String
+ *  @param job id Number
  */
 v8::Handle<v8::Value> getJob(const v8::Arguments& iArgs);
 
 //TODO
 /** Set job command. 
- * Possible command:
+ * arguments:
+ * @param printer name String
+ * @param job id Number
+ * @param job command String
+ * Possible commands:
  *      "CANCEL"
  *      "PAUSE"
  *      "RESTART"
@@ -46,15 +53,14 @@ v8::Handle<v8::Value> getJob(const v8::Arguments& iArgs);
  */
 v8::Handle<v8::Value> setJob(const v8::Arguments& iArgs);
 
-/** Get Supported format array depends on the system
+/** Get supported print formats for printDirect. It depends on platform
  */
-v8::Handle<v8::Value> getSupportedFormats(const v8::Arguments& iArgs);
+v8::Handle<v8::Value> getSupportedPrintFormats(const v8::Arguments& iArgs);
 
-/** Get Supported format array depends on the system
+/** Get supported job commands for setJob method
  */
-v8::Handle<v8::Value> getJobCommands(const v8::Arguments& iArgs);
+v8::Handle<v8::Value> getSupportedJobCommands(const v8::Arguments& iArgs);
 
 //TODO:
-// to see if the printer is already printing
 // optional ability to get printer spool
 #endif

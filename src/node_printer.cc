@@ -7,8 +7,8 @@ void initNode(v8::Handle<v8::Object> exports) {
   NODE_SET_METHOD(exports, "getJob", getJob);
   NODE_SET_METHOD(exports, "setJob", setJob);
   NODE_SET_METHOD(exports, "printDirect", PrintDirect);
-  NODE_SET_METHOD(exports, "getSupportedFormats", getSupportedFormats);
-  NODE_SET_METHOD(exports, "getJobCommands", getJobCommands);
+  NODE_SET_METHOD(exports, "getSupportedPrintFormats", getSupportedPrintFormats);
+  NODE_SET_METHOD(exports, "getSupportedJobCommands", getSupportedJobCommands);
   
 }
 

@@ -111,15 +111,18 @@ namespace{
         }
         // add only first time
 #define STATUS_PRINTER_ADD(value, type) result.insert(std::make_pair(value, type))
+        // Common statuses
+        STATUS_PRINTER_ADD("PRINTING", JOB_STATUS_PRINTING);
+        STATUS_PRINTER_ADD("PRINTED", JOB_STATUS_PRINTED);
+        STATUS_PRINTER_ADD("PAUSED", JOB_STATUS_PAUSED);
+        
+        // Specific statuses
         STATUS_PRINTER_ADD("BLOCKED-DEVQ", JOB_STATUS_BLOCKED_DEVQ);
         STATUS_PRINTER_ADD("DELETED", JOB_STATUS_DELETED);
         STATUS_PRINTER_ADD("DELETING", JOB_STATUS_DELETING);
         STATUS_PRINTER_ADD("ERROR", JOB_STATUS_ERROR);
         STATUS_PRINTER_ADD("OFFLINE", JOB_STATUS_OFFLINE);
         STATUS_PRINTER_ADD("PAPEROUT", JOB_STATUS_PAPEROUT);
-        STATUS_PRINTER_ADD("PAUSED", JOB_STATUS_PAUSED);
-        STATUS_PRINTER_ADD("PRINTED", JOB_STATUS_PRINTED);
-        STATUS_PRINTER_ADD("PRINTING", JOB_STATUS_PRINTING);
         STATUS_PRINTER_ADD("RESTART", JOB_STATUS_RESTART);
         STATUS_PRINTER_ADD("SPOOLING", JOB_STATUS_SPOOLING);
         STATUS_PRINTER_ADD("USER-INTERVENTION", JOB_STATUS_USER_INTERVENTION);
@@ -202,6 +205,7 @@ namespace{
 
     void parseJobObject(JOB_INFO_2W *job, v8::Handle<v8::Object> result_printer_job)
     {
+        //Common fields
         //DWORD                JobId;
         result_printer_job->Set(v8::String::NewSymbol("id"), v8::Number::New(job->JobId));
 #define ADD_V8_STRING_PROPERTY(name, key) if((job->##key != NULL) && (*job->##key != L'\0'))    \
@@ -212,16 +216,38 @@ namespace{
         ADD_V8_STRING_PROPERTY(name, pPrinterName)
         //LPTSTR               pPrinterName;
         ADD_V8_STRING_PROPERTY(printerName, pPrinterName);
+        //LPTSTR               pUserName;
+        ADD_V8_STRING_PROPERTY(user, pUserName);
+        //LPTSTR               pDatatype;
+        ADD_V8_STRING_PROPERTY(format, pDatatype);
+        //DWORD                Priority;
+        result_printer_job->Set(v8::String::NewSymbol("priority"), v8::Number::New(job->Priority));
+        //DWORD                Size;
+        result_printer_job->Set(v8::String::NewSymbol("size"), v8::Number::New(job->Size));
+        //DWORD                Status;
+        v8::Local<v8::Array> result_printer_job_status = v8::Array::New();
+        int i_status = 0;
+        for(StatusMapType::const_iterator itStatus = getJobStatusMap().begin(); itStatus != getJobStatusMap().end(); ++itStatus)
+        {
+            if(job->Status & itStatus->second)
+            {
+                result_printer_job_status->Set(i_status++, v8::String::New(itStatus->first.c_str()));
+            }
+        }
+        //LPTSTR               pStatus;
+        if((job->pStatus != NULL) && (*job->pStatus != L'\0'))
+        {
+            result_printer_job_status->Set(i_status++, v8::String::New((uint16_t*)job->pStatus));
+        }
+        result_printer_job->Set(v8::String::NewSymbol("status"), result_printer_job_status);
+        
+        // Specific fields
         //LPTSTR               pMachineName;
         ADD_V8_STRING_PROPERTY(machineName, pMachineName);
-        //LPTSTR               pUserName;
-        ADD_V8_STRING_PROPERTY(userName, pUserName);
         //LPTSTR               pDocument;
         ADD_V8_STRING_PROPERTY(document, pDocument);
         //LPTSTR               pNotifyName;
         ADD_V8_STRING_PROPERTY(notifyName, pNotifyName);
-        //LPTSTR               pDatatype;
-        ADD_V8_STRING_PROPERTY(datatype, pDatatype);
         //LPTSTR               pPrintProcessor;
         ADD_V8_STRING_PROPERTY(printProcessor, pPrintProcessor);
         //LPTSTR               pParameters;
@@ -231,26 +257,6 @@ namespace{
 #undef ADD_V8_STRING_PROPERTY
         //LPDEVMODE            pDevMode;
         //PSECURITY_DESCRIPTOR pSecurityDescriptor;
-        //DWORD                Status;
-        v8::Local<v8::Array> result_printer_job_status = v8::Array::New();
-        int i_status = 0;
-        for(StatusMapType::const_iterator itStatus = getJobStatusMap().begin(); itStatus != getJobStatusMap().end(); ++itStatus)
-        {
-            if(job->Status & itStatus->second)
-            {
-                result_printer_job_status->Set(i_status, v8::String::New(itStatus->first.c_str()));
-                ++i_status;
-            }
-        }
-        //LPTSTR               pStatus;
-        if((job->pStatus != NULL) && (*job->pStatus != L'\0'))
-        {
-            result_printer_job_status->Set(i_status, v8::String::New((uint16_t*)job->pStatus));
-            ++i_status;
-        }
-        result_printer_job->Set(v8::String::NewSymbol("status"), result_printer_job_status);
-        //DWORD                Priority;
-        result_printer_job->Set(v8::String::NewSymbol("priority"), v8::Number::New(job->Priority));
         //DWORD                Position;
         result_printer_job->Set(v8::String::NewSymbol("position"), v8::Number::New(job->Position));
         //DWORD                StartTime;
@@ -259,8 +265,6 @@ namespace{
         result_printer_job->Set(v8::String::NewSymbol("untilTime"), v8::Number::New(job->UntilTime));
         //DWORD                TotalPages;
         result_printer_job->Set(v8::String::NewSymbol("totalPages"), v8::Number::New(job->TotalPages));
-        //DWORD                Size;
-        result_printer_job->Set(v8::String::NewSymbol("size"), v8::Number::New(job->Size));
         //SYSTEMTIME           Submitted;
         //DWORD                Time;
         result_printer_job->Set(v8::String::NewSymbol("time"), v8::Number::New(job->Time));
@@ -440,7 +444,7 @@ v8::Handle<v8::Value> getPrinter(const v8::Arguments& iArgs)
     PrinterHandle printerHandle((LPWSTR)(*printername));
     if(!printerHandle)
     {
-        RETURN_EXCEPTION_STR("error on PrinterHandle");
+        RETURN_EXCEPTION_STR("Printer not found");
     }
     DWORD printers_size_bytes = 0, dummyBytes = 0;
     GetPrinter(*printerHandle, 2, NULL, printers_size_bytes, &printers_size_bytes);
@@ -512,7 +516,7 @@ v8::Handle<v8::Value> setJob(const v8::Arguments& iArgs)
     StatusMapType::const_iterator itJobCommand = getJobCommandMap().find(jobCommandStr);
     if(itJobCommand == getJobCommandMap().end())
     {
-        RETURN_EXCEPTION_STR("wrong job command. use getJobCommands to see the possible commands");
+        RETURN_EXCEPTION_STR("wrong job command. use getSupportedJobCommands to see the possible commands");
     }
     DWORD jobCommand = itJobCommand->second;
     // Open a handle to the printer.
@@ -523,11 +527,11 @@ v8::Handle<v8::Value> setJob(const v8::Arguments& iArgs)
     }
     // TODO: add the possibility to set job properties
     // http://msdn.microsoft.com/en-us/library/windows/desktop/dd162978(v=vs.85).aspx
-    BOOL bError = SetJobW(*printerHandle, (DWORD)jobId, 0, NULL, jobCommand);
-    return scope.Close(v8::Boolean::New(!!bError));
+    BOOL ok = SetJobW(*printerHandle, (DWORD)jobId, 0, NULL, jobCommand);
+    return scope.Close(v8::Boolean::New(ok == TRUE));
 }
 
-v8::Handle<v8::Value> getJobCommands(const v8::Arguments& iArgs) {
+v8::Handle<v8::Value> getSupportedJobCommands(const v8::Arguments& iArgs) {
     v8::HandleScope scope;
     v8::Local<v8::Array> result = v8::Array::New();
     int i = 0;
@@ -538,7 +542,7 @@ v8::Handle<v8::Value> getJobCommands(const v8::Arguments& iArgs) {
     return scope.Close(result);
 }
 
-v8::Handle<v8::Value> getSupportedFormats(const v8::Arguments& iArgs) {
+v8::Handle<v8::Value> getSupportedPrintFormats(const v8::Arguments& iArgs) {
     v8::HandleScope scope;
     v8::Local<v8::Array> result = v8::Array::New();
     int i = 0;
