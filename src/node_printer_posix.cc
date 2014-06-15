@@ -324,12 +324,9 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
     FormatMapType::const_iterator itFormat = getPrinterFormatMap().find(type_str);
     if(itFormat == getPrinterFormatMap().end())
     {
-        type_str = itFormat->second;
-    }
-    else
-    {
         RETURN_EXCEPTION_STR("unsupported format type");
     }
+    type_str = itFormat->second;
     int num_options = 0;
     cups_option_t *options = NULL;
     int job_id = cupsCreateJob(CUPS_HTTP_DEFAULT, *printername, *docname, num_options, options);
