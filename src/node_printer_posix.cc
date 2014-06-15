@@ -1,13 +1,15 @@
 #include "node_printer.hpp"
 
 #include <string>
+#include <map>
+#include <utility>
 
 #include <cups/cups.h>
 
 namespace
 {
     typedef std::map<std::string, int> StatusMapType;
-    typedef std::map<std::string, std::string> FormatMap;
+    typedef std::map<std::string, std::string> FormatMapType;
 
     const StatusMapType& getJobStatusMap()
     {
@@ -32,9 +34,9 @@ namespace
         return result;
     }
 
-    const FormatMap& getPrinterFormatMap()
+    const FormatMapType& getPrinterFormatMap()
     {
-        static FormatMap result;
+        static FormatMapType result;
         if(!result.empty())
         {
             return result;
@@ -49,17 +51,20 @@ namespace
         return result;
     }
 
-    void parseJobObject(const cups_job_t *job, v8::Handle<v8::Object> result_printer_job)
+    /** Parse job info object.
+     * @return error string. if empty, then no error
+     */
+    std::string parseJobObject(const cups_job_t *job, v8::Handle<v8::Object> result_printer_job)
     {
         //Common fields
-        result_printer_job.Set(v8::String::NewSymbol("id"), v8::Number::New(job->id));
-        result_printer_job.Set(v8::String::NewSymbol("name"), v8::String::New(job->title));
-        result_printer_job.Set(v8::String::NewSymbol("printerName"), v8::String::New(job->dest));
-        result_printer_job.Set(v8::String::NewSymbol("user"), v8::String::New(job->user));
+        result_printer_job->Set(v8::String::NewSymbol("id"), v8::Number::New(job->id));
+        result_printer_job->Set(v8::String::NewSymbol("name"), v8::String::New(job->title));
+        result_printer_job->Set(v8::String::NewSymbol("printerName"), v8::String::New(job->dest));
+        result_printer_job->Set(v8::String::NewSymbol("user"), v8::String::New(job->user));
         std::string job_format(job->format);
 
         // Try to parse the data format, otherwise will write the unformatted one
-        for(FormatMap::const_ietartor itFormat = getPrinterFormatMap().begin(); itFormat != getPrinterFormatMap().end(); ++itFormat)
+        for(FormatMapType::const_iterator itFormat = getPrinterFormatMap().begin(); itFormat != getPrinterFormatMap().end(); ++itFormat)
         {
             if(itFormat->second == job_format)
             {
@@ -68,9 +73,9 @@ namespace
             }
         }
         
-        result_printer_job.Set(v8::String::NewSymbol("format"), v8::String::New(job_format.c_str()));
-        result_printer_job.Set(v8::String::NewSymbol("priority"), v8::Number::New(job->priority));
-        result_printer_job.Set(v8::String::NewSymbol("size"), v8::Number::New(job->size));
+        result_printer_job->Set(v8::String::NewSymbol("format"), v8::String::New(job_format.c_str()));
+        result_printer_job->Set(v8::String::NewSymbol("priority"), v8::Number::New(job->priority));
+        result_printer_job->Set(v8::String::NewSymbol("size"), v8::Number::New(job->size));
         v8::Local<v8::Array> result_printer_job_status = v8::Array::New();
         int i_status = 0;
         for(StatusMapType::const_iterator itStatus = getJobStatusMap().begin(); itStatus != getJobStatusMap().end(); ++itStatus)
@@ -84,20 +89,28 @@ namespace
         }
         if(i_status == 0)
         {
-            // A new status? encode as it is
-            result_printer_job_status.Set(i_status++, v8::String::New(job->state));
+            // A new status? return error then
+            std::string error_str("wrong job status: ");
+            error_str += job->state;
+            return error_str;
         }
         
-        result_printer_job.Set(v8::String::NewSymbol("status"), result_printer_job_status);
+        result_printer_job->Set(v8::String::NewSymbol("status"), result_printer_job_status);
 
         //Specific fields
         // Ecmascript store time in milliseconds, but time_t in seconds
-        result_printer_job.Set(v8::String::NewSymbol("completedTime"), job->completed_time*1000);
-        result_printer_job.Set(v8::String::NewSymbol("creationTime"), job->creation_time*1000);
-        result_printer_job.Set(v8::String::NewSymbol("processingTime"), job->processing_time*1000);
+        result_printer_job->Set(v8::String::NewSymbol("completedTime"), v8::Date::New(job->completed_time*1000));
+        result_printer_job->Set(v8::String::NewSymbol("creationTime"), v8::Date::New(job->creation_time*1000));
+        result_printer_job->Set(v8::String::NewSymbol("processingTime"), v8::Date::New(job->processing_time*1000));
+
+        // No error. return an empty string
+        return "";
     }
     
-    void parsePrinterInfo(const cups_dest_t * printer, v8::Handle<v8::Object> result_printer)
+    /** Parse printer info object
+     * @return error string.
+     */
+    std::string parsePrinterInfo(const cups_dest_t * printer, v8::Handle<v8::Object> result_printer)
     {
         result_printer->Set(v8::String::NewSymbol("name"), v8::String::New(printer->name));
         result_printer->Set(v8::String::NewSymbol("isDefault"), v8::Boolean::New(static_cast<bool>(printer->is_default)));
@@ -107,8 +120,8 @@ namespace
             result_printer->Set(v8::String::NewSymbol("instance"), v8::String::New(printer->instance));
         }
         v8::Local<v8::Object> result_printer_options = v8::Object::New();
-        cups_option_t *dest_option = NULL; 
-        for(j = 0, dest_option = printer->options; j < printer->num_options; ++j, ++dest_option)
+        cups_option_t *dest_option = printer->options; 
+        for(int j = 0; j < printer->num_options; ++j, ++dest_option)
         {
             result_printer_options->Set(v8::String::NewSymbol(dest_option->name), v8::String::New(dest_option->value));
         }
@@ -116,20 +129,27 @@ namespace
         // Get printer jobs
         cups_job_t * jobs;
         int totalJobs = cupsGetJobs(&jobs, printer->name, 0 /*0 means all users*/, CUPS_WHICHJOBS_ACTIVE);
+        std::string error_str;
         if(totalJobs > 0)
         {
-            v8::Local<v8::Array> result_priner_jobs = v8::Array::New(printers_size);
+            v8::Local<v8::Array> result_priner_jobs = v8::Array::New(totalJobs);
             int jobi =0;
             cups_job_t * job = jobs;
             for(; jobi < totalJobs; ++jobi, ++job)
             {
                 v8::Local<v8::Object> result_printer_job = v8::Object::New();
-                parseJobObject(job, result_printer_job);
-                result_priner_jobs.Set(jobi, result_printer_job);
+                error_str = parseJobObject(job, result_printer_job);
+                if(!error_str.empty())
+                {
+                    // got an error? break then.
+                    break;
+                }
+                result_priner_jobs->Set(jobi, result_printer_job);
             }
             result_printer->Set(v8::String::NewSymbol("jobs"), result_priner_jobs);
         }
         cupsFreeJobs(totalJobs, jobs);
+        return error_str;
     }
 }
 
@@ -137,17 +157,28 @@ v8::Handle<v8::Value> getPrinters(const v8::Arguments& iArgs)
 {
     v8::HandleScope scope;
 
-    cups_dest_t *printers = NULL, *printer = NULL;
+    cups_dest_t *printers = NULL;
     int printers_size = cupsGetDests(&printers);
     v8::Local<v8::Array> result = v8::Array::New(printers_size);
-    int i, j;
-    for(i = 0, printer = printers; i < printers_size; ++i, ++printer)
+    cups_dest_t *printer = printers;
+    std::string error_str;
+    for(int i = 0; i < printers_size; ++i, ++printer)
     {
         v8::Local<v8::Object> result_printer = v8::Object::New();
-        parsePrinterInfo(printer, result_printer);
+        error_str = parsePrinterInfo(printer, result_printer);
+        if(!error_str.empty())
+        {
+            // got an error? break then
+            break;
+        }
         result->Set(i, result_printer);
     }
     cupsFreeDests(printers_size, printers);
+    if(!error_str.empty())
+    {
+        // got an error? return the error then
+        RETURN_EXCEPTION_STR(error_str.c_str());
+    }
     return scope.Close(result);
 }
 
@@ -184,7 +215,7 @@ v8::Handle<v8::Value> getJob(const v8::Arguments& iArgs)
     v8::Local<v8::Object> result_printer_job = v8::Object::New();
     // Get printer jobs
     cups_job_t *jobs = NULL, *jobFound = NULL;
-    int totalJobs = cupsGetJobs(&jobs, printername, 0 /*0 means all users*/, CUPS_WHICHJOBS_ALL);
+    int totalJobs = cupsGetJobs(&jobs, *printername, 0 /*0 means all users*/, CUPS_WHICHJOBS_ALL);
     if(totalJobs > 0)
     {
         int jobi =0;
@@ -214,7 +245,7 @@ v8::Handle<v8::Value> setJob(const v8::Arguments& iArgs)
 {
     v8::HandleScope scope;
     REQUIRE_ARGUMENTS(iArgs, 3);
-    REQUIRE_ARGUMENT_STRINGW(iArgs, 0, printername);
+    REQUIRE_ARGUMENT_STRING(iArgs, 0, printername);
     REQUIRE_ARGUMENT_INTEGER(iArgs, 1, jobId);
     REQUIRE_ARGUMENT_STRING(iArgs, 2, jobCommandV8);
     if(jobId < 0)
@@ -223,7 +254,7 @@ v8::Handle<v8::Value> setJob(const v8::Arguments& iArgs)
     }
     std::string jobCommandStr(*jobCommandV8);
     bool result_ok = false;
-    if(jobCommandStr == 'CANCEL')
+    if(jobCommandStr == "CANCEL")
     {
         result_ok = (cupsCancelJob(*printername, jobId) == 1);
     }
@@ -246,7 +277,7 @@ v8::Handle<v8::Value> getSupportedPrintFormats(const v8::Arguments& iArgs) {
     v8::HandleScope scope;
     v8::Local<v8::Array> result = v8::Array::New();
     int i = 0;
-    for(FormatMap::const_ietartor itFormat = getPrinterFormatMap().begin(); itFormat != getPrinterFormatMap().end(); ++itFormat)
+    for(FormatMapType::const_iterator itFormat = getPrinterFormatMap().begin(); itFormat != getPrinterFormatMap().end(); ++itFormat)
     {
         result->Set(i++, v8::String::New(itFormat->first.c_str()));
     }
@@ -285,7 +316,7 @@ v8::Handle<v8::Value> PrintDirect(const v8::Arguments& iArgs) {
     REQUIRE_ARGUMENT_STRING(iArgs, 2, docname);
     REQUIRE_ARGUMENT_STRING(iArgs, 3, type);
     std::string type_str(*type);
-    FormatMap::const_ietartor itFormat = getPrinterFormatMap().find(type_str);
+    FormatMapType::const_iterator itFormat = getPrinterFormatMap().find(type_str);
     if(itFormat == getPrinterFormatMap().end())
     {
         type_str = itFormat->second;
