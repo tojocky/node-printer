@@ -404,7 +404,7 @@ MY_NODE_MODULE_CALLBACK(getPrinters)
     DWORD printers_size = 0;
     DWORD printers_size_bytes = 0, dummyBytes = 0;
     DWORD Level = 2;
-    DWORD flags = PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS;
+    DWORD flags = PRINTER_ENUM_LOCAL; // TODO: do we need to enumerate the list of printers to which the user has made previous connections? then add PRINTER_ENUM_CONNECTIONS
     // First try to retrieve the number of printers
     BOOL bError = EnumPrintersW(flags, NULL, 2, NULL, 0, &printers_size_bytes, &printers_size);
     // allocate the required memmory
