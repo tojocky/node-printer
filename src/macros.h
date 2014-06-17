@@ -1,12 +1,12 @@
 #ifndef NODE_PRINTER_SRC_MACROS_H
 #define NODE_PRINTER_SRC_MACROS_H
 
-#include <node.h>
+#include <node_version.h>
 
 // NODE_MODULE_VERSION was incremented for v0.11
 
 
-#if NODE_VERSION_AT_LEAST(0, 11, 9) //NODE_MODULE_VERSION > 0x000B
+#if NODE_VERSION_AT_LEAST(0, 11, 9)
 #  define MY_NODE_MODULE_ISOLATE_DECL v8::Isolate* isolate = v8::Isolate::GetCurrent();
 #  define MY_NODE_MODULE_ISOLATE      isolate
 #  define MY_NODE_MODULE_ISOLATE_PRE  isolate, 
