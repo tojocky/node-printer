@@ -211,7 +211,7 @@ namespace{
         result_printer_job->Set(V8_STRING_NEW_UTF8("id"), V8_VALUE_NEW(Number, job->JobId));
 #define ADD_V8_STRING_PROPERTY(name, key) if((job->##key != NULL) && (*job->##key != L'\0'))    \
         {                                   \
-            result_printer_job->Set(V8_STRING_NEW_UTF8(#name), V8_STRING_NEW_UTF8((uint16_t*)job->##key)); \
+            result_printer_job->Set(V8_STRING_NEW_UTF8(#name), V8_STRING_NEW_2BYTES((uint16_t*)job->##key)); \
         }
         //LPTSTR               pPrinterName;
         ADD_V8_STRING_PROPERTY(name, pPrinterName)
@@ -238,7 +238,7 @@ namespace{
         //LPTSTR               pStatus;
         if((job->pStatus != NULL) && (*job->pStatus != L'\0'))
         {
-            result_printer_job_status->Set(i_status++, V8_STRING_NEW_UTF8((uint16_t*)job->pStatus));
+            result_printer_job_status->Set(i_status++, V8_STRING_NEW_2BYTES((uint16_t*)job->pStatus));
         }
         result_printer_job->Set(V8_STRING_NEW_UTF8("status"), result_printer_job_status);
         
@@ -307,7 +307,7 @@ namespace{
         MY_NODE_MODULE_ISOLATE_DECL
     #define ADD_V8_STRING_PROPERTY(name, key) if((printer->##key != NULL) && (*printer->##key != L'\0'))    \
         {                                   \
-            result_printer->Set(V8_STRING_NEW_UTF8(#name), V8_STRING_NEW_UTF8((uint16_t*)printer->##key)); \
+            result_printer->Set(V8_STRING_NEW_UTF8(#name), V8_STRING_NEW_2BYTES((uint16_t*)printer->##key)); \
         }
         //LPTSTR               pPrinterName;
         ADD_V8_STRING_PROPERTY(name, pPrinterName)

@@ -15,6 +15,7 @@
 #  define V8_VALUE_NEW(type, value)   v8::type::New(MY_NODE_MODULE_ISOLATE_PRE value)
 #  define V8_VALUE_NEW_DEFAULT(type)   v8::type::New(MY_NODE_MODULE_ISOLATE)
 #  define V8_STRING_NEW_UTF8(value)   v8::String::NewFromUtf8(MY_NODE_MODULE_ISOLATE_PRE value)
+#  define V8_STRING_NEW_2BYTES(value)   v8::String::NewFromTwoByte(MY_NODE_MODULE_ISOLATE_PRE value)
 
 #  define RETURN_EXCEPTION(msg)  isolate->ThrowException(v8::Exception::TypeError(msg));    \
     return
@@ -32,6 +33,7 @@
 #  define V8_VALUE_NEW(type, value)   v8::type::New(value)
 #  define V8_VALUE_NEW_DEFAULT(type)   v8::type::New()
 #  define V8_STRING_NEW_UTF8(value)   v8::String::New(MY_NODE_MODULE_ISOLATE_PRE value)
+#  define V8_STRING_NEW_2BYTES(value)   v8::String::New(MY_NODE_MODULE_ISOLATE_PRE value)
 
 #  define RETURN_EXCEPTION(msg) return v8::ThrowException(v8::Exception::TypeError(msg)) 
 
