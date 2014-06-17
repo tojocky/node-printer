@@ -5,7 +5,8 @@
 
 // NODE_MODULE_VERSION was incremented for v0.11
 
-#if NODE_MODULE_VERSION > 0x000B
+
+#if NODE_VERSION_AT_LEAST(0, 11, 9) //NODE_MODULE_VERSION > 0x000B
 #  define MY_NODE_MODULE_ISOLATE_DECL v8::Isolate* isolate = v8::Isolate::GetCurrent();
 #  define MY_NODE_MODULE_ISOLATE      isolate
 #  define MY_NODE_MODULE_ISOLATE_PRE  isolate, 
@@ -39,6 +40,14 @@
 
 #  define RETURN_EXCEPTION_STR(msg) RETURN_EXCEPTION(V8_STRING_NEW_UTF8(msg))
 #  define MY_NODE_MODULE_RETURN_VALUE(value)   return scope.Close(value)
+#endif
+
+#if NODE_VERSION_AT_LEAST(0, 11, 10) // for node-webkit v.0.9.2 which uses node v0.11.9
+#  define V8_VALUE_NEW_V_0_11_10(type, value)          v8::type::New(MY_NODE_MODULE_ISOLATE_PRE value)
+#  define V8_VALUE_NEW_DEFAULT_V_0_11_10(type)         v8::type::New(MY_NODE_MODULE_ISOLATE)
+#else
+#  define V8_VALUE_NEW_V_0_11_10(type, value)          v8::type::New(value)
+#  define V8_VALUE_NEW_DEFAULT_V_0_11_10(type)         v8::type::New()
 #endif
 
 
