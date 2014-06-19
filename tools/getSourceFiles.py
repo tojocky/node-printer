@@ -7,6 +7,6 @@ if len(sys.argv) < 3:
 folder = sys.argv[1]
 file_ext = '.'+sys.argv[2]
 
-for file in os.listdir('src'):
+for file in os.listdir(folder):
     if (file.endswith(file_ext)):
         print(folder+'/'+file)
