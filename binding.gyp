@@ -5,7 +5,7 @@
       'sources': [
         # is like "ls -1 src/*.cc", but gyp does not support direct patterns on
         # sources
-        '<!@(python tools/getSourceFiles.py)'
+        '<!@(["python", "tools/getSourceFiles.py", "src", "cc"])'
       ],
       'conditions': [
         # common exclusions
