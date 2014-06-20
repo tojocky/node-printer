@@ -13,7 +13,7 @@ I was involved in a project where I need to print from Node.JS. This is the reas
 ### Features:
 
 * no dependecies;
-* native method wrappers from Windows  and POSIX (which uses [CUPS 1.4/MAC OS X 10.7](http://cups.org/)) APIs;
+* native method wrappers from Windows  and POSIX (which uses [CUPS 1.4/MAC OS X 10.6](http://cups.org/)) APIs;
 * compatible with node v0.8.x, 0.9.x and v0.11.x (with 0.11.9 and 0.11.13);
 * compatible with node-webkit v0.8.x and 0.9.2;
 * ```getPrinters()``` to enumerate all installed printers with current jobs and statuses;
