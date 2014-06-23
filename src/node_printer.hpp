@@ -1,7 +1,7 @@
 #ifndef NODE_PRINTER_HPP
 #define NODE_PRINTER_HPP
 
-#include "macros.h"
+#include "macros.hh"
 
 #include <node.h>
 #include <v8.h>
