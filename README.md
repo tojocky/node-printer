@@ -1,8 +1,6 @@
 node-printer
 ============
 
-Release: 0.0.1 DEV
-
 This package binds printers on POSIX and Windows OS from Node.js.
 
 ### Reason:
