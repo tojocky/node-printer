@@ -43,11 +43,21 @@ namespace
         }
         result.insert(std::make_pair("RAW", CUPS_FORMAT_RAW));
         result.insert(std::make_pair("TEXT", CUPS_FORMAT_TEXT));
+#ifdef CUPS_FORMAT_PDF
         result.insert(std::make_pair("PDF", CUPS_FORMAT_PDF));
+#endif
+#ifdef CUPS_FORMAT_JPEG
         result.insert(std::make_pair("JPEG", CUPS_FORMAT_JPEG));
+#endif
+#ifdef CUPS_FORMAT_POSTSCRIPT
         result.insert(std::make_pair("POSTSCRIPT", CUPS_FORMAT_POSTSCRIPT));
+#endif
+#ifdef CUPS_FORMAT_COMMAND
         result.insert(std::make_pair("COMMAND", CUPS_FORMAT_COMMAND));
+#endif
+#ifdef CUPS_FORMAT_AUTO
         result.insert(std::make_pair("AUTO", CUPS_FORMAT_AUTO));
+#endif
         return result;
     }
 
