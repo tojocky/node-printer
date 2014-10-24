@@ -29,7 +29,7 @@ I was involved in a project where I need to print from Node.JS. This is the reas
 
 or direct from git:
 
-    npm install https://github.com/tojocky/node-printer.git
+    npm install git+https://github.com/tojocky/node-printer.git
     
 ### How to use:
 
