@@ -27,7 +27,7 @@ I was involved in a project where I need to print from Node.JS. This is the reas
 
     npm install printer
 
-or direct from git:
+or [direct from git](https://www.npmjs.org/doc/cli/npm-install.html):
 
     npm install git+https://github.com/tojocky/node-printer.git
     
