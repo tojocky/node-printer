@@ -25,6 +25,8 @@ I was involved in a project where I need to print from Node.JS. This is the reas
 
 ### How to install:
 
+from [npmjs.org](https://www.npmjs.org/package/printer)
+
     npm install printer
 
 or [direct from git](https://www.npmjs.org/doc/cli/npm-install.html):
@@ -42,3 +44,6 @@ See examples
 ### Contibutors:
 
 Feel free to download, test and propose new futures
+
+### License:
+ [The MIT License (MIT)](http://opensource.org/licenses/MIT)
