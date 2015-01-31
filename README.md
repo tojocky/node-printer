@@ -1,6 +1,8 @@
 node-printer
 ============
 
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/tojocky/node-printer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 This package binds printers on POSIX and Windows OS from Node.js.
 
 ### Reason:
@@ -32,6 +34,11 @@ from [npmjs.org](https://www.npmjs.org/package/printer)
 or [direct from git](https://www.npmjs.org/doc/cli/npm-install.html):
 
     npm install git+https://github.com/tojocky/node-printer.git
+
+Ubuntu User :
+You need to install libcupsys2-dev package 
+```sudo apt-get install libcupsys2-dev```
+    
     
 ### How to use:
 
