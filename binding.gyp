@@ -28,7 +28,12 @@
           'libraries':[
             '<!(cups-config --libs)'
             #'-lcups -lgssapi_krb5 -lkrb5 -lk5crypto -lcom_err -lz -lpthread -lm -lcrypt -lz'
-          ]
+          ],
+          'link_settings': {
+              'libraries': [
+                  '<!(cups-config --libs)'
+              ]
+           }
         }]
       ]
     }
