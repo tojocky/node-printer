@@ -41,7 +41,7 @@ namespace{
         operator bool() const { return (_value != NULL); }
         Type *_value;
     };
-    
+
     struct PrinterHandle
     {
         PrinterHandle(LPWSTR iPrinterName)
@@ -61,9 +61,9 @@ namespace{
         HANDLE * operator ->() { return &_printer;}
         const HANDLE & operator ->() const { return _printer;}
         HANDLE _printer;
-        BOOL _ok; 
+        BOOL _ok;
     };
-    
+
     const StatusMapType& getStatusMap()
     {
         static StatusMapType result;
@@ -115,7 +115,7 @@ namespace{
         STATUS_PRINTER_ADD("PRINTING", JOB_STATUS_PRINTING);
         STATUS_PRINTER_ADD("PRINTED", JOB_STATUS_PRINTED);
         STATUS_PRINTER_ADD("PAUSED", JOB_STATUS_PAUSED);
-        
+
         // Specific statuses
         STATUS_PRINTER_ADD("BLOCKED-DEVQ", JOB_STATUS_BLOCKED_DEVQ);
         STATUS_PRINTER_ADD("DELETED", JOB_STATUS_DELETED);
@@ -176,7 +176,7 @@ namespace{
 #undef ATTRIBUTE_PRINTER_ADD
         return result;
     }
-    
+
     const StatusMapType& getJobCommandMap()
     {
         static StatusMapType result;
@@ -241,7 +241,7 @@ namespace{
             result_printer_job_status->Set(i_status++, V8_STRING_NEW_2BYTES((uint16_t*)job->pStatus));
         }
         result_printer_job->Set(V8_STRING_NEW_UTF8("status"), result_printer_job_status);
-        
+
         // Specific fields
         //LPTSTR               pMachineName;
         ADD_V8_STRING_PROPERTY(machineName, pMachineName);
@@ -272,7 +272,7 @@ namespace{
         //DWORD                PagesPrinted;
         result_printer_job->Set(V8_STRING_NEW_UTF8("pagesPrinted"), V8_VALUE_NEW(Number, job->PagesPrinted));
     }
-    
+
     std::string retrieveAndParseJobs(const LPWSTR iPrinterName,
                                      const DWORD& iTotalJobs,
                                      v8::Handle<v8::Object> result_printer_jobs,
@@ -404,7 +404,7 @@ MY_NODE_MODULE_CALLBACK(getPrinters)
     DWORD printers_size = 0;
     DWORD printers_size_bytes = 0, dummyBytes = 0;
     DWORD Level = 2;
-    DWORD flags = PRINTER_ENUM_LOCAL; // TODO: do we need to enumerate the list of printers to which the user has made previous connections? then add PRINTER_ENUM_CONNECTIONS
+    DWORD flags = PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS; https://msdn.microsoft.com/en-us/library/cc244669.aspx
     // First try to retrieve the number of printers
     BOOL bError = EnumPrintersW(flags, NULL, 2, NULL, 0, &printers_size_bytes, &printers_size);
     // allocate the required memmory
@@ -467,7 +467,7 @@ MY_NODE_MODULE_CALLBACK(getPrinter)
     {
         RETURN_EXCEPTION_STR(error_str.c_str());
     }
-    
+
     MY_NODE_MODULE_RETURN_VALUE(result_printer);
 }
 
