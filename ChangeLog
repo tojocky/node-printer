@@ -1,0 +1,6 @@
+2015.01.30, Version 0.0.4
+* win: added RPC installed printers in getPrinters #40
+* posix: on some devices not all formats are supported, issue #23
+* posix: added link settings on build #28
+* corrected README.md
+* corrected examples
