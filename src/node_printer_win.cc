@@ -450,13 +450,13 @@ MY_NODE_MODULE_CALLBACK(getPrinter)
         RETURN_EXCEPTION_STR("Printer not found");
     }
     DWORD printers_size_bytes = 0, dummyBytes = 0;
-    GetPrinter(*printerHandle, 2, NULL, printers_size_bytes, &printers_size_bytes);
+    GetPrinterW(*printerHandle, 2, NULL, printers_size_bytes, &printers_size_bytes);
     MemValue<PRINTER_INFO_2W> printer(printers_size_bytes);
     if(!printer)
     {
         RETURN_EXCEPTION_STR("Error on allocating memory for printers");
     }
-    BOOL bOK = GetPrinter(*printerHandle, 2, (LPBYTE)(printer.get()), printers_size_bytes, &printers_size_bytes);
+    BOOL bOK = GetPrinterW(*printerHandle, 2, (LPBYTE)(printer.get()), printers_size_bytes, &printers_size_bytes);
     if(!bOK)
     {
         RETURN_EXCEPTION_STR("Error on GetPrinter");
