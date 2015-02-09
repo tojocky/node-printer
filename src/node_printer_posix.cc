@@ -3,6 +3,7 @@
 #include <string>
 #include <map>
 #include <utility>
+#include <sstream>
 
 #include <cups/cups.h>
 
@@ -101,9 +102,9 @@ namespace
         if(i_status == 0)
         {
             // A new status? return error then
-            std::string error_str("wrong job status: ");
-            error_str += job->state;
-            return error_str;
+            std::ostringstream s;
+            s << "wrong job status: " << job->state;
+            return s.str();
         }
         
         result_printer_job->Set(V8_STRING_NEW_UTF8("status"), result_printer_job_status);
