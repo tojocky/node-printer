@@ -11,6 +11,7 @@
 #include <string>
 #include <map>
 #include <utility>
+#include <sstream>
 
 namespace{
     typedef std::map<std::string, DWORD> StatusMapType;
@@ -396,6 +397,35 @@ namespace{
         }
         return "";
     }
+    
+    /**
+     * Returns last error code and message string
+     */
+    std::string getLastErrorCodeAndMessage() {
+    	std::ostringstream s;
+    	DWORD erroCode = GetLastError();
+    	s << "code: " << erroCode;
+    	DWORD retSize;
+    	LPTSTR pTemp = NULL;
+    	retSize = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|
+                                FORMAT_MESSAGE_FROM_SYSTEM|
+                                FORMAT_MESSAGE_ARGUMENT_ARRAY,
+                                NULL,
+                                erroCode,
+                                LANG_NEUTRAL,
+                                (LPTSTR)&pTemp,
+                                0,
+                                NULL );
+        if (retSize && pTemp != NULL) {
+	    //pTemp[strlen(pTemp)-2]='\0'; //remove cr and newline character
+	    //TODO: check if it is needed to convert c string to std::string
+	    std::string stringMessage(pTemp);
+	    s << ", message: " << stringMessage;
+	    LocalFree((HLOCAL)pTemp);
+	}
+
+    	return s.str();
+    }
 }
 
 MY_NODE_MODULE_CALLBACK(getPrinters)
@@ -601,6 +631,7 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
     {
         RETURN_EXCEPTION(v8::String::Concat(V8_STRING_NEW_UTF8("OpenPrinter error: "), iArgs[1]->ToString()));
     }
+
     // Fill in the structure with info about this "document."
     DocInfo.pDocName = (LPWSTR)(*docname);
     DocInfo.pOutputFile =  NULL;
@@ -622,7 +653,9 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
         // Inform the spooler that the document is ending.
         EndDocPrinter(*printerHandle);
     }else{
-        RETURN_EXCEPTION_STR("StartDocPrinter error");
+    	std::string error_str("StartDocPrinterW error: ");
+    	error_str += getLastErrorCodeAndMessage();
+        RETURN_EXCEPTION_STR(error_str.c_str());
     }
     // Check to see if correct number of bytes were written.
     if (dwBytesWritten != data.size()) {
