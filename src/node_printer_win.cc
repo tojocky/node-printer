@@ -438,7 +438,7 @@ MY_NODE_MODULE_CALLBACK(getPrinters)
     DWORD printers_size = 0;
     DWORD printers_size_bytes = 0, dummyBytes = 0;
     DWORD Level = 2;
-    DWORD flags = PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS; https://msdn.microsoft.com/en-us/library/cc244669.aspx
+    DWORD flags = PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS;// https://msdn.microsoft.com/en-us/library/cc244669.aspx
     // First try to retrieve the number of printers
     BOOL bError = EnumPrintersW(flags, NULL, 2, NULL, 0, &printers_size_bytes, &printers_size);
     // allocate the required memmory
