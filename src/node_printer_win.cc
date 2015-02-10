@@ -273,6 +273,35 @@ namespace{
         //DWORD                PagesPrinted;
         result_printer_job->Set(V8_STRING_NEW_UTF8("pagesPrinted"), V8_VALUE_NEW(Number, job->PagesPrinted));
     }
+    
+    /**
+     * Returns last error code and message string
+     */
+    std::string getLastErrorCodeAndMessage() {
+    	std::ostringstream s;
+    	DWORD erroCode = GetLastError();
+    	s << "code: " << erroCode;
+    	DWORD retSize;
+    	LPTSTR pTemp = NULL;
+    	retSize = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|
+                                FORMAT_MESSAGE_FROM_SYSTEM|
+                                FORMAT_MESSAGE_ARGUMENT_ARRAY,
+                                NULL,
+                                erroCode,
+                                LANG_NEUTRAL,
+                                (LPTSTR)&pTemp,
+                                0,
+                                NULL );
+        if (retSize && pTemp != NULL) {
+	    //pTemp[strlen(pTemp)-2]='\0'; //remove cr and newline character
+	    //TODO: check if it is needed to convert c string to std::string
+	    std::string stringMessage(pTemp);
+	    s << ", message: " << stringMessage;
+	    LocalFree((HLOCAL)pTemp);
+	}
+
+    	return s.str();
+    }
 
     std::string retrieveAndParseJobs(const LPWSTR iPrinterName,
                                      const DWORD& iTotalJobs,
@@ -400,35 +429,6 @@ namespace{
             result_printer->Set(V8_STRING_NEW_UTF8("jobs"), result_printer_jobs);
         }
         return "";
-    }
-    
-    /**
-     * Returns last error code and message string
-     */
-    std::string getLastErrorCodeAndMessage() {
-    	std::ostringstream s;
-    	DWORD erroCode = GetLastError();
-    	s << "code: " << erroCode;
-    	DWORD retSize;
-    	LPTSTR pTemp = NULL;
-    	retSize = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|
-                                FORMAT_MESSAGE_FROM_SYSTEM|
-                                FORMAT_MESSAGE_ARGUMENT_ARRAY,
-                                NULL,
-                                erroCode,
-                                LANG_NEUTRAL,
-                                (LPTSTR)&pTemp,
-                                0,
-                                NULL );
-        if (retSize && pTemp != NULL) {
-	    //pTemp[strlen(pTemp)-2]='\0'; //remove cr and newline character
-	    //TODO: check if it is needed to convert c string to std::string
-	    std::string stringMessage(pTemp);
-	    s << ", message: " << stringMessage;
-	    LocalFree((HLOCAL)pTemp);
-	}
-
-    	return s.str();
     }
 }
 
