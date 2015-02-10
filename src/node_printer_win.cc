@@ -285,13 +285,17 @@ namespace{
         MemValue<JOB_INFO_2W> jobs(bytes_needed);
         if(!jobs)
         {
-            return std::string("Error on allocating memory for jobs");
+            std::string error_str("Error on allocating memory for jobs: ");
+            error_str += getLastErrorCodeAndMessage();
+            return error_str;
         }
         DWORD dummy_bytes = 0;
         bError = EnumJobsW(*iPrinterHandle, 0, iTotalJobs, 2, (LPBYTE)jobs.get(), bytes_needed, &dummy_bytes, &totalJobs);
         if(!bError)
         {
-            return std::string("Error on EnumJobsW");
+            std::string error_str("Error on EnumJobsW: ");
+            error_str += getLastErrorCodeAndMessage();
+            return error_str;
         }
         JOB_INFO_2W *job = jobs.get();
         for(DWORD i = 0; i < totalJobs; ++i, ++job)
@@ -447,7 +451,9 @@ MY_NODE_MODULE_CALLBACK(getPrinters)
     bError = EnumPrintersW(flags, NULL, 2, (LPBYTE)(printers.get()), printers_size_bytes, &dummyBytes, &printers_size);
     if(!bError)
     {
-        RETURN_EXCEPTION_STR("Error on EnumPrinters");
+        std::string error_str("Error on EnumPrinters: ");
+	error_str += getLastErrorCodeAndMessage();
+        RETURN_EXCEPTION_STR(error_str.c_str());
     }
     v8::Local<v8::Array> result = V8_VALUE_NEW_V_0_11_10(Array, printers_size);
     // http://msdn.microsoft.com/en-gb/library/windows/desktop/dd162845(v=vs.85).aspx
@@ -477,7 +483,9 @@ MY_NODE_MODULE_CALLBACK(getPrinter)
     PrinterHandle printerHandle((LPWSTR)(*printername));
     if(!printerHandle)
     {
-        RETURN_EXCEPTION_STR("Printer not found");
+        std::string error_str("error on PrinterHandle: ");
+	error_str += getLastErrorCodeAndMessage();
+        RETURN_EXCEPTION_STR(error_str.c_str());
     }
     DWORD printers_size_bytes = 0, dummyBytes = 0;
     GetPrinterW(*printerHandle, 2, NULL, printers_size_bytes, &printers_size_bytes);
@@ -489,7 +497,9 @@ MY_NODE_MODULE_CALLBACK(getPrinter)
     BOOL bOK = GetPrinterW(*printerHandle, 2, (LPBYTE)(printer.get()), printers_size_bytes, &printers_size_bytes);
     if(!bOK)
     {
-        RETURN_EXCEPTION_STR("Error on GetPrinter");
+        std::string error_str("Error on GetPrinter: ");
+	error_str += getLastErrorCodeAndMessage();
+        RETURN_EXCEPTION_STR(error_str.c_str());
     }
     v8::Local<v8::Object> result_printer = V8_VALUE_NEW_DEFAULT_V_0_11_10(Object);
     std::string error_str = parsePrinterInfo(printer.get(), result_printer, printerHandle);
@@ -515,7 +525,9 @@ MY_NODE_MODULE_CALLBACK(getJob)
     PrinterHandle printerHandle((LPWSTR)(*printername));
     if(!printerHandle)
     {
-        RETURN_EXCEPTION_STR("error on PrinterHandle");
+        std::string error_str("error on PrinterHandle: ");
+	error_str += getLastErrorCodeAndMessage();
+        RETURN_EXCEPTION_STR(error_str.c_str());
     }
     DWORD size_bytes = 0, dummyBytes = 0;
     GetJobW(*printerHandle, static_cast<DWORD>(jobId), 2, NULL, size_bytes, &size_bytes);
@@ -527,7 +539,9 @@ MY_NODE_MODULE_CALLBACK(getJob)
     BOOL bOK = GetJobW(*printerHandle, static_cast<DWORD>(jobId), 2, (LPBYTE)job.get(), size_bytes, &dummyBytes);
     if(!bOK)
     {
-        RETURN_EXCEPTION_STR("Error on GetJob. Wrong job id or it was deleted");
+        std::string error_str("Error on GetJob. Wrong job id or it was deleted: ");
+	error_str += getLastErrorCodeAndMessage();
+        RETURN_EXCEPTION_STR(error_str.c_str());
     }
     v8::Local<v8::Object> result_printer_job = V8_VALUE_NEW_DEFAULT_V_0_11_10(Object);
     parseJobObject(job.get(), result_printer_job);
@@ -556,7 +570,9 @@ MY_NODE_MODULE_CALLBACK(setJob)
     PrinterHandle printerHandle((LPWSTR)(*printername));
     if(!printerHandle)
     {
-        RETURN_EXCEPTION_STR("error on PrinterHandle");
+        std::string error_str("error on PrinterHandle: ");
+	error_str += getLastErrorCodeAndMessage();
+        RETURN_EXCEPTION_STR(error_str.c_str());
     }
     // TODO: add the possibility to set job properties
     // http://msdn.microsoft.com/en-us/library/windows/desktop/dd162978(v=vs.85).aspx
@@ -629,7 +645,9 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
 
     if (!printerHandle)
     {
-        RETURN_EXCEPTION(v8::String::Concat(V8_STRING_NEW_UTF8("OpenPrinter error: "), iArgs[1]->ToString()));
+        std::string error_str("error on PrinterHandle: ");
+	error_str += getLastErrorCodeAndMessage();
+        RETURN_EXCEPTION_STR(error_str.c_str());
     }
 
     // Fill in the structure with info about this "document."
@@ -648,7 +666,9 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
             bStatus = WritePrinter( *printerHandle, (LPVOID)(data.c_str()), (DWORD)data.size(), &dwBytesWritten);
             EndPagePrinter(*printerHandle);
         }else{
-            RETURN_EXCEPTION_STR("StartPagePrinter error");
+            std::string error_str("StartPagePrinter error: ");
+    	    error_str += getLastErrorCodeAndMessage();
+            RETURN_EXCEPTION_STR(error_str.c_str());
         }
         // Inform the spooler that the document is ending.
         EndDocPrinter(*printerHandle);
