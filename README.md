@@ -17,8 +17,9 @@ I was involved in a project where I need to print from Node.JS. This is the reas
 * compatible with node v0.8.x, 0.9.x and v0.11.x (with 0.11.9 and 0.11.13);
 * compatible with node-webkit v0.8.x and 0.9.2;
 * ```getPrinters()``` to enumerate all installed printers with current jobs and statuses;
-* ```getPrinter(printerName)``` to get a specific printer info with current jobs and statuses;
-* ```printDirect(stringData|bufferData, printerName, format, docname, success, error)``` to send a job to a printer;
+* ```getPrinter(printerName)``` to get a specific/default printer info with current jobs and statuses;
+* ```getDefaultPrinterName()``` return the default printer name;
+* ```printDirect(stringData|bufferData, printerName, format, docname, success, error)``` to send a job to a specific/default printer;
 * ```getSupportedPrintFormats()``` to get all posibilbe print formats for printDirect method which depends on OS. ```RAW``` and ```TEXT``` are supported from all OS-es;
 * ```getJob(printerName, jobId)``` to get a specific job info including job status;
 * ```setJob(printerName, jobId, command)``` to send a command to a job (e.g. ```'CANCEL'``` to cancel the job);
