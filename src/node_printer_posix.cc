@@ -101,10 +101,10 @@ namespace
         }
         if(i_status == 0)
         {
-            // A new status? return error then
+            // A new status? report as unsupported
             std::ostringstream s;
-            s << "wrong job status: " << job->state;
-            return s.str();
+            s << "unsupported job status: " << job->state;
+            result_printer_job_status->Set(i_status++, V8_STRING_NEW_UTF8(s.str()));
         }
         
         result_printer_job->Set(V8_STRING_NEW_UTF8("status"), result_printer_job_status);
