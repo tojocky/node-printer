@@ -1,3 +1,9 @@
+2015.02.00, Version 0.0.5
+* added getDefaultPrinterName() method by returning the default printer name
+* make printer argument optional in getPrinter() and printDirect. If is missing, will try to print to default printer
+* resolve charest of getPrinter() #38
+* posix/win32: added more explicit errors
+
 2015.01.30, Version 0.0.4
 * win: added RPC installed printers in getPrinters #40
 * posix: on some devices not all formats are supported, issue #23
