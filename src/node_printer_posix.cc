@@ -84,7 +84,7 @@ namespace
                 break;
             }
         }
-        
+
         result_printer_job->Set(V8_STRING_NEW_UTF8("format"), V8_STRING_NEW_UTF8(job_format.c_str()));
         result_printer_job->Set(V8_STRING_NEW_UTF8("priority"), V8_VALUE_NEW(Number, job->priority));
         result_printer_job->Set(V8_STRING_NEW_UTF8("size"), V8_VALUE_NEW(Number, job->size));
@@ -104,9 +104,9 @@ namespace
             // A new status? report as unsupported
             std::ostringstream s;
             s << "unsupported job status: " << job->state;
-            result_printer_job_status->Set(i_status++, V8_STRING_NEW_UTF8(s.str()));
+            result_printer_job_status->Set(i_status++, V8_STRING_NEW_UTF8(s.str().c_str()));
         }
-        
+
         result_printer_job->Set(V8_STRING_NEW_UTF8("status"), result_printer_job_status);
 
         //Specific fields
@@ -118,7 +118,7 @@ namespace
         // No error. return an empty string
         return "";
     }
-    
+
     /** Parse printer info object
      * @return error string.
      */
@@ -193,6 +193,12 @@ MY_NODE_MODULE_CALLBACK(getPrinters)
         RETURN_EXCEPTION_STR(error_str.c_str());
     }
     MY_NODE_MODULE_RETURN_VALUE(result);
+}
+
+MY_NODE_MODULE_CALLBACK(getDefaultPrinterName)
+{
+    MY_NODE_MODULE_HANDLESCOPE;
+    MY_NODE_MODULE_RETURN_VALUE(V8_STRING_NEW_UTF8(cupsGetDefault2(CUPS_HTTP_DEFAULT)));
 }
 
 MY_NODE_MODULE_CALLBACK(getPrinter)

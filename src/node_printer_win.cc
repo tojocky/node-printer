@@ -273,7 +273,7 @@ namespace{
         //DWORD                PagesPrinted;
         result_printer_job->Set(V8_STRING_NEW_UTF8("pagesPrinted"), V8_VALUE_NEW(Number, job->PagesPrinted));
     }
-    
+
     /**
      * Returns last error code and message string
      */
@@ -473,6 +473,26 @@ MY_NODE_MODULE_CALLBACK(getPrinters)
     MY_NODE_MODULE_RETURN_VALUE(result);
 }
 
+MY_NODE_MODULE_CALLBACK(getDefaultPrinterName)
+{
+    MY_NODE_MODULE_HANDLESCOPE;
+    DWORD bSize = 0;
+    GetDefaultPrinterW(NULL, &bSize);
+
+    if(bSize == 0) {
+        MY_NODE_MODULE_RETURN_VALUE(V8_STRING_NEW_UTF8(""))
+    }
+
+    MemValue<uint16_t> bPrinterName(bSize);
+    BOOL res = GetDefaultPrinterW(bPrinterName.get(), bSize);
+
+    if(!res) {
+        MY_NODE_MODULE_RETURN_VALUE(V8_STRING_NEW_UTF8(""))
+    }
+
+    MY_NODE_MODULE_RETURN_VALUE(V8_STRING_NEW_2BYTES((uint16_t*)bPrinterName.get()));
+}
+
 MY_NODE_MODULE_CALLBACK(getPrinter)
 {
     MY_NODE_MODULE_HANDLESCOPE;
@@ -484,7 +504,7 @@ MY_NODE_MODULE_CALLBACK(getPrinter)
     if(!printerHandle)
     {
         std::string error_str("error on PrinterHandle: ");
-	error_str += getLastErrorCodeAndMessage();
+        error_str += getLastErrorCodeAndMessage();
         RETURN_EXCEPTION_STR(error_str.c_str());
     }
     DWORD printers_size_bytes = 0, dummyBytes = 0;

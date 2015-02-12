@@ -23,6 +23,11 @@ MY_NODE_MODULE_CALLBACK(PrintDirect);
  */
 MY_NODE_MODULE_CALLBACK(getPrinters);
 
+/**
+ * Return default printer name, if null then default printer is not set
+ */
+MY_NODE_MODULE_CALLBACK(getDefaultPrinterName);
+
 /** Retrieve printer info and jobs
  * @param printer name String
  */

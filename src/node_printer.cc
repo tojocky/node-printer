@@ -3,6 +3,7 @@
 void initNode(v8::Handle<v8::Object> exports) {
 // only for node
   NODE_SET_METHOD(exports, "getPrinters", getPrinters);
+  NODE_SET_METHOD(exports, "getDefaultPrinterName", getDefaultPrinterName);
   NODE_SET_METHOD(exports, "getPrinter", getPrinter);
   NODE_SET_METHOD(exports, "getJob", getJob);
   NODE_SET_METHOD(exports, "setJob", setJob);
