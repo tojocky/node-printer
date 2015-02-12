@@ -3,6 +3,7 @@
 * make printer argument optional in getPrinter() and printDirect. If is missing, will try to print to default printer
 * resolve charest of getPrinter() #38
 * posix/win32: added more explicit errors
+* posix: do not throw error if job status code is not supported
 
 2015.01.30, Version 0.0.4
 * win: added RPC installed printers in getPrinters #40
