@@ -347,13 +347,21 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
     int num_options = 0;
     cups_option_t *options = NULL;
     int job_id = cupsCreateJob(CUPS_HTTP_DEFAULT, *printername, *docname, num_options, options);
-    if(job_id > 0)
-    {
-        cupsStartDocument(CUPS_HTTP_DEFAULT, *printername, job_id, *docname, type_str.c_str(), 1 /*last document*/);
-        /* cupsWriteRequestData can be called as many times as needed */
-        //TODO: to split big buffer
-        cupsWriteRequestData(CUPS_HTTP_DEFAULT, data.c_str(), data.size());
-        cupsFinishDocument(CUPS_HTTP_DEFAULT, *printername);
+    if(job_id == 0) {
+        RETURN_EXCEPTION_STR(cupsLastErrorString());
     }
+
+    if(HTTP_CONTINUE != cupsStartDocument(CUPS_HTTP_DEFAULT, *printername, job_id, *docname, type_str.c_str(), 1 /*last document*/)) {
+        RETURN_EXCEPTION_STR(cupsLastErrorString());
+    }
+
+    /* cupsWriteRequestData can be called as many times as needed */
+    //TODO: to split big buffer
+    if (HTTP_STATUS_CONTINUE != cupsWriteRequestData(CUPS_HTTP_DEFAULT, data.c_str(), data.size())) {
+        RETURN_EXCEPTION_STR(cupsLastErrorString());
+    }
+
+    cupsFinishDocument(CUPS_HTTP_DEFAULT, *printername);
+
     MY_NODE_MODULE_RETURN_VALUE(V8_VALUE_NEW(Number, job_id));
 }
