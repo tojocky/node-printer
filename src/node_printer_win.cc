@@ -480,14 +480,14 @@ MY_NODE_MODULE_CALLBACK(getDefaultPrinterName)
     GetDefaultPrinterW(NULL, &bSize);
 
     if(bSize == 0) {
-        MY_NODE_MODULE_RETURN_VALUE(V8_STRING_NEW_UTF8(""))
+        MY_NODE_MODULE_RETURN_VALUE(V8_STRING_NEW_UTF8(""));
     }
 
     MemValue<uint16_t> bPrinterName(bSize);
-    BOOL res = GetDefaultPrinterW(bPrinterName.get(), bSize);
+    BOOL res = GetDefaultPrinterW((LPWSTR)(bPrinterName.get()), &bSize);
 
     if(!res) {
-        MY_NODE_MODULE_RETURN_VALUE(V8_STRING_NEW_UTF8(""))
+        MY_NODE_MODULE_RETURN_VALUE(V8_STRING_NEW_UTF8(""));
     }
 
     MY_NODE_MODULE_RETURN_VALUE(V8_STRING_NEW_2BYTES((uint16_t*)bPrinterName.get()));
