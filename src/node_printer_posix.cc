@@ -351,13 +351,17 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
         RETURN_EXCEPTION_STR(cupsLastErrorString());
     }
 
-    cupsStartDocument(CUPS_HTTP_DEFAULT, *printername, job_id, *docname, type_str.c_str(), 1 /*last document*/);
+    if(HTTP_CONTINUE != cupsStartDocument(CUPS_HTTP_DEFAULT, *printername, job_id, *docname, type_str.c_str(), 1 /*last document*/)) {
+        RETURN_EXCEPTION_STR(cupsLastErrorString());
+    }
 
     /* cupsWriteRequestData can be called as many times as needed */
     //TODO: to split big buffer
-    // Find a safe method to use HTTP_STATUS_CONTINUE and HTTP_OK.
-    //if (HTTP_STATUS_CONTINUE != cupsWriteRequestData(CUPS_HTTP_DEFAULT, data.c_str(), data.size())) {
-    cupsWriteRequestData(CUPS_HTTP_DEFAULT, data.c_str(), data.size());
+    if (HTTP_CONTINUE != cupsWriteRequestData(CUPS_HTTP_DEFAULT, data.c_str(), data.size())) {
+        cupsFinishDocument(CUPS_HTTP_DEFAULT, *printername);
+        RETURN_EXCEPTION_STR(cupsLastErrorString());
+    }
+    
     cupsFinishDocument(CUPS_HTTP_DEFAULT, *printername);
 
     MY_NODE_MODULE_RETURN_VALUE(V8_VALUE_NEW(Number, job_id));
