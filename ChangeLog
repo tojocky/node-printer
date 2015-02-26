@@ -1,4 +1,7 @@
-2015.02.00, Version 0.0.5
+2012.02.26, version 0.1.0
+* possibility to load native module for platform/arch: node_module_{platform}_{arch}.node
+
+2015.02.24, Version 0.0.5
 * added getDefaultPrinterName() method by returning the default printer name
 * make printer argument optional in getPrinter() and printDirect. If is missing, will try to print to default printer
 * resolve charest of getPrinter() #38
