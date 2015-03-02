@@ -16,10 +16,10 @@ module.exports = function(grunt) {
         },
         copy: {
             ia32: {
-                files: [{src: 'build/Release/node_printer.node', dest: 'build/Release/node_printer_' + process.platform + '_ia32.node'}]
+                files: [{src: 'build/Release/node_printer.node', dest: 'lib/node_printer_' + process.platform + '_ia32.node'}]
             },
             x64: {
-                files: [{src: 'build/Release/node_printer.node', dest: 'build/Release/node_printer_' + process.platform + '_x64.node'}]
+                files: [{src: 'build/Release/node_printer.node', dest: 'lib/node_printer_' + process.platform + '_x64.node'}]
             }
         }
     });
