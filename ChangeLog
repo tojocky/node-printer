@@ -1,3 +1,6 @@
+2012.03.03, version 0.1.1
+* possibility to build for node-webkit with grunt
+
 2012.02.26, version 0.1.0
 * possibility to load native module for platform/arch: node_module_{platform}_{arch}.node
 
