@@ -198,7 +198,12 @@ MY_NODE_MODULE_CALLBACK(getPrinters)
 MY_NODE_MODULE_CALLBACK(getDefaultPrinterName)
 {
     MY_NODE_MODULE_HANDLESCOPE;
-    MY_NODE_MODULE_RETURN_VALUE(V8_STRING_NEW_UTF8(cupsGetDefault2(CUPS_HTTP_DEFAULT)));
+    const char * printerName = cupsGetDefault2(CUPS_HTTP_DEFAULT);
+
+    // return default printer name only if defined
+    if(printerName != NULL) {
+        MY_NODE_MODULE_RETURN_VALUE(V8_STRING_NEW_UTF8(printerName));
+    }
 }
 
 MY_NODE_MODULE_CALLBACK(getPrinter)
