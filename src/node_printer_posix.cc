@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include <cups/cups.h>
+#include <cups/ppd.h>
 
 namespace
 {
@@ -119,6 +120,36 @@ namespace
         return "";
     }
 
+    void populatePpdOptions(v8::Handle<v8::Object> ppd_options, ppd_file_t  *ppd, ppd_group_t *group)
+    {
+
+      int		i, j;			/* Looping vars */
+      ppd_option_t	*option;		/* Current option */
+      ppd_choice_t	*choice;		/* Current choice */
+      ppd_group_t	*subgroup;		/* Current subgroup */
+
+
+      for (i = group->num_options, option = group->options; i > 0; i --, option ++)
+      {
+        MY_NODE_MODULE_ISOLATE_DECL
+        v8::Local<v8::Object> ppd_suboptions = V8_VALUE_NEW_DEFAULT_V_0_11_10(Object);
+        for (j = option->num_choices, choice = option->choices;
+             j > 0;
+         j --, choice ++)
+        {
+
+            ppd_suboptions->Set(V8_STRING_NEW_UTF8(choice->choice),
+            choice->marked ? V8_STRING_NEW_UTF8("true") : V8_STRING_NEW_UTF8("false"));
+        }
+
+        ppd_options->Set(V8_STRING_NEW_UTF8(option->keyword), ppd_suboptions);
+      }
+
+      for (i = group->num_subgroups, subgroup = group->subgroups; i > 0; i --, subgroup ++)
+        populatePpdOptions(ppd_options, ppd, subgroup);
+    }
+
+
     /** Parse printer info object
      * @return error string.
      */
@@ -132,6 +163,30 @@ namespace
         {
             result_printer->Set(V8_STRING_NEW_UTF8("instance"), V8_STRING_NEW_UTF8(printer->instance));
         }
+
+        v8::Local<v8::Object> ppd_options = V8_VALUE_NEW_DEFAULT_V_0_11_10(Object);
+
+        const char	*filename;		/* PPD filename */
+        ppd_file_t	*ppd;			/* PPD data */
+        ppd_group_t	*group;			/* Current group */
+        int i;
+        if ((filename = cupsGetPPD(printer->name)) != NULL)
+        {
+            if ((ppd = ppdOpenFile(filename)) != NULL)
+            {
+                 ppdMarkDefaults(ppd);
+                 cupsMarkOptions(ppd, printer->num_options, printer->options);
+
+                 for (i = ppd->num_groups, group = ppd->groups; i > 0; i--, group++)
+                 {
+                    populatePpdOptions(ppd_options, ppd, group);
+                 }
+                 ppdClose(ppd);
+            }
+            unlink(filename);
+        }
+        result_printer->Set(V8_STRING_NEW_UTF8("driver_options"), ppd_options);
+
         v8::Local<v8::Object> result_printer_options = V8_VALUE_NEW_DEFAULT_V_0_11_10(Object);
         cups_option_t *dest_option = printer->options; 
         for(int j = 0; j < printer->num_options; ++j, ++dest_option)
@@ -342,6 +397,9 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
     REQUIRE_ARGUMENT_STRING(iArgs, 1, printername);
     REQUIRE_ARGUMENT_STRING(iArgs, 2, docname);
     REQUIRE_ARGUMENT_STRING(iArgs, 3, type);
+    REQUIRE_ARGUMENT_STRING(iArgs, 4, media);
+    REQUIRE_ARGUMENT_STRING(iArgs, 5, fit_to_page);
+
     std::string type_str(*type);
     FormatMapType::const_iterator itFormat = getPrinterFormatMap().find(type_str);
     if(itFormat == getPrinterFormatMap().end())
@@ -349,8 +407,17 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
         RETURN_EXCEPTION_STR("unsupported format type");
     }
     type_str = itFormat->second;
+
     int num_options = 0;
-    cups_option_t *options = NULL;
+    cups_option_t *options = (cups_option_t *)0;
+
+    /* Add options using cupsAddOption() */
+    //TODO: pass an array of arbitrary options instead of these two
+    if (strcmp(*media, "") != 0) {
+        num_options = cupsAddOption("media", *media, num_options, &options);
+        num_options = cupsAddOption("fit-to-page", *fit_to_page, num_options, &options);
+    }
+
     int job_id = cupsCreateJob(CUPS_HTTP_DEFAULT, *printername, *docname, num_options, options);
     if(job_id == 0) {
         RETURN_EXCEPTION_STR(cupsLastErrorString());
