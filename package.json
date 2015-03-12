@@ -27,7 +27,6 @@
     "node": ">= 0.8.0"
   },
   "scripts": {
-    "test": "nodeunit -I lib test/*.test.js"
   },
   "licenses": [
     {
