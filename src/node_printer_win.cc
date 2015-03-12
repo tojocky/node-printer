@@ -531,6 +531,12 @@ MY_NODE_MODULE_CALLBACK(getPrinter)
     MY_NODE_MODULE_RETURN_VALUE(result_printer);
 }
 
+MY_NODE_MODULE_CALLBACK(getPrinterDriverOptions)
+{
+    MY_NODE_MODULE_HANDLESCOPE;
+    RETURN_EXCEPTION_STR("not supported on windows");
+}
+
 MY_NODE_MODULE_CALLBACK(getJob)
 {
     MY_NODE_MODULE_HANDLESCOPE;
