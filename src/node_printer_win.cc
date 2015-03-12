@@ -632,7 +632,7 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
 {
     MY_NODE_MODULE_HANDLESCOPE;
     //TODO: to move in an unique place win and posix input parameters processing
-    REQUIRE_ARGUMENTS(iArgs, 6);
+    REQUIRE_ARGUMENTS(iArgs, 5);
 
     // can be string or buffer
     if(iArgs.Length()<=0)
