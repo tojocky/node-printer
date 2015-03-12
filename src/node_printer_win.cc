@@ -3,6 +3,7 @@
 #if _MSC_VER
 #include <windows.h>
 #include <Winspool.h>
+#include <Wingdi.h>
 #pragma  comment(lib, "Winspool.lib")
 #else
 #error "Unsupported compiler for windows. Feel free to add it."
@@ -591,7 +592,7 @@ MY_NODE_MODULE_CALLBACK(setJob)
     if(!printerHandle)
     {
         std::string error_str("error on PrinterHandle: ");
-	error_str += getLastErrorCodeAndMessage();
+        error_str += getLastErrorCodeAndMessage();
         RETURN_EXCEPTION_STR(error_str.c_str());
     }
     // TODO: add the possibility to set job properties
@@ -616,9 +617,45 @@ MY_NODE_MODULE_CALLBACK(getSupportedPrintFormats)
 {
     MY_NODE_MODULE_HANDLESCOPE;
     v8::Local<v8::Array> result = V8_VALUE_NEW_DEFAULT_V_0_11_10(Array);
-    int i = 0;
-    result->Set(i++, V8_STRING_NEW_UTF8("RAW"));
-    result->Set(i++, V8_STRING_NEW_UTF8("TEXT"));
+    int format_i = 0;
+
+    LPTSTR name = NULL;
+    DWORD numBytes = 0, processorsNum = 0;
+
+    // Check the amount of bytes required
+    LPWSTR nullVal = NULL;
+    EnumPrintProcessorsW(nullVal, nullVal, 1, (LPBYTE)(NULL), numBytes, &numBytes, &processorsNum);
+    MemValue<_PRINTPROCESSOR_INFO_1W> processors(numBytes);
+    // Retrieve processors
+    BOOL isOK = EnumPrintProcessorsW(nullVal, nullVal, 1, (LPBYTE)(processors.get()), numBytes, &numBytes, &processorsNum);
+
+    if(!isOK) {
+        std::string error_str("error on EnumPrintProcessorsW: ");
+        error_str += getLastErrorCodeAndMessage();
+        RETURN_EXCEPTION_STR(error_str.c_str());
+    }
+
+    _PRINTPROCESSOR_INFO_1W *pProcessor = processors.get();
+
+    for(int processor_i = 0; processor_i < processorsNum; ++processor_i, ++pProcessor) {
+        numBytes = 0;
+        DWORD dataTypesNum = 0;
+        EnumPrintProcessorDatatypesW(nullVal, pProcessor->pName, 1, (LPBYTE)(NULL), numBytes, &numBytes, &dataTypesNum);
+        MemValue<_DATATYPES_INFO_1W> dataTypes(numBytes);
+        isOK = EnumPrintProcessorDatatypesW(nullVal, pProcessor->pName, 1, (LPBYTE)(dataTypes.get()), numBytes, &numBytes, &dataTypesNum);
+
+        if(!isOK) {
+            std::string error_str("error on EnumPrintProcessorDatatypesW: ");
+            error_str += getLastErrorCodeAndMessage();
+            RETURN_EXCEPTION_STR(error_str.c_str());
+        }
+
+        _DATATYPES_INFO_1W *pDataType = dataTypes.get();
+        for(int j = 0; j < dataTypesNum; ++j, ++pDataType) {
+            result->Set(format_i++, V8_STRING_NEW_2BYTES((uint16_t*)(pDataType->pName)));
+        }
+    }
+
     MY_NODE_MODULE_RETURN_VALUE(result);
 }
 
@@ -666,7 +703,7 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
     if (!printerHandle)
     {
         std::string error_str("error on PrinterHandle: ");
-	error_str += getLastErrorCodeAndMessage();
+        error_str += getLastErrorCodeAndMessage();
         RETURN_EXCEPTION_STR(error_str.c_str());
     }
 
