@@ -1,7 +1,12 @@
-2012.03.03, version 0.1.1
+2015.04, version 0.1.2
+* posix: new method getPrinterDriverOptions(printerName) to retrieve PPD options
+* posix: new method getSelectedPaperSize(printerName) to retrieve the current paper size name
+* posix: new parameter `options` added to `printDirect` to set printer options (ex. `fit-to-page`, `media`, etc)
+
+2015.03.03, version 0.1.1
 * possibility to build for node-webkit with grunt
 
-2012.02.26, version 0.1.0
+2015.02.26, version 0.1.0
 * possibility to load native module for platform/arch: node_module_{platform}_{arch}.node
 
 2015.02.24, Version 0.0.5
