@@ -16,6 +16,27 @@
 namespace{
     typedef std::map<std::string, DWORD> StatusMapType;
 
+    /** Memory value class management to avoid memory leak
+    */
+    template<typename Type>
+    class MemValue: public MemValueBase<Type> {
+    public:
+        /** Constructor of allocating iSizeKbytes bytes memory;
+        * @param iSizeKbytes size in bytes of required allocating memory
+        */
+        MemValue(const DWORD iSizeKbytes) {
+            _value = (Type*)malloc(iSizeKbytes);
+        }
+    protected:
+        virtual void free() {
+            if(_value != NULL)
+            {
+                ::free(_value);
+                _value = NULL;
+            }
+        }
+    };
+
     struct PrinterHandle
     {
         PrinterHandle(LPWSTR iPrinterName)
@@ -403,26 +424,6 @@ namespace{
         }
         return "";
     }
-
-    /** Memory value class management to avoid memory leak
-    */
-    template<typename Type>
-    struct MemValue: public<Type> {
-        /** Constructor of allocating iSizeKbytes bytes memory;
-        * @param iSizeKbytes size in bytes of required allocating memory
-        */
-        MemValue(const DWORD iSizeKbytes) {
-            _value = (Type*)malloc(iSizeKbytes);
-        }
-    protected:
-        virtual void free() {
-            if(_value != NULL)
-            {
-                free(_value);
-                _value = NULL;
-            }
-        }
-    };
 }
 
 MY_NODE_MODULE_CALLBACK(getPrinters)
@@ -705,5 +706,6 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
 
 MY_NODE_MODULE_CALLBACK(PrintFile)
 {
+    MY_NODE_MODULE_HANDLESCOPE;
     RETURN_EXCEPTION_STR("Not yet implemented on Windows");
 }

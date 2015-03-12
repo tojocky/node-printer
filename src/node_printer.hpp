@@ -91,8 +91,9 @@ MY_NODE_MODULE_CALLBACK(getSupportedJobCommands);
 /** Memory value class management to avoid memory leak
 */
 template<typename Type>
-struct MemValueBase
+class MemValueBase
 {
+public:
     MemValueBase(): _value(NULL) {}
 
     /** Destructor. The allocated memory will be deallocated
