@@ -66,6 +66,12 @@
     }                                                                          \
     v8::Local<v8::External> var = v8::Local<v8::External>::Cast(args[i]);
 
+#define REQUIRE_ARGUMENT_OBJECT(args, i, var)                                      \
+    if (args.Length() <= (i) || !args[i]->IsObject()) {                      \
+        RETURN_EXCEPTION_STR("Argument " #i " is not an object");       \
+    }                                                                          \
+    v8::Local<v8::Object> var = v8::Local<v8::Object>::Cast(args[i]);
+
 
 #define REQUIRE_ARGUMENT_FUNCTION(i, var)                                      \
     if (args.Length() <= (i) || !args[i]->IsFunction()) {                      \

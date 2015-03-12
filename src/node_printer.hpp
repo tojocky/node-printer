@@ -33,6 +33,11 @@ MY_NODE_MODULE_CALLBACK(getDefaultPrinterName);
  */
 MY_NODE_MODULE_CALLBACK(getPrinter);
 
+/** Retrieve printer driver info
+ * @param printer name String
+ */
+MY_NODE_MODULE_CALLBACK(getPrinterDriverOptions);
+
 /** Retrieve job info
  *  @param printer name String
  *  @param job id Number

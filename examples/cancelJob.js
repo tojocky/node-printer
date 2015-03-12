@@ -7,6 +7,11 @@ printer.printDirect({
     data:"print from Node.JS buffer", // or simple String: "some text"
 	printer:printerName, // printer name
 	type: printerFormat, // type: RAW, TEXT, PDF, JPEG, .. depends on platform
+    options: // supported page sizes may be retrieved using getPrinterDriverOptions, supports CUPS printing options
+    {
+        media: 'Letter',
+        'fit-to-page': true
+    },
 	success:function(jobID){
 		console.log("sent to printer with ID: "+jobID);
         var jobInfo = printer.getJob(printerName, jobID);
