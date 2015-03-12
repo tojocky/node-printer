@@ -124,29 +124,28 @@ namespace
      */
     void populatePpdOptions(v8::Handle<v8::Object> ppd_options, ppd_file_t  *ppd, ppd_group_t *group)
     {
-      int		i, j;
-      ppd_option_t	*option;
-      ppd_choice_t	*choice;
-      ppd_group_t	*subgroup;
+        int i, j;
+        ppd_option_t *option;
+        ppd_choice_t *choice;
+        ppd_group_t *subgroup;
 
-      for (i = group->num_options, option = group->options; i > 0; i --, option ++)
-      {
-        MY_NODE_MODULE_ISOLATE_DECL
-        v8::Local<v8::Object> ppd_suboptions = V8_VALUE_NEW_DEFAULT_V_0_11_10(Object);
-        for (j = option->num_choices, choice = option->choices;
-             j > 0;
-         j --, choice ++)
+        for (i = group->num_options, option = group->options; i > 0; --i, ++option)
         {
+            MY_NODE_MODULE_ISOLATE_DECL
+            v8::Local<v8::Object> ppd_suboptions = V8_VALUE_NEW_DEFAULT_V_0_11_10(Object);
+            for (j = option->num_choices, choice = option->choices;
+                 j > 0;
+                 --j, ++choice)
+            {
+                ppd_suboptions->Set(V8_STRING_NEW_UTF8(choice->choice), V8_VALUE_NEW_V_0_11_10(Boolean, static_cast<bool>(choice->marked)));
+            }
 
-            ppd_suboptions->Set(V8_STRING_NEW_UTF8(choice->choice),
-            choice->marked ? V8_STRING_NEW_UTF8("true") : V8_STRING_NEW_UTF8("false"));
+            ppd_options->Set(V8_STRING_NEW_UTF8(option->keyword), ppd_suboptions);
         }
 
-        ppd_options->Set(V8_STRING_NEW_UTF8(option->keyword), ppd_suboptions);
-      }
-
-      for (i = group->num_subgroups, subgroup = group->subgroups; i > 0; i --, subgroup ++)
-        populatePpdOptions(ppd_options, ppd, subgroup);
+        for (i = group->num_subgroups, subgroup = group->subgroups; i > 0; --i, ++subgroup) {
+            populatePpdOptions(ppd_options, ppd, subgroup);
+        }
     }
 
     /** Parse printer driver options
@@ -154,9 +153,9 @@ namespace
      */
     std::string parseDriverOptions(const cups_dest_t * printer, v8::Handle<v8::Object> ppd_options)
     {
-        const char	*filename;
-        ppd_file_t	*ppd;
-        ppd_group_t	*group;
+        const char *filename;
+        ppd_file_t *ppd;
+        ppd_group_t *group;
         int i;
 
         std::ostringstream error_str; // error string
@@ -168,7 +167,7 @@ namespace
                  ppdMarkDefaults(ppd);
                  cupsMarkOptions(ppd, printer->num_options, printer->options);
 
-                 for (i = ppd->num_groups, group = ppd->groups; i > 0; i--, group++)
+                 for (i = ppd->num_groups, group = ppd->groups; i > 0; --i, ++group)
                  {
                     populatePpdOptions(ppd_options, ppd, group);
                  }
@@ -204,7 +203,7 @@ namespace
         }
 
         v8::Local<v8::Object> result_printer_options = V8_VALUE_NEW_DEFAULT_V_0_11_10(Object);
-        cups_option_t *dest_option = printer->options; 
+        cups_option_t *dest_option = printer->options;
         for(int j = 0; j < printer->num_options; ++j, ++dest_option)
         {
             result_printer_options->Set(V8_STRING_NEW_UTF8(dest_option->name), V8_STRING_NEW_UTF8(dest_option->value));
@@ -451,8 +450,7 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
 
     v8::Local<v8::Array> props = print_options->GetPropertyNames();
 
-    for(unsigned int i = 0; i < props->Length(); i++) {
-
+    for(unsigned int i = 0; i < props->Length(); ++i) {
         v8::Handle<v8::Value> key(props->Get(i));
         v8::String::Utf8Value keyStr(key->ToString());
         v8::String::Utf8Value valStr(print_options->Get(key)->ToString());
@@ -475,7 +473,7 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
         cupsFinishDocument(CUPS_HTTP_DEFAULT, *printername);
         RETURN_EXCEPTION_STR(cupsLastErrorString());
     }
-    
+
     cupsFinishDocument(CUPS_HTTP_DEFAULT, *printername);
 
     MY_NODE_MODULE_RETURN_VALUE(V8_VALUE_NEW(Number, job_id));
