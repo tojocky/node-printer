@@ -18,6 +18,17 @@
  */
 MY_NODE_MODULE_CALLBACK(PrintDirect);
 
+/**
+ * Send file to printer
+ *
+ * @param filename String, mandatory, specifying filename to print
+ * @param docname String, mandatory, specifying document name
+ * @param printer String, mandatory, specifying printer name
+ *
+ * @returns jobId for success, or error message for failure.
+ */
+MY_NODE_MODULE_CALLBACK(PrintFile);
+
 /** Retrieve all printers and jobs
  * posix: minimum version: CUPS 1.1.21/OS X 10.4
  */
@@ -73,4 +84,31 @@ MY_NODE_MODULE_CALLBACK(getSupportedJobCommands);
 
 //TODO:
 // optional ability to get printer spool
+
+
+// util class
+
+/** Memory value class management to avoid memory leak
+*/
+template<typename Type>
+struct MemValueBase
+{
+    MemValueBase(): _value(NULL) {}
+
+    /** Destructor. The allocated memory will be deallocated
+    */
+    ~MemValueBase() {
+        free();
+    }
+
+    Type * get() {return _value; }
+    Type * operator ->() { return &_value; }
+    operator bool() const { return (_value != NULL); }
+protected:
+    Type *_value;
+
+    virtual void free() {};
+};
+
+
 #endif

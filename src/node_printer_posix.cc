@@ -234,6 +234,37 @@ namespace
         cupsFreeJobs(totalJobs, jobs);
         return error_str;
     }
+
+    /// cups option class to automatically free memory.
+    class CupsOptions: public MemValueBase<cups_option_t> {
+    protected:
+        int num_options;
+        virtual void free() {
+            if(_value != NULL)
+            {
+                cupsFreeOptions(num_options, get());
+                _value = NULL;
+                num_options = 0;
+            }
+        }
+    public:
+        CupsOptions(): num_options(0) {}
+
+        /// Add options from v8 object
+        CupsOptions(v8::Local<v8::Object> iV8Options) {
+            v8::Local<v8::Array> props = iV8Options->GetPropertyNames();
+
+            for(unsigned int i = 0; i < props->Length(); ++i) {
+                v8::Handle<v8::Value> key(props->Get(i));
+                v8::String::Utf8Value keyStr(key->ToString());
+                v8::String::Utf8Value valStr(iV8Options->Get(key)->ToString());
+
+                num_options = cupsAddOption(*keyStr, *valStr, num_options, &_value);
+            }
+        }
+
+        const int& getNumOptions() { return num_options; }
+    };
 }
 
 MY_NODE_MODULE_CALLBACK(getPrinters)
@@ -445,20 +476,9 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
     }
     type_str = itFormat->second;
 
-    int num_options = 0;
-    cups_option_t *options = (cups_option_t *)0;
+    CupsOptions options(print_options);
 
-    v8::Local<v8::Array> props = print_options->GetPropertyNames();
-
-    for(unsigned int i = 0; i < props->Length(); ++i) {
-        v8::Handle<v8::Value> key(props->Get(i));
-        v8::String::Utf8Value keyStr(key->ToString());
-        v8::String::Utf8Value valStr(print_options->Get(key)->ToString());
-
-        num_options = cupsAddOption(*keyStr, *valStr, num_options, &options);
-    }
-
-    int job_id = cupsCreateJob(CUPS_HTTP_DEFAULT, *printername, *docname, num_options, options);
+    int job_id = cupsCreateJob(CUPS_HTTP_DEFAULT, *printername, *docname, options.getNumOptions(), options.get());
     if(job_id == 0) {
         RETURN_EXCEPTION_STR(cupsLastErrorString());
     }
@@ -477,4 +497,31 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
     cupsFinishDocument(CUPS_HTTP_DEFAULT, *printername);
 
     MY_NODE_MODULE_RETURN_VALUE(V8_VALUE_NEW(Number, job_id));
+}
+
+MY_NODE_MODULE_CALLBACK(PrintFile)
+{
+    MY_NODE_MODULE_HANDLESCOPE;
+    REQUIRE_ARGUMENTS(iArgs, 3);
+
+    // can be string or buffer
+    if(iArgs.Length() <= 0)
+    {
+        RETURN_EXCEPTION_STR("Argument 0 missing");
+    }
+
+    REQUIRE_ARGUMENT_STRING(iArgs, 0, filename);
+    REQUIRE_ARGUMENT_STRING(iArgs, 1, docname);
+    REQUIRE_ARGUMENT_STRING(iArgs, 2, printer);
+    REQUIRE_ARGUMENT_OBJECT(iArgs, 3, print_options);
+
+    CupsOptions options(print_options);
+
+    int job_id = cupsPrintFile(*printer, *filename, *docname, options.getNumOptions(), options.get());
+
+    if(job_id == 0){
+        MY_NODE_MODULE_RETURN_VALUE(V8_STRING_NEW_UTF8(cupsLastErrorString()));
+    } else {
+        MY_NODE_MODULE_RETURN_VALUE(V8_VALUE_NEW(Number, job_id));
+    }
 }
