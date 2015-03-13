@@ -30,8 +30,8 @@ before_script:
 git:
   depth: 1
 branches:
-    only:
-        - master
+  only:
+    - master
 os:
   - linux
   - osx
