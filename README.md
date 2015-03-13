@@ -41,8 +41,8 @@ or [direct from git](https://www.npmjs.org/doc/cli/npm-install.html):
     npm install git+https://github.com/tojocky/node-printer.git
 
 Ubuntu User :
-You need to install libcupsys2-dev package
-`sudo apt-get install libcupsys2-dev`
+You need to install libcups2-dev package
+`sudo apt-get install libcups2-dev`
 
 
 ### How to use:
