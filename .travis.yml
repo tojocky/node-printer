@@ -33,6 +33,6 @@ branches:
     only:
         - master
 os:
-    - linux
-    - osx
+  - linux
+  - osx
 script: npm test
