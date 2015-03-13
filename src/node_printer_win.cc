@@ -637,7 +637,7 @@ MY_NODE_MODULE_CALLBACK(getSupportedPrintFormats)
 
     _PRINTPROCESSOR_INFO_1W *pProcessor = processors.get();
 
-    for(int processor_i = 0; processor_i < processorsNum; ++processor_i, ++pProcessor) {
+    for(DWORD processor_i = 0; processor_i < processorsNum; ++processor_i, ++pProcessor) {
         numBytes = 0;
         DWORD dataTypesNum = 0;
         EnumPrintProcessorDatatypesW(nullVal, pProcessor->pName, 1, (LPBYTE)(NULL), numBytes, &numBytes, &dataTypesNum);
@@ -651,7 +651,7 @@ MY_NODE_MODULE_CALLBACK(getSupportedPrintFormats)
         }
 
         _DATATYPES_INFO_1W *pDataType = dataTypes.get();
-        for(int j = 0; j < dataTypesNum; ++j, ++pDataType) {
+        for(DWORD j = 0; j < dataTypesNum; ++j, ++pDataType) {
             result->Set(format_i++, V8_STRING_NEW_2BYTES((uint16_t*)(pDataType->pName)));
         }
     }
