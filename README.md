@@ -1,5 +1,6 @@
 node-printer
 ============
+Native bind printers on POSIX and Windows OS from Node.js, iojs and node-webkit.
 <table>
   <thead>
     <tr>
@@ -23,8 +24,7 @@ node-printer
   </tbody>
 </table>
 
-This package native bind printers on POSIX and Windows OS from Node.js. It was tested on node.js, io.js and node-webkit.
-if you have a problem, ask question to [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/tojocky/node-printer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) or find/create a new [Github issue](https://github.com/tojocky/node-printer/issues)
+If you have a problem, ask question to [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/tojocky/node-printer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) or find/create a new [Github issue](https://github.com/tojocky/node-printer/issues)
 
 ### Reason:
 
