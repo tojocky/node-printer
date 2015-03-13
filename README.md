@@ -1,10 +1,31 @@
 node-printer
 ============
+<table>
+  <thead>
+    <tr>
+      <th>Linux</th>
+      <th>OS X</th>
+      <th>Windows</th>
+      <th>Dependencies</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td colspan="2" align="center">
+        <a href="https://travis-ci.org/tojocky/node-printer"><img src="https://travis-ci.org/tojocky/node-printer.svg?branch=master"></a>
+      </td>
+      <td align="center">
+        <a href="https://ci.appveyor.com/project/tojocky/node-printer"><img src="https://ci.appveyor.com/api/projects/status/9y800f36wla35ee7?svg=true"></a>
+      </td>
+      <td align="center">
+        <a href="https://david-dm.org/tojocky/node-printer"><img src="https://david-dm.org/tojocky/node-printer.svg"></a>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
-[![Build Status](https://travis-ci.org/tojocky/node-printer.svg?branch=master)](https://travis-ci.org/tojocky/node-printer)
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/tojocky/node-printer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
-This package binds printers on POSIX and Windows OS from Node.js.
+This package native binds printers on POSIX and Windows OS from Node.js. It was tested on node.js, io.js and node-webkit.
+if you have a problem, ask question to [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/tojocky/node-printer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) or find/create a new [Github issue](https://github.com/tojocky/node-printer/issues)
 
 ### Reason:
 
@@ -47,7 +68,7 @@ You need to install libcups2-dev package
 
 ### How to use:
 
-See examples
+See [examples](https://github.com/tojocky/node-printer/tree/master/examples)
 
 ### Author(s):
 
