@@ -4,14 +4,13 @@ node-printer
   <thead>
     <tr>
       <th>Linux</th>
-      <th>OS X</th>
       <th>Windows</th>
       <th>Dependencies</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td colspan="2" align="center">
+      <td align="center">
         <a href="https://travis-ci.org/tojocky/node-printer"><img src="https://travis-ci.org/tojocky/node-printer.svg?branch=master"></a>
       </td>
       <td align="center">
