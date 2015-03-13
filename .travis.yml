@@ -23,10 +23,10 @@ before_install:
       sudo apt-get install -qq debhelper autotools-dev cups-ppdc libcups2-dev cups imagemagick ghostscript;
     fi
   - "export JOBS=4"
-  - BUILD_ONLY=true npm install"
+  - BUILD_ONLY=true npm install
 before_script:
- - git config --global user.name "Ion Lupascu"
- - git config --global user.email ionlupascu@gmail.com
+  - git config --global user.name "Ion Lupascu"
+  - git config --global user.email ionlupascu@gmail.com
 git:
   depth: 1
 branches:
