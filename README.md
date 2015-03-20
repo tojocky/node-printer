@@ -59,6 +59,12 @@ from [npmjs.org](https://www.npmjs.org/package/printer)
 or [direct from git](https://www.npmjs.org/doc/cli/npm-install.html):
 
     npm install git+https://github.com/tojocky/node-printer.git
+if you want to to run in [nwjs](http://nwjs.io/) then rebuild the module with [nw-gyp](https://github.com/nwjs/nw-gyp):
+```
+npm install -g nw-gyp
+cd node_module/printer
+nw-gyp rebuild
+```
 
 Ubuntu User :
 You need to install libcups2-dev package
