@@ -29,6 +29,10 @@ MY_NODE_MODULE_CALLBACK(PrintDirect);
  */
 MY_NODE_MODULE_CALLBACK(PrintFile);
 
+MY_NODE_MODULE_CALLBACK(preparePrintStream);
+MY_NODE_MODULE_CALLBACK(writeStreamChunk);
+MY_NODE_MODULE_CALLBACK(finishPrintStream);
+
 /** Retrieve all printers and jobs
  * posix: minimum version: CUPS 1.1.21/OS X 10.4
  */

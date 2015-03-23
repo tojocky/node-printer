@@ -526,3 +526,96 @@ MY_NODE_MODULE_CALLBACK(PrintFile)
         MY_NODE_MODULE_RETURN_VALUE(V8_VALUE_NEW(Number, job_id));
     }
 }
+
+MY_NODE_MODULE_CALLBACK(preparePrintStream)
+{
+    MY_NODE_MODULE_HANDLESCOPE;
+    REQUIRE_ARGUMENTS(iArgs, 4);
+
+    // can be string or buffer
+    if(iArgs.Length() <= 0)
+    {
+        RETURN_EXCEPTION_STR("Argument 0 missing");
+    }
+
+    REQUIRE_ARGUMENT_STRING(iArgs, 0, printername);
+    REQUIRE_ARGUMENT_STRING(iArgs, 1, docname);
+    REQUIRE_ARGUMENT_STRING(iArgs, 2, type);
+    REQUIRE_ARGUMENT_OBJECT(iArgs, 3, print_options);
+
+    std::string type_str(*type);
+    FormatMapType::const_iterator itFormat = getPrinterFormatMap().find(type_str);
+    if(itFormat == getPrinterFormatMap().end())
+    {
+        RETURN_EXCEPTION_STR("unsupported format type");
+    }
+    type_str = itFormat->second;
+
+    CupsOptions options(print_options);
+
+    int job_id = cupsCreateJob(CUPS_HTTP_DEFAULT, *printername, *docname, options.getNumOptions(), options.get());
+    if(job_id == 0) {
+        RETURN_EXCEPTION_STR(cupsLastErrorString());
+    }
+
+    if(HTTP_CONTINUE != cupsStartDocument(CUPS_HTTP_DEFAULT, *printername, job_id, *docname, type_str.c_str(), 1 /*last document*/)) {
+        RETURN_EXCEPTION_STR(cupsLastErrorString());
+    }
+
+    MY_NODE_MODULE_RETURN_VALUE(V8_VALUE_NEW(Number, job_id));
+}
+
+MY_NODE_MODULE_CALLBACK(writeStreamChunk)
+{
+	MY_NODE_MODULE_HANDLESCOPE;
+    REQUIRE_ARGUMENTS(iArgs, 2);
+    if(iArgs.Length() <= 0)
+    {
+        RETURN_EXCEPTION_STR("Argument 0 missing");
+    }
+
+    // arg0 can be string or buffer
+    std::string data;
+    v8::Handle<v8::Value> arg0(iArgs[0]);
+    if(arg0->IsString())
+    {
+        v8::String::Utf8Value data_str_v8(arg0->ToString());
+        data.assign(*data_str_v8, data_str_v8.length());
+    }
+    else if(arg0->IsObject() && arg0.As<v8::Object>()->HasIndexedPropertiesInExternalArrayData())
+    {
+        data.assign(static_cast<char*>(arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayData()),
+                    arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayDataLength());
+    }
+    else
+    {
+        RETURN_EXCEPTION_STR("Argument 0 must be a string or Buffer");
+    }
+
+    // arg1 must be printer name in a string
+    REQUIRE_ARGUMENT_STRING(iArgs, 1, printername);
+
+    // write data to printer
+    if (HTTP_CONTINUE != cupsWriteRequestData(CUPS_HTTP_DEFAULT, data.c_str(), data.size())) {
+        cupsFinishDocument(CUPS_HTTP_DEFAULT, *printername);
+        RETURN_EXCEPTION_STR(cupsLastErrorString());
+    }
+
+    MY_NODE_MODULE_RETURN_VALUE(V8_VALUE_NEW(Number, HTTP_CONTINUE));
+}
+
+MY_NODE_MODULE_CALLBACK(finishPrintStream)
+{
+	MY_NODE_MODULE_HANDLESCOPE;
+    REQUIRE_ARGUMENTS(iArgs, 1);
+    if(iArgs.Length() <= 0)
+    {
+        RETURN_EXCEPTION_STR("Argument 0 missing");
+    }
+
+    REQUIRE_ARGUMENT_STRING(iArgs, 0, printername);
+
+    ipp_status_t finish_status = cupsFinishDocument(CUPS_HTTP_DEFAULT, *printername);
+
+    MY_NODE_MODULE_RETURN_VALUE(V8_VALUE_NEW(Number, finish_status));
+}
