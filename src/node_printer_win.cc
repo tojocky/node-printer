@@ -471,15 +471,16 @@ MY_NODE_MODULE_CALLBACK(getPrinters)
 MY_NODE_MODULE_CALLBACK(getDefaultPrinterName)
 {
     MY_NODE_MODULE_HANDLESCOPE;
-    DWORD bSize = 0;
-    GetDefaultPrinterW(NULL, &bSize);
+    // size in chars of the printer name: https://msdn.microsoft.com/en-us/library/windows/desktop/dd144876(v=vs.85).aspx
+    DWORD cSize = 0;
+    GetDefaultPrinterW(NULL, &cSize);
 
-    if(bSize == 0) {
+    if(cSize == 0) {
         MY_NODE_MODULE_RETURN_VALUE(V8_STRING_NEW_UTF8(""));
     }
 
-    MemValue<uint16_t> bPrinterName(bSize);
-    BOOL res = GetDefaultPrinterW((LPWSTR)(bPrinterName.get()), &bSize);
+    MemValue<uint16_t> bPrinterName(cSize*sizeof(uint16_t));
+    BOOL res = GetDefaultPrinterW((LPWSTR)(bPrinterName.get()), &cSize);
 
     if(!res) {
         MY_NODE_MODULE_RETURN_VALUE(V8_STRING_NEW_UTF8(""));
