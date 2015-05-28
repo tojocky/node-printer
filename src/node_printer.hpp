@@ -89,6 +89,7 @@ MY_NODE_MODULE_CALLBACK(getSupportedJobCommands);
 // util class
 
 /** Memory value class management to avoid memory leak
+ * TODO: move to std::unique_ptr on switching to C++11
 */
 template<typename Type>
 class MemValueBase
