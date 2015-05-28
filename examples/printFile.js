@@ -4,12 +4,13 @@ var printer = require("../lib"),
 
 console.log('try to print file: ' + filename);
 
-printer.printFile({filename:filename
-	, printer:'HP_LaserJet_Pro_MFP_M125nw' // printer name, if missing then will print to default printer
-    , printer: process.env[3],
-	, success:function(jobID){
+printer.printFile({filename:filename,
+  printer: process.env[3], // printer name, if missing then will print to default printer
+	success:function(jobID){
 		console.log("sent to printer with ID: "+jobID);
-	}
-	, error:function(err){console.log(err);}
+	},
+	error:function(err){
+    console.log(err);
+  }
 });
 
