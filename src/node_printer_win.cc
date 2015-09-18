@@ -13,6 +13,7 @@
 #include <map>
 #include <utility>
 #include <sstream>
+#include <node_version.h>
 
 namespace{
     typedef std::map<std::string, DWORD> StatusMapType;
@@ -680,10 +681,18 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
         v8::String::Utf8Value data_str_v8(arg0->ToString());
         data.assign(*data_str_v8, data_str_v8.length());
     }
-    else if(arg0->IsObject() && arg0.As<v8::Object>()->HasIndexedPropertiesInExternalArrayData())
+    else if(arg0->IsObject())
     {
-        data.assign(static_cast<char*>(arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayData()),
-                    arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayDataLength());
+        #if NODE_VERSION_AT_LEAST(4,0,0)
+            v8::ArrayBuffer::Contents data_contents = arg0.As<v8::ArrayBuffer>()->GetContents();
+            data.assign(static_cast<char*>(data_contents.Data()),
+                        data_contents.ByteLength());
+        #else
+            if(arg0.As<v8::Object>()->HasIndexedPropertiesInExternalArrayData()){
+                data.assign(static_cast<char*>(arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayData()),
+-                    arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayDataLength());
+            }
+        #endif
     }
     else
     {
