@@ -681,19 +681,19 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
         v8::String::Utf8Value data_str_v8(arg0->ToString());
         data.assign(*data_str_v8, data_str_v8.length());
     }
+    #if NODE_VERSION_AT_LEAST(4,0,0)
     else if(arg0->IsObject())
     {
-        #if NODE_VERSION_AT_LEAST(4,0,0)
-            v8::ArrayBuffer::Contents data_contents = arg0.As<v8::ArrayBuffer>()->GetContents();
-            data.assign(static_cast<char*>(data_contents.Data()),
+        v8::ArrayBuffer::Contents data_contents = arg0.As<v8::ArrayBuffer>()->GetContents();
+        data.assign(static_cast<char*>(data_contents.Data()),
                         data_contents.ByteLength());
-        #else
-            if(arg0.As<v8::Object>()->HasIndexedPropertiesInExternalArrayData()){
-                data.assign(static_cast<char*>(arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayData()),
+    }     
+    #else
+    else if(arg0->IsObject() && arg0.As<v8::Object>()->HasIndexedPropertiesInExternalArrayData()){
+        data.assign(static_cast<char*>(arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayData()),
 -                    arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayDataLength());
-            }
-        #endif
     }
+    #endif
     else
     {
         RETURN_EXCEPTION_STR("Argument 0 must be a string or NativeBuffer");
