@@ -462,13 +462,13 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
     else if(arg0->IsObject())
     {
         v8::ArrayBuffer::Contents data_contents = arg0.As<v8::ArrayBuffer>()->GetContents();
-        data.assign(static_cast<char*>(data_contents.Data()),
-                        data_contents.ByteLength());
+        data.assign(static_cast<char*>(data_contents.Data()), data_contents.ByteLength());
     }     
     #else
-    else if(arg0->IsObject() && arg0.As<v8::Object>()->HasIndexedPropertiesInExternalArrayData()){
-        data.assign(static_cast<char*>(arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayData()),
--                    arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayDataLength());
+    else if(arg0->IsObject() && arg0.As<v8::Object>()->HasIndexedPropertiesInExternalArrayData())
+    {
+        data.assign(static_cast<char*>(arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayData()), 
+            arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayDataLength());
     }
     #endif
     else
