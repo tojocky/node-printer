@@ -310,6 +310,7 @@ MY_NODE_MODULE_CALLBACK(getDefaultPrinterName)
         MY_NODE_MODULE_RETURN_VALUE(V8_STRING_NEW_UTF8(printerName));
     }
     */
+    MY_NODE_MODULE_RETURN_UNDEFINED();
 }
 
 MY_NODE_MODULE_CALLBACK(getPrinter)
@@ -452,26 +453,7 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
 
     std::string data;
     v8::Handle<v8::Value> arg0(iArgs[0]);
-
-    if(arg0->IsString())
-    {
-        v8::String::Utf8Value data_str_v8(arg0->ToString());
-        data.assign(*data_str_v8, data_str_v8.length());
-    }
-    #if NODE_VERSION_AT_LEAST(4,0,0)
-    else if(arg0->IsObject())
-    {
-        v8::ArrayBuffer::Contents data_contents = arg0.As<v8::ArrayBuffer>()->GetContents();
-        data.assign(static_cast<char*>(data_contents.Data()), data_contents.ByteLength());
-    }     
-    #else
-    else if(arg0->IsObject() && arg0.As<v8::Object>()->HasIndexedPropertiesInExternalArrayData())
-    {
-        data.assign(static_cast<char*>(arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayData()), 
-            arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayDataLength());
-    }
-    #endif
-    else
+    if (!getStringOrBufferFromV8Value(arg0, data))
     {
         RETURN_EXCEPTION_STR("Argument 0 must be a string or Buffer");
     }
