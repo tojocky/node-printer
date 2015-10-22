@@ -1,5 +1,6 @@
 env:
   matrix:
+    - export NODE_VERSION="4.2"
     - export NODE_VERSION="4.1"
     - export NODE_VERSION="0.10"
 matrix:
