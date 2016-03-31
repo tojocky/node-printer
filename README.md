@@ -51,10 +51,12 @@ I was involved in a project where I need to print from Node.JS. This is the reas
 
 
 ### How to install:
+Make sure you have Python 2.x installed on your system. Windows users will also require Visual Studio (2013 Express is a good fit)
 
 from [npmjs.org](https://www.npmjs.org/package/printer)
 
-    npm install printer
+    npm install -g node-gyp
+    npm install printer --msvs_version=2013
 
 or [direct from git](https://www.npmjs.org/doc/cli/npm-install.html):
 
