@@ -1,3 +1,11 @@
+2015.10.22, version 0.2.1
+* corrected printDirect with buffer data for node v4.X (#95)
+* corrected segmentation fault from get default printer for node v0.10.X
+
+2015.09, version 0.2.0
+* added possibility to compile with node v4.X
+* various bug/core dumps fix
+
 2015.04, version 0.1.2
 * posix: new method getPrinterDriverOptions(printerName) to retrieve PPD options
 * posix: new method getSelectedPaperSize(printerName) to retrieve the current paper size name

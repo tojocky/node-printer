@@ -24,6 +24,7 @@
 #  define RETURN_EXCEPTION_STR(msg) RETURN_EXCEPTION(V8_STRING_NEW_UTF8(msg))
 #  define MY_NODE_MODULE_RETURN_VALUE(value)   iArgs.GetReturnValue().Set(value);   \
     return
+#  define MY_NODE_MODULE_RETURN_UNDEFINED()   return
 #else
 #  define MY_NODE_MODULE_ISOLATE_DECL
 #  define MY_NODE_MODULE_ISOLATE
@@ -40,6 +41,7 @@
 
 #  define RETURN_EXCEPTION_STR(msg) RETURN_EXCEPTION(V8_STRING_NEW_UTF8(msg))
 #  define MY_NODE_MODULE_RETURN_VALUE(value)   return scope.Close(value)
+#  define MY_NODE_MODULE_RETURN_UNDEFINED()   return scope.Close(v8::Undefined())
 #endif
 
 #if NODE_VERSION_AT_LEAST(0, 11, 10) // for node-webkit v.0.9.2 which uses node v0.11.9

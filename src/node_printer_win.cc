@@ -13,6 +13,7 @@
 #include <map>
 #include <utility>
 #include <sstream>
+#include <node_version.h>
 
 namespace{
     typedef std::map<std::string, DWORD> StatusMapType;
@@ -154,6 +155,7 @@ namespace{
         ATTRIBUTE_PRINTER_ADD("QUEUED", PRINTER_ATTRIBUTE_QUEUED);
         ATTRIBUTE_PRINTER_ADD("RAW-ONLY", PRINTER_ATTRIBUTE_RAW_ONLY);
         ATTRIBUTE_PRINTER_ADD("SHARED", PRINTER_ATTRIBUTE_SHARED);
+        ATTRIBUTE_PRINTER_ADD("OFFLINE", PRINTER_ATTRIBUTE_WORK_OFFLINE);
         // XP
 #ifdef PRINTER_ATTRIBUTE_FAX
         ATTRIBUTE_PRINTER_ADD("FAX", PRINTER_ATTRIBUTE_FAX);
@@ -471,15 +473,16 @@ MY_NODE_MODULE_CALLBACK(getPrinters)
 MY_NODE_MODULE_CALLBACK(getDefaultPrinterName)
 {
     MY_NODE_MODULE_HANDLESCOPE;
-    DWORD bSize = 0;
-    GetDefaultPrinterW(NULL, &bSize);
+    // size in chars of the printer name: https://msdn.microsoft.com/en-us/library/windows/desktop/dd144876(v=vs.85).aspx
+    DWORD cSize = 0;
+    GetDefaultPrinterW(NULL, &cSize);
 
-    if(bSize == 0) {
+    if(cSize == 0) {
         MY_NODE_MODULE_RETURN_VALUE(V8_STRING_NEW_UTF8(""));
     }
 
-    MemValue<uint16_t> bPrinterName(bSize);
-    BOOL res = GetDefaultPrinterW((LPWSTR)(bPrinterName.get()), &bSize);
+    MemValue<uint16_t> bPrinterName(cSize*sizeof(uint16_t));
+    BOOL res = GetDefaultPrinterW((LPWSTR)(bPrinterName.get()), &cSize);
 
     if(!res) {
         MY_NODE_MODULE_RETURN_VALUE(V8_STRING_NEW_UTF8(""));
@@ -673,20 +676,9 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
 
     std::string data;
     v8::Handle<v8::Value> arg0(iArgs[0]);
-
-    if(arg0->IsString())
+    if (!getStringOrBufferFromV8Value(arg0, data))
     {
-        v8::String::Utf8Value data_str_v8(arg0->ToString());
-        data.assign(*data_str_v8, data_str_v8.length());
-    }
-    else if(arg0->IsObject() && arg0.As<v8::Object>()->HasIndexedPropertiesInExternalArrayData())
-    {
-        data.assign(static_cast<char*>(arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayData()),
-                    arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayDataLength());
-    }
-    else
-    {
-        RETURN_EXCEPTION_STR("Argument 0 must be a string or NativeBuffer");
+        RETURN_EXCEPTION_STR("Argument 0 must be a string or Buffer");
     }
 
     REQUIRE_ARGUMENT_STRINGW(iArgs, 1, printername);

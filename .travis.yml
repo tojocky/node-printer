@@ -1,9 +1,8 @@
 env:
   matrix:
+    - export NODE_VERSION="5.9"
+    - export NODE_VERSION="4.4"
     - export NODE_VERSION="0.10"
-    - export NODE_VERSION="0.11"
-    - export NODE_VERSION="0.12"
-    - export NODE_VERSION="iojs
 matrix:
   fast_finish: true
   allow_failures:

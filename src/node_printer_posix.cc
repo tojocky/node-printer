@@ -4,6 +4,7 @@
 #include <map>
 #include <utility>
 #include <sstream>
+#include <node_version.h>
 
 #include <cups/cups.h>
 #include <cups/ppd.h>
@@ -299,12 +300,17 @@ MY_NODE_MODULE_CALLBACK(getPrinters)
 MY_NODE_MODULE_CALLBACK(getDefaultPrinterName)
 {
     MY_NODE_MODULE_HANDLESCOPE;
-    const char * printerName = cupsGetDefault2(CUPS_HTTP_DEFAULT);
+    //This does not return default user printer name according to https://www.cups.org/documentation.php/doc-2.0/api-cups.html#cupsGetDefault2
+    //so leave as undefined and JS implementation will loop in all printers
+    /*
+    const char * printerName = cupsGetDefault();
 
     // return default printer name only if defined
     if(printerName != NULL) {
         MY_NODE_MODULE_RETURN_VALUE(V8_STRING_NEW_UTF8(printerName));
     }
+    */
+    MY_NODE_MODULE_RETURN_UNDEFINED();
 }
 
 MY_NODE_MODULE_CALLBACK(getPrinter)
@@ -447,18 +453,7 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
 
     std::string data;
     v8::Handle<v8::Value> arg0(iArgs[0]);
-
-    if(arg0->IsString())
-    {
-        v8::String::Utf8Value data_str_v8(arg0->ToString());
-        data.assign(*data_str_v8, data_str_v8.length());
-    }
-    else if(arg0->IsObject() && arg0.As<v8::Object>()->HasIndexedPropertiesInExternalArrayData())
-    {
-        data.assign(static_cast<char*>(arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayData()),
-                    arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayDataLength());
-    }
-    else
+    if (!getStringOrBufferFromV8Value(arg0, data))
     {
         RETURN_EXCEPTION_STR("Argument 0 must be a string or Buffer");
     }

@@ -42,7 +42,7 @@ I was involved in a project where I need to print from Node.JS. This is the reas
 * `getPrinterDriverOptions(printerName)` ([POSIX](http://en.wikipedia.org/wiki/POSIX) only) to get a specific/default printer driver options such as supported paper size and other info
 * `getSelectedPaperSize(printerName)` ([POSIX](http://en.wikipedia.org/wiki/POSIX) only) to get a specific/default printer default paper size from its driver options
 * `getDefaultPrinterName()` return the default printer name;
-* `printDirect(options)` to send a job to a specific/default printer, now supports [CUPS options](http://www.cups.org/documentation.php/options.html) passed in the form of a JS object (see `cancelJob.js` example);
+* `printDirect(options)` to send a job to a specific/default printer, now supports [CUPS options](http://www.cups.org/documentation.php/options.html) passed in the form of a JS object (see `cancelJob.js` example). To print a PDF from windows it is possible by using [node-pdfium module](https://github.com/tojocky/node-pdfium) to convert a PDF format into EMF and after to send to printer as EMF;
 * `printFile(options)`  ([POSIX](http://en.wikipedia.org/wiki/POSIX) only) to print a file;
 * `getSupportedPrintFormats()` to get all possible print formats for printDirect method which depends on OS. `RAW` and `TEXT` are supported from all OS-es;
 * `getJob(printerName, jobId)` to get a specific job info including job status;
@@ -51,10 +51,12 @@ I was involved in a project where I need to print from Node.JS. This is the reas
 
 
 ### How to install:
+Make sure you have Python 2.x installed on your system. Windows users will also require Visual Studio (2013 Express is a good fit)
 
 from [npmjs.org](https://www.npmjs.org/package/printer)
 
-    npm install printer
+    npm install -g node-gyp
+    npm install printer --msvs_version=2013
 
 or [direct from git](https://www.npmjs.org/doc/cli/npm-install.html):
 
@@ -64,6 +66,10 @@ if you want to to run in [nwjs](http://nwjs.io/) then rebuild the module with [n
 npm install -g nw-gyp
 cd node_module/printer
 nw-gyp rebuild
+```
+For specific distribution `--dist-url` node-gyp parameter should be used. Example for electron:
+```
+node-gyp rebuild --target=0.37.4 --arch=x64 --dist-url=https://atom.io/download/atom-shell
 ```
 
 Ubuntu User :
