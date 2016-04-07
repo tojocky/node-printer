@@ -67,6 +67,10 @@ npm install -g nw-gyp
 cd node_module/printer
 nw-gyp rebuild
 ```
+For specific distribution `--dist-url` node-gyp parameter should be used. Example for electron:
+```
+node-gyp rebuild --target=0.37.4 --arch=x64 --dist-url=https://atom.io/download/atom-shell
+```
 
 Ubuntu User :
 You need to install libcups2-dev package
