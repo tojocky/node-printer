@@ -571,17 +571,7 @@ MY_NODE_MODULE_CALLBACK(writeStreamChunk)
     // arg0 can be string or buffer
     std::string data;
     v8::Handle<v8::Value> arg0(iArgs[0]);
-    if(arg0->IsString())
-    {
-        v8::String::Utf8Value data_str_v8(arg0->ToString());
-        data.assign(*data_str_v8, data_str_v8.length());
-    }
-    else if(arg0->IsObject() && arg0.As<v8::Object>()->HasIndexedPropertiesInExternalArrayData())
-    {
-        data.assign(static_cast<char*>(arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayData()),
-                    arg0.As<v8::Object>()->GetIndexedPropertiesExternalArrayDataLength());
-    }
-    else
+    if (!getStringOrBufferFromV8Value(arg0, data))
     {
         RETURN_EXCEPTION_STR("Argument 0 must be a string or Buffer");
     }
