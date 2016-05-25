@@ -27,6 +27,14 @@
     "node": ">= 0.8.0"
   },
   "scripts": {
+    "preinstall": "npm install node-pre-gyp",
+    "install": "node-pre-gyp install --fallback-to-build"
+  },
+  "binary": {
+    "module_name": "node_printer",
+    "module_path": "./lib/binding/node_printer/",
+    "host": "https://github.com/tojocky/node-printer/releases/download/",
+    "remote_path": "{version}"
   },
   "licenses": [
     {
