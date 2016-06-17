@@ -13,7 +13,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/tojocky/node-printer.git"
+    "url": "git://github.com/vasumahesh1/node-printer.git"
   },
   "devDependencies": {
     "grunt": "^0.4.5",
@@ -27,6 +27,13 @@
     "node": ">= 0.8.0"
   },
   "scripts": {
+    "install": "node-pre-gyp install --fallback-to-build"
+  },
+  "binary": {
+    "module_name": "node_printer",
+    "module_path": "./lib/binding/node_printer/",
+    "host": "https://github.com/vasumahesh1/node-printer/releases/download/",
+    "remote_path": "{version}"
   },
   "licenses": [
     {
