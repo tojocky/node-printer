@@ -64,7 +64,7 @@ or [direct from git](https://www.npmjs.org/doc/cli/npm-install.html):
 if you want to to run in [nwjs](http://nwjs.io/) then rebuild the module with [nw-gyp](https://github.com/nwjs/nw-gyp):
 ```
 npm install -g nw-gyp
-cd node_module/printer
+cd node_modules/printer
 nw-gyp rebuild
 ```
 For specific distribution `--dist-url` node-gyp parameter should be used. Example for electron:
