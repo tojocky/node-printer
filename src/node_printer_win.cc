@@ -29,6 +29,10 @@ namespace{
         MemValue(const DWORD iSizeKbytes) {
             _value = (Type*)malloc(iSizeKbytes);
         }
+		
+        ~MemValue () {
+            free();
+        }
     protected:
         virtual void free() {
             if(_value != NULL)
@@ -47,7 +51,7 @@ namespace{
         }
         ~PrinterHandle()
         {
-            if(!_ok)
+            if(_ok)
             {
                 ClosePrinter(_printer);
             }
