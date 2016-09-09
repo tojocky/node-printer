@@ -101,9 +101,7 @@ public:
 
     /** Destructor. The allocated memory will be deallocated
     */
-    ~MemValueBase() {
-        free();
-    }
+    ~MemValueBase() {}
 
     Type * get() {return _value; }
     Type * operator ->() { return &_value; }
