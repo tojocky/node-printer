@@ -250,6 +250,7 @@ namespace
         }
     public:
         CupsOptions(): num_options(0) {}
+        ~CupsOptions () { free(); }
 
         /// Add options from v8 object
         CupsOptions(v8::Local<v8::Object> iV8Options): num_options(0) {
