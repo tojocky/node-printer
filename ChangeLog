@@ -1,3 +1,6 @@
+2016.09.10, version 0.2.2
+* correct memory leak (thanks to @kjlaw89)
+
 2015.10.22, version 0.2.1
 * corrected printDirect with buffer data for node v4.X (#95)
 * corrected segmentation fault from get default printer for node v0.10.X
