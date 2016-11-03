@@ -1,5 +1,6 @@
 env:
   matrix:
+    - export NODE_VERSION="6.9"
     - export NODE_VERSION="5.9"
     - export NODE_VERSION="4.4"
     - export NODE_VERSION="0.10"
@@ -11,7 +12,7 @@ matrix:
 before_install:
   - git clone https://github.com/creationix/nvm.git ./.nvm
   - source ./.nvm/nvm.sh
-  - nvm install $NODE_VERSION
+  - nvm install $NODE_VERSION 64
   - echo $NODE_VERSION
   - nvm use $NODE_VERSION
   - if [ $TRAVIS_OS_NAME == "linux" ]; then
@@ -22,15 +23,32 @@ before_install:
       sudo apt-get install -qq debhelper autotools-dev cups-ppdc libcups2-dev cups imagemagick ghostscript;
     fi
   - "export JOBS=4"
+  - npm install -g node-gyp node-pre-gyp
   - BUILD_ONLY=true npm install
 before_script:
   - git config --global user.name "Ion Lupascu"
   - git config --global user.email ionlupascu@gmail.com
+
+after_script:
+  - node-pre-gyp configure
+  - node-pre-gyp build package
+
+  - node-pre-gyp configure
+  - node-pre-gyp build package --target_arch=ia32
+
+# Need S3 Upload for Artifacts
+# addons:
+#   artifacts:
+#     debug: true
+#     paths:
+#     - ./build/stage/**/*.tar.gz
+
 git:
   depth: 1
 branches:
   only:
     - master
+
 os:
   - linux
   - osx
