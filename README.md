@@ -55,8 +55,24 @@ Make sure you have Python 2.x installed on your system. Windows users will also 
 
 from [npmjs.org](https://www.npmjs.org/package/printer)
 
-    npm install -g node-gyp
-    npm install printer --msvs_version=2013
+#### Prebuilt node builds
+```
+npm install node-printer --target_arch=ia32
+npm install node-printer --target_arch=x64
+```
+
+#### Prebuilt electron builds
+Say you are installing 1.4.5 electron. Please check the [Releases](https://github.com/tojocky/node-printer/releases) for supported Electron versions
+```
+npm install node-printer --runtime=electron --target=1.4.5 --target_arch=x64
+npm install node-printer --runtime=electron --target=1.4.5 --target_arch=ia32
+```
+
+#### For building after install
+```
+npm install -g node-gyp
+npm install printer --msvs_version=2013  --build-from-source=node_printer
+```
 
 or [direct from git](https://www.npmjs.org/doc/cli/npm-install.html):
 
