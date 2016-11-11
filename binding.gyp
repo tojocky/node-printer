@@ -1,4 +1,8 @@
 {
+  'variables': {
+    'module_name%': 'node_printer',
+    'module_path%': './lib/'
+  },
   'targets': [
     {
       "target_name": "action_after_build",
