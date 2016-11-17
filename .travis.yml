@@ -23,8 +23,8 @@ before_install:
       sudo apt-get install -qq debhelper autotools-dev cups-ppdc libcups2-dev cups imagemagick ghostscript;
     fi
   - "export JOBS=4"
-  - npm install -g node-gyp node-pre-gyp
-  - BUILD_ONLY=true npm install
+  - npm install -g node-gyp
+  - BUILD_ONLY=true npm install --build-from-source
 before_script:
   - git config --global user.name "Ion Lupascu"
   - git config --global user.email ionlupascu@gmail.com

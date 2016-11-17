@@ -38,13 +38,13 @@ install:
   - cmd: SET PATH=c:\python27;%PATH%
   - cmd: SET JOBS=4
   - cmd: SET BUILD_ONLY=true
-  - cmd: npm install -g node-gyp node-pre-gyp
-  - npm install --msvs_version=2013
+  - cmd: npm install -g node-gyp
+  - npm install --build-from-source --msvs_version=2013
 
 test_script:
   - node --version
   - npm --version
-  - cmd: npm test
+  - npm test
 
 after_test:
   - node-gyp clean
