@@ -35,6 +35,7 @@ after_script:
 
   - node-pre-gyp configure
   - node-pre-gyp build package --target_arch=ia32
+  - npm test
 
 # Need S3 Upload for Artifacts
 # addons:

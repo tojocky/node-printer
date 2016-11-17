@@ -44,7 +44,7 @@ install:
 test_script:
   - node --version
   - npm --version
-#  - cmd: npm test
+  - cmd: npm test
 
 after_test:
   - node-gyp clean

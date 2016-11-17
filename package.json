@@ -27,7 +27,9 @@
     "node": ">= 0.8.0"
   },
   "scripts": {
-    "install": "node-pre-gyp install --fallback-to-build"
+    "preinstall": "npm install node-pre-gyp",
+    "install": "node-pre-gyp install --fallback-to-build",
+    "test": "nodeunit test"
   },
   "binary": {
     "module_name": "node_printer",
