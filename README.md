@@ -57,15 +57,15 @@ from [npmjs.org](https://www.npmjs.org/package/printer)
 
 #### Prebuilt node builds
 ```
-npm install node-printer --target_arch=ia32
-npm install node-printer --target_arch=x64
+npm install printer --target_arch=ia32
+npm install printer --target_arch=x64
 ```
 
 #### Prebuilt electron builds
 Say you are installing 1.4.5 electron. Please check the [Releases](https://github.com/tojocky/node-printer/releases) for supported Electron versions
 ```
-npm install node-printer --runtime=electron --target=1.4.5 --target_arch=x64
-npm install node-printer --runtime=electron --target=1.4.5 --target_arch=ia32
+npm install printer --runtime=electron --target=1.4.5 --target_arch=x64
+npm install printer --runtime=electron --target=1.4.5 --target_arch=ia32
 ```
 
 #### For building after install
