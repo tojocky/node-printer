@@ -97,6 +97,8 @@ You need to install libcups2-dev package
 
 See [examples](https://github.com/tojocky/node-printer/tree/master/examples)
 
+Please, remember to `require("printer/lib")` to make it work on your installation
+
 ### Author(s):
 
 * Ion Lupascu, ionlupascu@gmail.com
