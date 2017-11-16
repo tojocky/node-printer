@@ -113,9 +113,14 @@ namespace
 
         //Specific fields
         // Ecmascript store time in milliseconds, but time_t in seconds
-        result_printer_job->Set(V8_STRING_NEW_UTF8("completedTime"), V8_VALUE_NEW(Date, job->completed_time*1000));
-        result_printer_job->Set(V8_STRING_NEW_UTF8("creationTime"), V8_VALUE_NEW(Date, job->creation_time*1000));
-        result_printer_job->Set(V8_STRING_NEW_UTF8("processingTime"), V8_VALUE_NEW(Date, job->processing_time*1000));
+
+        double creationTime = ((double)job->creation_time) * 1000;
+        double completedTime = ((double)job->completed_time) * 1000;
+        double processingTime = ((double)job->processing_time) * 1000;
+
+        result_printer_job->Set(V8_STRING_NEW_UTF8("completedTime"), V8_VALUE_NEW(Date, completedTime));
+        result_printer_job->Set(V8_STRING_NEW_UTF8("creationTime"), V8_VALUE_NEW(Date, creationTime));
+        result_printer_job->Set(V8_STRING_NEW_UTF8("processingTime"), V8_VALUE_NEW(Date, processingTime));
 
         // No error. return an empty string
         return "";
