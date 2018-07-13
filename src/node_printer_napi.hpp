@@ -15,6 +15,18 @@
  */
 Napi::Value getDefaultPrinterName(const Napi::CallbackInfo &info);
 
+/**
+ * Send data to printer
+ *
+ * @param data String/NativeBuffer, mandatory, raw data bytes
+ * @param printername String, mandatory, specifying printer name
+ * @param docname String, mandatory, specifying document name
+ * @param type String, mandatory, specifying data type. E.G.: RAW, TEXT, ...
+ *
+ * @returns true for success, false for failure.
+ */
+Napi::Number PrintDirect(const Napi::CallbackInfo &info);
+
 // //TODO:
 // // optional ability to get printer spool
 
@@ -49,6 +61,6 @@ protected:
  * @param oData - destination data
  * @return TRUE if value is String or Buffer, FALSE otherwise
  */
-bool getStringOrBufferFromV8Value(v8::Handle<v8::Value> iV8Value, std::string &oData);
+bool getStringOrBufferFromNapiValue(Napi::Value iValue, std::string &oData);
 
 #endif

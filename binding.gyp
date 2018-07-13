@@ -18,7 +18,7 @@
     {
       'target_name': 'node_printer',
       'sources': [
-        # sources
+        # sources napi
         "src/node_printer_posix_napi.cc",
         "src/node_printer_win_napi.cc",
         "src/node_printer_napi.cc"

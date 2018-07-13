@@ -1,5 +1,5 @@
 #include "node_printer_napi.hpp"
-
+#include <iostream>
 #include <node_buffer.h>
 
 Napi::Object Init(Napi::Env env, Napi::Object exports)
@@ -7,23 +7,30 @@ Napi::Object Init(Napi::Env env, Napi::Object exports)
     exports.Set(
         Napi::String::New(env, "getDefaultPrinterName"),
         Napi::Function::New(env, getDefaultPrinterName));
+    exports.Set(
+        Napi::String::New(env, "printDirect"),
+        Napi::Function::New(env, PrintDirect));
     return exports;
 }
 NODE_API_MODULE(node_printer, Init)
 
 // Helpers
 
-bool getStringOrBufferFromV8Value(v8::Handle<v8::Value> iV8Value, std::string &oData)
+bool getStringOrBufferFromNapiValue(Napi::Value iValue, std::string &oData)
 {
-    if (iV8Value->IsString())
+    if (iValue.IsString())
     {
-        v8::String::Utf8Value data_str_v8(iV8Value->ToString());
-        oData.assign(*data_str_v8, data_str_v8.length());
+        // Napi::String::Utf8Value data_str(iValue.ToString());
+        oData.assign(iValue.ToString().Utf8Value());
+        std::cout << "string" << std::endl;
+        std::cout << oData << std::endl;
         return true;
     }
-    if (iV8Value->IsObject() && node::Buffer::HasInstance(iV8Value))
+    if (iValue.IsObject() && iValue.IsBuffer())
     {
-        oData.assign(node::Buffer::Data(iV8Value), node::Buffer::Length(iV8Value));
+        oData.assign(iValue.As<Napi::Buffer<char>>().Data(), iValue.As<Napi::Buffer<char>>().Length());
+        std::cout << "Buffer" << std::endl;
+        std::cout << oData << std::endl;
         return true;
     }
     return false;
