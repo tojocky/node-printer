@@ -18,18 +18,24 @@
     {
       'target_name': 'node_printer',
       'sources': [
-        # is like "ls -1 src/*.cc", but gyp does not support direct patterns on
         # sources
-        '<!@(["python", "tools/getSourceFiles.py", "src", "cc"])'
+        "src/node_printer_posix_napi.cc",
+        "src/node_printer_win_napi.cc",
+        "src/node_printer_napi.cc"
+
       ],
+     "include_dirs" : [
+        "<!@(node -p \"require('node-addon-api').include\")"
+      ],
+      "defines": [ "NAPI_CPP_EXCEPTIONS" ],
       'conditions': [
         # common exclusions
         ['OS!="linux"', {'sources/': [['exclude', '_linux\\.cc$']]}],
         ['OS!="mac"', {'sources/': [['exclude', '_mac\\.cc|mm?$']]}],
         ['OS!="win"', {
-          'sources/': [['exclude', '_win\\.cc$']]}, {
+          'sources/': [['exclude', '_win_napi\\.cc$']]}, {
           # else if OS==win, exclude also posix files
-          'sources/': [['exclude', '_posix\\.cc$']]
+          'sources/': [['exclude', '_posix_napi\\.cc$']]
         }],
         # specific settings
         ['OS!="win"', {
