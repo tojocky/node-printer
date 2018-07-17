@@ -8,6 +8,9 @@ Napi::Object Init(Napi::Env env, Napi::Object exports)
         Napi::String::New(env, "getDefaultPrinterName"),
         Napi::Function::New(env, getDefaultPrinterName));
     exports.Set(
+        Napi::String::New(env, "getPrinters"),
+        Napi::Function::New(env, getPrinters));    
+    exports.Set(
         Napi::String::New(env, "printDirect"),
         Napi::Function::New(env, PrintDirect));
     return exports;

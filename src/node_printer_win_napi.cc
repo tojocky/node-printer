@@ -129,6 +129,11 @@ Napi::Value getDefaultPrinterName(const Napi::CallbackInfo &info)
     return Napi::String::New(info.Env(), (char16_t *)bPrinterName.get());
 }
 
+Napi::Value getPrinters(const Napi::CallbackInfo &info)
+{
+    //Temporary return
+    return Napi::Number::New(info.Env(), 0);
+}
 Napi::Value PrintDirect(const Napi::CallbackInfo &info)
 {
     //TODO: to move in an unique place win and posix input parameters processing

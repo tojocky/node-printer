@@ -17,6 +17,11 @@
     },
     {
       'target_name': 'node_printer',
+      'cflags!': [ '-fno-exceptions' ],
+      'cflags_cc!': [ '-fno-exceptions' ],
+      'xcode_settings': {        
+          'GCC_ENABLE_CPP_EXCEPTIONS': 'YES' 
+          },
       'sources': [
         # sources napi
         "src/node_printer_posix_napi.cc",

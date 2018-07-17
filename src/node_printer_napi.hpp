@@ -15,6 +15,11 @@
  */
 Napi::Value getDefaultPrinterName(const Napi::CallbackInfo &info);
 
+/** Retrieve all printers and jobs
+ * posix: minimum version: CUPS 1.1.21/OS X 10.4
+ */
+Napi::Value getPrinters(const Napi::CallbackInfo &info);
+
 /**
  * Send data to printer
  *

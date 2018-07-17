@@ -73,12 +73,12 @@
     }                                                    \
     v8::Local<v8::External> var = v8::Local<v8::External>::Cast(args[i]);
 
-#define REQUIRE_ARGUMENT_OBJECT(args, i, var)                     \
-    if (args.Length() <= (i) || !args[i]->IsObject())             \
-    {                                                             \
-        RETURN_EXCEPTION_STR("Argument " #i " is not an object"); \
-    }                                                             \
-    v8::Local<v8::Object> var = v8::Local<v8::Object>::Cast(args[i]);
+#define REQUIRE_ARGUMENT_OBJECT(args, i, var)                                 \
+    if (args.Length() <= (i) || !args[i].IsObject())                          \
+    {                                                                         \
+        RETURN_EXCEPTION_STR(args.Env(), "Argument " #i " is not an object"); \
+    }                                                                         \
+    Napi::Object var = args[i].As<Napi::Object>();
 
 #define REQUIRE_ARGUMENT_FUNCTION(i, var)                           \
     if (args.Length() <= (i) || !args[i]->IsFunction())             \
@@ -95,7 +95,7 @@
 
 #define REQUIRE_ARGUMENT_STRING(args, i, var) \
     ARG_CHECK_STRING(args, i);                \
-    char16_t *var(args[i].ToString());
+    std::string var(args[i].ToString());
 
 #define REQUIRE_ARGUMENT_STRINGW(args, i, var, tempo) \
     ARG_CHECK_STRING(args, i);                        \
