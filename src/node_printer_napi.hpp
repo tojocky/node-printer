@@ -25,7 +25,7 @@ Napi::Value getDefaultPrinterName(const Napi::CallbackInfo &info);
  *
  * @returns true for success, false for failure.
  */
-Napi::Number PrintDirect(const Napi::CallbackInfo &info);
+Napi::Value PrintDirect(const Napi::CallbackInfo &info);
 
 // //TODO:
 // // optional ability to get printer spool

@@ -22,15 +22,11 @@ bool getStringOrBufferFromNapiValue(Napi::Value iValue, std::string &oData)
     {
         // Napi::String::Utf8Value data_str(iValue.ToString());
         oData.assign(iValue.ToString().Utf8Value());
-        std::cout << "string" << std::endl;
-        std::cout << oData << std::endl;
         return true;
     }
     if (iValue.IsObject() && iValue.IsBuffer())
     {
         oData.assign(iValue.As<Napi::Buffer<char>>().Data(), iValue.As<Napi::Buffer<char>>().Length());
-        std::cout << "Buffer" << std::endl;
-        std::cout << oData << std::endl;
         return true;
     }
     return false;

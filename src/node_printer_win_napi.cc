@@ -129,7 +129,7 @@ Napi::Value getDefaultPrinterName(const Napi::CallbackInfo &info)
     return Napi::String::New(info.Env(), (char16_t *)bPrinterName.get());
 }
 
-Napi::Number PrintDirect(const Napi::CallbackInfo &info)
+Napi::Value PrintDirect(const Napi::CallbackInfo &info)
 {
     //TODO: to move in an unique place win and posix input parameters processing
     REQUIRE_ARGUMENTS(info, 5, info.Env());
@@ -138,6 +138,7 @@ Napi::Number PrintDirect(const Napi::CallbackInfo &info)
     if (info.Length() <= 0)
     {
         Napi::Error::New(info.Env(), "Argument 0 missing").ThrowAsJavaScriptException();
+        return info.Env().Null();
     }
 
     std::string data;
@@ -145,64 +146,64 @@ Napi::Number PrintDirect(const Napi::CallbackInfo &info)
     if (!getStringOrBufferFromNapiValue(arg0, data))
     {
         Napi::Error::New(info.Env(), "Argument 0 must be a string or Buffer").ThrowAsJavaScriptException();
+        return info.Env().Null();
     }
-
-    REQUIRE_ARGUMENT_STRINGW(info, 1, printername);
-    REQUIRE_ARGUMENT_STRINGW(info, 2, docname);
-    REQUIRE_ARGUMENT_STRINGW(info, 3, type);
+    std::string tempo;
+    REQUIRE_ARGUMENT_STRINGW(info, 1, printername, tempo);
+    REQUIRE_ARGUMENT_STRINGW(info, 2, docname, tempo);
+    REQUIRE_ARGUMENT_STRINGW(info, 3, type, tempo);
     BOOL bStatus = true;
-    //Open a handle to the printer.
-    PrinterHandle printerHandle((LPWSTR)(&printername));
+
+    // Open a handle to the printer.
+
+    PrinterHandle printerHandle((LPWSTR)&printername[0]);
     DOC_INFO_1W DocInfo;
     DWORD dwJob = 0L;
     DWORD dwBytesWritten = 0L;
-
     if (!printerHandle)
     {
         std::string error_str("error on PrinterHandle: ");
         error_str += getLastErrorCodeAndMessage();
         RETURN_EXCEPTION_STR(info.Env(), error_str.c_str());
     }
-
-    // // Fill in the structure with info about this "document."
-    // DocInfo.pDocName = (LPWSTR)(*docname);
-    // DocInfo.pOutputFile = NULL;
-    // DocInfo.pDatatype = (LPWSTR)(*type);
+    // Fill in the structure with info about this "document."
+    DocInfo.pDocName = (LPWSTR)(&docname[0]);
+    DocInfo.pOutputFile = NULL;
+    DocInfo.pDatatype = (LPWSTR)(&type[0]);
 
     // // Inform the spooler the document is beginning.
-    // dwJob = StartDocPrinterW(*printerHandle, 1, (LPBYTE)&DocInfo);
-    // if (dwJob > 0)
-    // {
-    //     // Start a page.
-    //     bStatus = StartPagePrinter(*printerHandle);
-    //     if (bStatus)
-    //     {
-    //         // Send the data to the printer.
-    //         //TODO: check with sizeof(LPTSTR) is the same as sizeof(char)
-    //         bStatus = WritePrinter(*printerHandle, (LPVOID)(data.c_str()), (DWORD)data.size(), &dwBytesWritten);
-    //         EndPagePrinter(*printerHandle);
-    //     }
-    //     else
-    //     {
-    //         std::string error_str("StartPagePrinter error: ");
-    //         error_str += getLastErrorCodeAndMessage();
-    //         RETURN_EXCEPTION_STR(error_str.c_str());
-    //     }
-    //     // Inform the spooler that the document is ending.
-    //     EndDocPrinter(*printerHandle);
-    // }
-    // else
-    // {
-    //     std::string error_str("StartDocPrinterW error: ");
-    //     error_str += getLastErrorCodeAndMessage();
-    //     RETURN_EXCEPTION_STR(error_str.c_str());
-    // }
-    // // Check to see if correct number of bytes were written.
-    // if (dwBytesWritten != data.size())
-    // {
-    //     RETURN_EXCEPTION_STR("not sent all bytes");
-    // }
+    dwJob = StartDocPrinterW(*printerHandle, 1, (LPBYTE)&DocInfo);
+    if (dwJob > 0)
+    {
+        // Start a page.
+        bStatus = StartPagePrinter(*printerHandle);
+        if (bStatus)
+        {
+            // Send the data to the printer.
+            //TODO: check with sizeof(LPTSTR) is the same as sizeof(char)
+            bStatus = WritePrinter(*printerHandle, (LPVOID)(data.c_str()), (DWORD)data.size(), &dwBytesWritten);
+            EndPagePrinter(*printerHandle);
+        }
+        else
+        {
+            std::string error_str("StartPagePrinter error: ");
+            error_str += getLastErrorCodeAndMessage();
+            RETURN_EXCEPTION_STR(info.Env(), error_str.c_str());
+        }
+        // Inform the spooler that the document is ending.
+        EndDocPrinter(*printerHandle);
+    }
+    else
+    {
+        std::string error_str("StartDocPrinterW error: ");
+        error_str += getLastErrorCodeAndMessage();
+        RETURN_EXCEPTION_STR(info.Env(), error_str.c_str());
+    }
+    // Check to see if correct number of bytes were written.
+    if (dwBytesWritten != data.size())
+    {
+        RETURN_EXCEPTION_STR(info.Env(), "not sent all bytes");
+    }
     // MY_NODE_MODULE_RETURN_VALUE(V8_VALUE_NEW(Number, dwJob));
-
-    return Napi::Number::New(info.Env(), 2);
+    return Napi::Number::New(info.Env(), dwJob);
 }

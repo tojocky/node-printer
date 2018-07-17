@@ -18,7 +18,10 @@
 #define V8_STRING_NEW_UTF8(value) v8::String::NewFromUtf8(MY_NODE_MODULE_ISOLATE_PRE value)
 #define V8_STRING_NEW_2BYTES(value) v8::String::NewFromTwoByte(MY_NODE_MODULE_ISOLATE_PRE value)
 
-#define RETURN_EXCEPTION(env, msg) Napi::Error::New(env, msg).ThrowAsJavaScriptException();
+#define RETURN_EXCEPTION(env, msg)                           \
+    Napi::Error::New(env, msg).ThrowAsJavaScriptException(); \
+    return env.Null();
+
 #define RETURN_EXCEPTION_STR(env, msg) RETURN_EXCEPTION(env, msg)
 #define MY_NODE_MODULE_RETURN_VALUE(value) \
     iArgs.GetReturnValue().Set(value);     \
@@ -36,7 +39,9 @@
 #define V8_STRING_NEW_UTF8(value) v8::String::New(MY_NODE_MODULE_ISOLATE_PRE value)
 #define V8_STRING_NEW_2BYTES(value) v8::String::New(MY_NODE_MODULE_ISOLATE_PRE value)
 
-#define RETURN_EXCEPTION(env, msg) Napi::Error::New(env, msg).ThrowAsJavaScriptException();
+#define RETURN_EXCEPTION(env, msg)                           \
+    Napi::Error::New(env, msg).ThrowAsJavaScriptException(); \
+    return env.Null();
 
 #define RETURN_EXCEPTION_STR(env, msg) RETURN_EXCEPTION(env, msg)
 #define MY_NODE_MODULE_RETURN_VALUE(value) return scope.Close(value) #define MY_NODE_MODULE_RETURN_VALUE(value) return scope.Close(value)
@@ -58,6 +63,7 @@
     if (args.Length() < (n))                                                             \
     {                                                                                    \
         Napi::Error::New(env, "Expected " #n " arguments").ThrowAsJavaScriptException(); \
+        return env.Null();                                                               \
     }
 
 #define REQUIRE_ARGUMENT_EXTERNAL(i, var)                \
@@ -89,11 +95,12 @@
 
 #define REQUIRE_ARGUMENT_STRING(args, i, var) \
     ARG_CHECK_STRING(args, i);                \
-    Napi::String var(args.Env(), args[i].ToString()).Utf8Value();
+    char16_t *var(args[i].ToString());
 
-#define REQUIRE_ARGUMENT_STRINGW(args, i, var) \
-    ARG_CHECK_STRING(args, i);                 \
-    Napi::String var(args.Env(), args[i].ToString());
+#define REQUIRE_ARGUMENT_STRINGW(args, i, var, tempo) \
+    ARG_CHECK_STRING(args, i);                        \
+    tempo = args[i].As<Napi::String>().Utf8Value();   \
+    std::wstring var(tempo.begin(), tempo.end());
 
 #define OPTIONAL_ARGUMENT_FUNCTION(i, var)                              \
     v8::Local<v8::Function> var;                                        \
