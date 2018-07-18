@@ -32,7 +32,7 @@ install:
   - cmd: SET JOBS=4
   - cmd: SET BUILD_ONLY=true
   - npm install -g node-gyp node-pre-gyp
-  - npm install --build-from-source --msvs_version=2013
+  - npm install --build-from-source --msvs_version=2015
 
 test_script:
   - node --version
