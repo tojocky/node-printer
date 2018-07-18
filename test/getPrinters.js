@@ -29,4 +29,15 @@ exports.testGetSupportedJobCommands = function(test) {
   test.done();
 };
 
+exports.testGetPrinter = function(test) {
+  printer = require("../");
+  test.equal(
+    assert(
+      typeof printer.getPrinter() === "undefined" ||
+        typeof printer.getPrinter() === "object"
+    )
+  );
+  test.done();
+};
+
 // TODO: add more tests

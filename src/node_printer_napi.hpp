@@ -47,6 +47,16 @@ Napi::Value PrintDirect(const Napi::CallbackInfo &info);
  */
 Napi::Value getSupportedJobCommands(const Napi::CallbackInfo &info);
 
+/** Retrieve printer info and jobs
+ * @param printer name String
+ */
+Napi::Value getPrinter(const Napi::CallbackInfo &info);
+
+/** Retrieve printer driver info
+ * @param printer name String
+ */
+Napi::Value getPrinterDriverOptions(const Napi::CallbackInfo &info);
+
 // //TODO:
 // // optional ability to get printer spool
 

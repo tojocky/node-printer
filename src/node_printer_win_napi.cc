@@ -599,3 +599,46 @@ Napi::Value getSupportedJobCommands(const Napi::CallbackInfo &info)
     }
     return result;
 }
+
+Napi::Value getPrinter(const Napi::CallbackInfo &info)
+{
+    REQUIRE_ARGUMENTS(info, 1, info.Env());
+    std::string tempo;
+    REQUIRE_ARGUMENT_STRINGW(info, 0, printername, tempo);
+
+    // Open a handle to the printer.
+    PrinterHandle printerHandle((LPWSTR)(&printername[0]));
+    if (!printerHandle)
+    {
+        std::string error_str("error on PrinterHandle: ");
+        error_str += getLastErrorCodeAndMessage();
+        RETURN_EXCEPTION_STR(info.Env(), error_str.c_str());
+    }
+    DWORD printers_size_bytes = 0, dummyBytes = 0;
+    GetPrinterW(*printerHandle, 2, NULL, printers_size_bytes, &printers_size_bytes);
+    MemValue<PRINTER_INFO_2W> printer(printers_size_bytes);
+    if (!printer)
+    {
+        RETURN_EXCEPTION_STR(info.Env(), "Error on allocating memory for printers");
+    }
+    BOOL bOK = GetPrinterW(*printerHandle, 2, (LPBYTE)(printer.get()), printers_size_bytes, &printers_size_bytes);
+    if (!bOK)
+    {
+        std::string error_str("Error on GetPrinter: ");
+        error_str += getLastErrorCodeAndMessage();
+        RETURN_EXCEPTION_STR(info.Env(), error_str.c_str());
+    }
+    Napi::Object result_printer = Napi::Object::New(info.Env());
+    std::string error_str = parsePrinterInfo(printer.get(), result_printer, printerHandle, info.Env());
+    if (!error_str.empty())
+    {
+        RETURN_EXCEPTION_STR(info.Env(), error_str.c_str());
+    }
+
+    return result_printer;
+}
+
+Napi::Value getPrinterDriverOptions(const Napi::CallbackInfo &info)
+{
+    RETURN_EXCEPTION_STR(info.Env(), "not supported on windows");
+}

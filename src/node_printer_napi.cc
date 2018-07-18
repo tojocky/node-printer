@@ -19,6 +19,12 @@ Napi::Object Init(Napi::Env env, Napi::Object exports)
     exports.Set(
         Napi::String::New(env, "printFile"),
         Napi::Function::New(env, PrintFile));
+    exports.Set(
+        Napi::String::New(env, "getPrinter"),
+        Napi::Function::New(env, getPrinter));
+    exports.Set(
+        Napi::String::New(env, "getPrinterDriverOptions"),
+        Napi::Function::New(env, getPrinterDriverOptions));
     return exports;
 }
 NODE_API_MODULE(node_printer, Init)

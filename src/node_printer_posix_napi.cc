@@ -171,6 +171,73 @@ std::string parsePrinterInfo(const cups_dest_t *printer, Napi::Object &result_pr
     return error_str;
 }
 
+/** Parses printer driver PPD options
+     */
+void populatePpdOptions(Napi::Object &ppd_options, ppd_file_t *ppd, ppd_group_t *group, Napi::Env env)
+{
+    int i, j;
+    ppd_option_t *option;
+    ppd_choice_t *choice;
+    ppd_group_t *subgroup;
+
+    for (i = group->num_options, option = group->options; i > 0; --i, ++option)
+    {
+        Napi::Object ppd_suboptions = Napi::Object::New(env);
+        for (j = option->num_choices, choice = option->choices;
+             j > 0;
+             --j, ++choice)
+        {
+            ppd_suboptions.Set(Napi::String::New(env, choice->choice), Napi::Boolean::New(env, static_cast<bool>(choice->marked)));
+        }
+
+        ppd_options.Set(Napi::String::New(env, option->keyword), ppd_suboptions);
+    }
+
+    for (i = group->num_subgroups, subgroup = group->subgroups; i > 0; --i, ++subgroup)
+    {
+        populatePpdOptions(ppd_options, ppd, subgroup, env);
+    }
+}
+
+/** Parse printer driver options
+     * @return error string.
+     */
+std::string parseDriverOptions(const cups_dest_t *printer, Napi::Object &ppd_options, Napi::Env env)
+{
+    const char *filename;
+    ppd_file_t *ppd;
+    ppd_group_t *group;
+    int i;
+
+    std::ostringstream error_str; // error string
+
+    if ((filename = cupsGetPPD(printer->name)) != NULL)
+    {
+        if ((ppd = ppdOpenFile(filename)) != NULL)
+        {
+            ppdMarkDefaults(ppd);
+            cupsMarkOptions(ppd, printer->num_options, printer->options);
+
+            for (i = ppd->num_groups, group = ppd->groups; i > 0; --i, ++group)
+            {
+                populatePpdOptions(ppd_options, ppd, group, env);
+            }
+            ppdClose(ppd);
+        }
+        else
+        {
+            error_str << "Unable to open PPD filename " << filename << " ";
+        }
+        unlink(filename);
+    }
+    else
+    {
+        error_str << "Unable to get CUPS PPD driver file. ";
+    }
+
+    return error_str.str();
+}
+
 class CupsOptions : public MemValueBase<cups_option_t>
 {
   protected:
@@ -343,4 +410,48 @@ Napi::Value getSupportedJobCommands(const Napi::CallbackInfo &info)
     int i = 0;
     result.Set(i++, Napi::String::New(info.Env(), "CANCEL"));
     return result;
+}
+
+Napi::Value getPrinter(const Napi::CallbackInfo &info)
+{
+    REQUIRE_ARGUMENTS(info, 1, info.Env());
+    REQUIRE_ARGUMENT_STRING(info, 0, printername);
+
+    cups_dest_t *printers = NULL, *printer = NULL;
+    int printers_size = cupsGetDests(&printers);
+    printer = cupsGetDest(printername.c_str(), NULL, printers_size, printers);
+    Napi::Object result_printer = Napi::Object::New(info.Env());
+    if (printer != NULL)
+    {
+        parsePrinterInfo(printer, result_printer, info.Env());
+    }
+    cupsFreeDests(printers_size, printers);
+    if (printer == NULL)
+    {
+        // printer not found
+        RETURN_EXCEPTION_STR(info.Env(), "Printer not found");
+    }
+    return result_printer;
+}
+
+Napi::Value getPrinterDriverOptions(const Napi::CallbackInfo &info)
+{
+    REQUIRE_ARGUMENTS(info, 1, info.Env());
+    REQUIRE_ARGUMENT_STRING(info, 0, printername);
+
+    cups_dest_t *printers = NULL, *printer = NULL;
+    int printers_size = cupsGetDests(&printers);
+    printer = cupsGetDest(printername.c_str(), NULL, printers_size, printers);
+    Napi::Object driver_options = Napi::Object::New(info.Env());
+    if (printer != NULL)
+    {
+        parseDriverOptions(printer, driver_options, info.Env());
+    }
+    cupsFreeDests(printers_size, printers);
+    if (printer == NULL)
+    {
+        // printer not found
+        RETURN_EXCEPTION_STR(info.Env(), "Printer not found");
+    }
+    return driver_options;
 }
