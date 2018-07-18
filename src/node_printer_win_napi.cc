@@ -642,3 +642,52 @@ Napi::Value getPrinterDriverOptions(const Napi::CallbackInfo &info)
 {
     RETURN_EXCEPTION_STR(info.Env(), "not supported on windows");
 }
+
+Napi::Value getSupportedPrintFormats(const Napi::CallbackInfo &info)
+{
+    Napi::Array result = Napi::Array::New(info.Env());
+    int format_i = 0;
+
+    LPTSTR name = NULL;
+    DWORD numBytes = 0, processorsNum = 0;
+
+    // Check the amount of bytes required
+    LPWSTR nullVal = NULL;
+    EnumPrintProcessorsW(nullVal, nullVal, 1, (LPBYTE)(NULL), numBytes, &numBytes, &processorsNum);
+    MemValue<_PRINTPROCESSOR_INFO_1W> processors(numBytes);
+    // Retrieve processors
+    BOOL isOK = EnumPrintProcessorsW(nullVal, nullVal, 1, (LPBYTE)(processors.get()), numBytes, &numBytes, &processorsNum);
+
+    if (!isOK)
+    {
+        std::string error_str("error on EnumPrintProcessorsW: ");
+        error_str += getLastErrorCodeAndMessage();
+        RETURN_EXCEPTION_STR(info.Env(), error_str.c_str());
+    }
+
+    _PRINTPROCESSOR_INFO_1W *pProcessor = processors.get();
+
+    for (DWORD processor_i = 0; processor_i < processorsNum; ++processor_i, ++pProcessor)
+    {
+        numBytes = 0;
+        DWORD dataTypesNum = 0;
+        EnumPrintProcessorDatatypesW(nullVal, pProcessor->pName, 1, (LPBYTE)(NULL), numBytes, &numBytes, &dataTypesNum);
+        MemValue<_DATATYPES_INFO_1W> dataTypes(numBytes);
+        isOK = EnumPrintProcessorDatatypesW(nullVal, pProcessor->pName, 1, (LPBYTE)(dataTypes.get()), numBytes, &numBytes, &dataTypesNum);
+
+        if (!isOK)
+        {
+            std::string error_str("error on EnumPrintProcessorDatatypesW: ");
+            error_str += getLastErrorCodeAndMessage();
+            RETURN_EXCEPTION_STR(info.Env(), error_str.c_str());
+        }
+
+        _DATATYPES_INFO_1W *pDataType = dataTypes.get();
+        for (DWORD j = 0; j < dataTypesNum; ++j, ++pDataType)
+        {
+            result.Set(format_i++, Napi::String::New(info.Env(), (char16_t *)(pDataType->pName)));
+        }
+    }
+
+    return result;
+}

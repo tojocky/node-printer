@@ -57,6 +57,10 @@ Napi::Value getPrinter(const Napi::CallbackInfo &info);
  */
 Napi::Value getPrinterDriverOptions(const Napi::CallbackInfo &info);
 
+/** Get supported print formats for printDirect. It depends on platform
+ */
+Napi::Value getSupportedPrintFormats(const Napi::CallbackInfo &info);
+
 // //TODO:
 // // optional ability to get printer spool
 
