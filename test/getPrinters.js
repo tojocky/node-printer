@@ -14,9 +14,11 @@ exports.testGetprinters = function(test) {
 
 exports.testGetDefaultPrinterName = function(test) {
   printer = require("../");
-  assert(
-    typeof printer.getDefaultPrinterName() === "undefined" ||
-      typeof printer.getDefaultPrinterName() === "string"
+  test.equal(
+    assert(
+      typeof printer.getDefaultPrinterName() === "undefined" ||
+        typeof printer.getDefaultPrinterName() === "string"
+    )
   );
   test.done();
 };
