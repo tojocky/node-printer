@@ -112,15 +112,15 @@
 //         var = v8::Local<v8::Function>::Cast(args[i]);                   \
 //     }
 
-#define REQUIRE_ARGUMENT_INTEGER(args, i, var)                      \
-    int var;                                                        \
-    if (args[i]->IsInt32())                                         \
-    {                                                               \
-        var = args[i]->Int32Value();                                \
-    }                                                               \
-    else                                                            \
-    {                                                               \
-        RETURN_EXCEPTION_STR("Argument " #i " must be an integer"); \
+#define REQUIRE_ARGUMENT_INTEGER(args, i, var)                                  \
+    int var;                                                                    \
+    if (args[i].IsNumber())                                                     \
+    {                                                                           \
+        var = args[i].As<Napi::Number>().Int32Value();                          \
+    }                                                                           \
+    else                                                                        \
+    {                                                                           \
+        RETURN_EXCEPTION_STR(args.Env(), "Argument " #i " must be an integer"); \
     }
 
 #define OPTIONAL_ARGUMENT_INTEGER(args, i, var, default)            \

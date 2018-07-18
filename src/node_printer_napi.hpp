@@ -61,6 +61,31 @@ Napi::Value getPrinterDriverOptions(const Napi::CallbackInfo &info);
  */
 Napi::Value getSupportedPrintFormats(const Napi::CallbackInfo &info);
 
+/** Retrieve job info
+ *  @param printer name String
+ *  @param job id Number
+ */
+Napi::Value getJob(const Napi::CallbackInfo &info);
+
+//TODO
+/** Set job command. 
+ * arguments:
+ * @param printer name String
+ * @param job id Number
+ * @param job command String
+ * Possible commands:
+ *      "CANCEL"
+ *      "PAUSE"
+ *      "RESTART"
+ *      "RESUME"
+ *      "DELETE"
+ *      "SENT-TO-PRINTER"
+ *      "LAST-PAGE-EJECTED"
+ *      "RETAIN"
+ *      "RELEASE"
+ */
+Napi::Value setJob(const Napi::CallbackInfo &info);
+
 // //TODO:
 // // optional ability to get printer spool
 

@@ -455,3 +455,14 @@ Napi::Value getPrinterDriverOptions(const Napi::CallbackInfo &info)
     }
     return driver_options;
 }
+
+Napi::Value getSupportedPrintFormats(const Napi::CallbackInfo &info)
+{
+    Napi::Array result = Napi::Array::New(info.Env());
+    int i = 0;
+    for (FormatMapType::const_iterator itFormat = getPrinterFormatMap().begin(); itFormat != getPrinterFormatMap().end(); ++itFormat)
+    {
+        result.Set(i++, Napi::String::New(info.Env(), itFormat->first.c_str()));
+    }
+    return result;
+}

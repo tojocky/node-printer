@@ -691,3 +691,72 @@ Napi::Value getSupportedPrintFormats(const Napi::CallbackInfo &info)
 
     return result;
 }
+
+Napi::Value getJob(const Napi::CallbackInfo &info)
+{
+    REQUIRE_ARGUMENTS(info, 2, info.Env());
+    std::string tempo;
+    REQUIRE_ARGUMENT_STRINGW(info, 0, printername, tempo);
+    REQUIRE_ARGUMENT_INTEGER(info, 1, jobId);
+    if (jobId < 0)
+    {
+        RETURN_EXCEPTION_STR(info.Env(), "Wrong job number");
+    }
+    // Open a handle to the printer.
+    PrinterHandle printerHandle((LPWSTR)(&printername[0]));
+    if (!printerHandle)
+    {
+        std::string error_str("error on PrinterHandle: ");
+        error_str += getLastErrorCodeAndMessage();
+        RETURN_EXCEPTION_STR(info.Env(), error_str.c_str());
+    }
+    DWORD size_bytes = 0, dummyBytes = 0;
+    GetJobW(*printerHandle, static_cast<DWORD>(jobId), 2, NULL, size_bytes, &size_bytes);
+    MemValue<JOB_INFO_2W> job(size_bytes);
+    if (!job)
+    {
+        RETURN_EXCEPTION_STR(info.Env(), "Error on allocating memory for printers");
+    }
+    BOOL bOK = GetJobW(*printerHandle, static_cast<DWORD>(jobId), 2, (LPBYTE)job.get(), size_bytes, &dummyBytes);
+    if (!bOK)
+    {
+        std::string error_str("Error on GetJob. Wrong job id or it was deleted: ");
+        error_str += getLastErrorCodeAndMessage();
+        RETURN_EXCEPTION_STR(info.Env(), error_str.c_str());
+    }
+    Napi::Object result_printer_job = Napi::Object::New(info.Env());
+    parseJobObject(job.get(), result_printer_job, info.Env());
+    return result_printer_job;
+}
+
+Napi::Value setJob(const Napi::CallbackInfo &info)
+{
+    REQUIRE_ARGUMENTS(info, 3, info.Env());
+    std::string tempo;
+    REQUIRE_ARGUMENT_STRINGW(info, 0, printername, tempo);
+    REQUIRE_ARGUMENT_INTEGER(info, 1, jobId);
+    REQUIRE_ARGUMENT_STRING(info, 2, jobCommandV8);
+    if (jobId < 0)
+    {
+        RETURN_EXCEPTION_STR(info.Env(), "Wrong job number");
+    }
+    std::string jobCommandStr(jobCommandV8);
+    StatusMapType::const_iterator itJobCommand = getJobCommandMap().find(jobCommandStr);
+    if (itJobCommand == getJobCommandMap().end())
+    {
+        RETURN_EXCEPTION_STR(info.Env(), "wrong job command. use getSupportedJobCommands to see the possible commands");
+    }
+    DWORD jobCommand = itJobCommand->second;
+    // Open a handle to the printer.
+    PrinterHandle printerHandle((LPWSTR)(&printername[0]));
+    if (!printerHandle)
+    {
+        std::string error_str("error on PrinterHandle: ");
+        error_str += getLastErrorCodeAndMessage();
+        RETURN_EXCEPTION_STR(info.Env(), error_str.c_str());
+    }
+    // TODO: add the possibility to set job properties
+    // http://msdn.microsoft.com/en-us/library/windows/desktop/dd162978(v=vs.85).aspx
+    BOOL ok = SetJobW(*printerHandle, (DWORD)jobId, 0, NULL, jobCommand);
+    return Napi::Boolean::New(info.Env(), ok == TRUE);
+}

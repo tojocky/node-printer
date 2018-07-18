@@ -28,6 +28,12 @@ Napi::Object Init(Napi::Env env, Napi::Object exports)
     exports.Set(
         Napi::String::New(env, "getSupportedPrintFormats"),
         Napi::Function::New(env, getSupportedPrintFormats));
+    exports.Set(
+        Napi::String::New(env, "getJob"),
+        Napi::Function::New(env, getJob));
+    exports.Set(
+        Napi::String::New(env, "setJob"),
+        Napi::Function::New(env, setJob));
     return exports;
 }
 NODE_API_MODULE(node_printer, Init)
