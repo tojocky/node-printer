@@ -73,6 +73,32 @@ struct PrinterHandle
     BOOL _ok;
 };
 
+const StatusMapType &getJobCommandMap()
+{
+    static StatusMapType result;
+    if (!result.empty())
+    {
+        return result;
+    }
+    // add only first time
+#define COMMAND_JOB_ADD(value, type) result.insert(std::make_pair(value, type))
+    COMMAND_JOB_ADD("CANCEL", JOB_CONTROL_CANCEL);
+    COMMAND_JOB_ADD("PAUSE", JOB_CONTROL_PAUSE);
+    COMMAND_JOB_ADD("RESTART", JOB_CONTROL_RESTART);
+    COMMAND_JOB_ADD("RESUME", JOB_CONTROL_RESUME);
+    COMMAND_JOB_ADD("DELETE", JOB_CONTROL_DELETE);
+    COMMAND_JOB_ADD("SENT-TO-PRINTER", JOB_CONTROL_SENT_TO_PRINTER);
+    COMMAND_JOB_ADD("LAST-PAGE-EJECTED", JOB_CONTROL_LAST_PAGE_EJECTED);
+#ifdef JOB_CONTROL_RETAIN
+    COMMAND_JOB_ADD("RETAIN", JOB_CONTROL_RETAIN);
+#endif
+#ifdef JOB_CONTROL_RELEASE
+    COMMAND_JOB_ADD("RELEASE", JOB_CONTROL_RELEASE);
+#endif
+#undef COMMAND_JOB_ADD
+    return result;
+}
+
 const StatusMapType &getStatusMap()
 {
     static StatusMapType result;
@@ -556,4 +582,20 @@ Napi::Value PrintDirect(const Napi::CallbackInfo &info)
         RETURN_EXCEPTION_STR(info.Env(), "not sent all bytes");
     }
     return Napi::Number::New(info.Env(), dwJob);
+}
+
+Napi::Value PrintFile(const Napi::CallbackInfo &info)
+{
+    RETURN_EXCEPTION_STR(info.Env(), "Not yet implemented on Windows");
+}
+
+Napi::Value getSupportedJobCommands(const Napi::CallbackInfo &info)
+{
+    Napi::Array result = Napi::Array::New(info.Env());
+    int i = 0;
+    for (StatusMapType::const_iterator itJob = getJobCommandMap().begin(); itJob != getJobCommandMap().end(); ++itJob)
+    {
+        result.Set(i++, Napi::String::New(info.Env(), itJob->first.c_str()));
+    }
+    return result;
 }

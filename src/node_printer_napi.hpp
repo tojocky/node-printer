@@ -11,6 +11,17 @@
 #include <string>
 
 /**
+ * Send file to printer
+ *
+ * @param filename String, mandatory, specifying filename to print
+ * @param docname String, mandatory, specifying document name
+ * @param printer String, mandatory, specifying printer name
+ *
+ * @returns jobId for success, or error message for failure.
+ */
+Napi::Value PrintFile(const Napi::CallbackInfo &info);
+
+/**
  * Return default printer name, if null then default printer is not set
  */
 Napi::Value getDefaultPrinterName(const Napi::CallbackInfo &info);
@@ -31,6 +42,10 @@ Napi::Value getPrinters(const Napi::CallbackInfo &info);
  * @returns true for success, false for failure.
  */
 Napi::Value PrintDirect(const Napi::CallbackInfo &info);
+
+/** Get supported job commands for setJob method
+ */
+Napi::Value getSupportedJobCommands(const Napi::CallbackInfo &info);
 
 // //TODO:
 // // optional ability to get printer spool

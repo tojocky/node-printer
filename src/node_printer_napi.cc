@@ -9,10 +9,16 @@ Napi::Object Init(Napi::Env env, Napi::Object exports)
         Napi::Function::New(env, getDefaultPrinterName));
     exports.Set(
         Napi::String::New(env, "getPrinters"),
-        Napi::Function::New(env, getPrinters));    
+        Napi::Function::New(env, getPrinters));
     exports.Set(
         Napi::String::New(env, "printDirect"),
         Napi::Function::New(env, PrintDirect));
+    exports.Set(
+        Napi::String::New(env, "getSupportedJobCommands"),
+        Napi::Function::New(env, getSupportedJobCommands));
+    exports.Set(
+        Napi::String::New(env, "printFile"),
+        Napi::Function::New(env, PrintFile));
     return exports;
 }
 NODE_API_MODULE(node_printer, Init)

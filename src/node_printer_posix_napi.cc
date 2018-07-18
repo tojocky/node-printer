@@ -306,3 +306,41 @@ Napi::Value PrintDirect(const Napi::CallbackInfo &info)
     cupsFinishDocument(CUPS_HTTP_DEFAULT, printername.c_str());
     return Napi::Number::New(info.Env(), job_id);
 }
+
+Napi::Value PrintFile(const Napi::CallbackInfo &info)
+{
+
+    REQUIRE_ARGUMENTS(info, 3, info.Env());
+
+    // can be string or buffer
+    if (info.Length() <= 0)
+    {
+        RETURN_EXCEPTION_STR(info.Env(), "Argument 0 missing");
+    }
+
+    REQUIRE_ARGUMENT_STRING(info, 0, filename);
+    REQUIRE_ARGUMENT_STRING(info, 1, docname);
+    REQUIRE_ARGUMENT_STRING(info, 2, printer);
+    REQUIRE_ARGUMENT_OBJECT(info, 3, print_options);
+
+    CupsOptions options(print_options);
+
+    int job_id = cupsPrintFile(printer.c_str(), filename.c_str(), docname.c_str(), options.getNumOptions(), options.get());
+
+    if (job_id == 0)
+    {
+        return Napi::String::New(info.Env(), cupsLastErrorString());
+    }
+    else
+    {
+        return Napi::Number::New(info.Env(), job_id);
+    }
+}
+
+Napi::Value getSupportedJobCommands(const Napi::CallbackInfo &info)
+{
+    Napi::Array result = Napi::Array::New(info.Env());
+    int i = 0;
+    result.Set(i++, Napi::String::New(info.Env(), "CANCEL"));
+    return result;
+}
