@@ -1,14 +1,9 @@
 env:
   matrix:
-    - export NODE_VERSION="6.9"
-    - export NODE_VERSION="5.9"
-    - export NODE_VERSION="4.4"
-    - export NODE_VERSION="0.10"
+    - export NODE_VERSION="10.6"
 matrix:
   fast_finish: true
-  allow_failures:
-    - env: NODE_VERSION="0.10"
-    - env: NODE_VERSION="iojs"
+
 before_install:
   - git clone https://github.com/creationix/nvm.git ./.nvm
   - source ./.nvm/nvm.sh

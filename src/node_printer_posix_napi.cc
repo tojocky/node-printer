@@ -4,7 +4,6 @@
 #include <map>
 #include <utility>
 #include <sstream>
-#include <node_version.h>
 
 #include <cups/cups.h>
 #include <cups/ppd.h>
@@ -158,7 +157,7 @@ std::string parsePrinterInfo(const cups_dest_t *printer, Napi::Object &result_pr
         {
             Napi::Object result_printer_job = Napi::Object::New(env);
             error_str = parseJobObject(job, result_printer_job, env);
-            
+
             if (!error_str.empty())
             {
                 // got an error? break then.
@@ -237,7 +236,7 @@ Napi::Value getPrinters(const Napi::CallbackInfo &info)
     {
         Napi::Object result_printer = Napi::Object::New(info.Env());
         error_str = parsePrinterInfo(printer, result_printer, info.Env());
-        
+
         if (!error_str.empty())
         {
             // got an error? break then
@@ -249,7 +248,7 @@ Napi::Value getPrinters(const Napi::CallbackInfo &info)
     if (!error_str.empty())
     {
         // got an error? return the error then
-        RETURN_EXCEPTION_STR(info.Env(),error_str.c_str());
+        RETURN_EXCEPTION_STR(info.Env(), error_str.c_str());
     }
     return result;
 }

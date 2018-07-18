@@ -20,17 +20,10 @@ init:
 environment:
   matrix:
     # Node.js
-    - nodejs_version: "0.10"
-    - nodejs_version: "0.12"
-    - nodejs_version: "4.4"
-    - nodejs_version: "5.8"
-    - nodejs_version: "6.9"
-      build_electron: "true"
+    - nodejs_version: "10.6"
 
 matrix:
   fast_finish: true
-  allow_failures:
-    - nodejs_version: "0.10"
 
 # Get the latest stable version of Node 0.STABLE.latest
 install:
