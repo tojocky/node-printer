@@ -21,6 +21,7 @@ environment:
   matrix:
     # Node.js
     - nodejs_version: "10.6"
+    - nodejs_version: "8.11"
 
 matrix:
   fast_finish: true
