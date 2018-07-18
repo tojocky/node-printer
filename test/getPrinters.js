@@ -11,11 +11,11 @@ exports.testGetprinters = function(test) {
   test.done();
 };
 
-exports.testGetDefaultPrinterName = function(test) {
-  printer = require("../");
-  test.equal(typeof printer.getDefaultPrinterName(), "string");
-  test.done();
-};
+// exports.testGetDefaultPrinterName = function(test) {
+//   printer = require("../");
+//   test.equal(typeof printer.getDefaultPrinterName(), "string");
+//   test.done();
+// };
 
 exports.testGetSupportedJobCommands = function(test) {
   printer = require("../");
