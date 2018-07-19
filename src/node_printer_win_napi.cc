@@ -735,12 +735,12 @@ Napi::Value setJob(const Napi::CallbackInfo &info)
     std::string tempo;
     REQUIRE_ARGUMENT_STRINGW(info, 0, printername, tempo);
     REQUIRE_ARGUMENT_INTEGER(info, 1, jobId);
-    REQUIRE_ARGUMENT_STRING(info, 2, jobCommandV8);
+    REQUIRE_ARGUMENT_STRING(info, 2, jobCommandPar);
     if (jobId < 0)
     {
         RETURN_EXCEPTION_STR(info.Env(), "Wrong job number");
     }
-    std::string jobCommandStr(jobCommandV8);
+    std::string jobCommandStr(jobCommandPar);
     StatusMapType::const_iterator itJobCommand = getJobCommandMap().find(jobCommandStr);
     if (itJobCommand == getJobCommandMap().end())
     {

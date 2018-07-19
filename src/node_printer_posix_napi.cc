@@ -466,3 +466,61 @@ Napi::Value getSupportedPrintFormats(const Napi::CallbackInfo &info)
     }
     return result;
 }
+
+Napi::Value getJob(const Napi::CallbackInfo &info)
+{
+    REQUIRE_ARGUMENTS(info, 2, info.Env());
+    REQUIRE_ARGUMENT_STRING(info, 0, printername);
+    REQUIRE_ARGUMENT_INTEGER(info, 1, jobId);
+
+    Napi::Object result_printer_job = Napi::Object::New(info.Env());
+    // Get printer jobs
+    cups_job_t *jobs = NULL, *jobFound = NULL;
+    int totalJobs = cupsGetJobs(&jobs, printername.c_str(), 0 /*0 means all users*/, CUPS_WHICHJOBS_ALL);
+    if (totalJobs > 0)
+    {
+        int jobi = 0;
+        cups_job_t *job = jobs;
+        for (; jobi < totalJobs; ++jobi, ++job)
+        {
+            if (job->id != jobId)
+            {
+                continue;
+            }
+            // Job Found
+            jobFound = job;
+            parseJobObject(job, result_printer_job, info.Env());
+            break;
+        }
+    }
+    cupsFreeJobs(totalJobs, jobs);
+    if (jobFound == NULL)
+    {
+        // printer not found
+        RETURN_EXCEPTION_STR(info.Env(), "Printer job not found");
+    }
+    return result_printer_job;
+}
+
+Napi::Value setJob(const Napi::CallbackInfo &info)
+{
+    REQUIRE_ARGUMENTS(info, 3, info.Env());
+    REQUIRE_ARGUMENT_STRING(info, 0, printername);
+    REQUIRE_ARGUMENT_INTEGER(info, 1, jobId);
+    REQUIRE_ARGUMENT_STRING(info, 2, jobCommand);
+    if (jobId < 0)
+    {
+        RETURN_EXCEPTION_STR(info.Env(), "Wrong job number");
+    }
+    std::string jobCommandStr(jobCommand);
+    bool result_ok = false;
+    if (jobCommandStr == "CANCEL")
+    {
+        result_ok = (cupsCancelJob(printername.c_str(), jobId) == 1);
+    }
+    else
+    {
+        RETURN_EXCEPTION_STR(info.Env(), "wrong job command. use getSupportedJobCommands to see the possible commands");
+    }
+    return Napi::Boolean::New(info.Env(), result_ok);
+}
