@@ -13,7 +13,7 @@ exports.testGetprinters = function(test) {
   } catch (e) {
     test.equal(
       e.message,
-      "Error on EnumPrinters: code: 1722, message: The RPC server is unavailable."
+      "Error on EnumPrinters: code: 1722, message: The RPC server is unavailable.\r\n"
     );
   }
   test.done();
