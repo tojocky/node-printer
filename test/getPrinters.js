@@ -8,7 +8,14 @@ exports.testLoadLibrary = function(test) {
 
 exports.testGetprinters = function(test) {
   printer = require("../");
-  test.equal(typeof printer.getPrinters(), "object");
+  try {
+    test.equal(typeof printer.getPrinters(), "object");
+  } catch (e) {
+    test.equal(
+      e.message,
+      "Error on EnumPrinters: code: 1722, message: The RPC server is unavailable."
+    );
+  }
   test.done();
 };
 
