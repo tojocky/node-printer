@@ -44,9 +44,9 @@ test_script:
   # - npm test
 
   - ps: >
-      # if ($env:publish_binary -eq "true") {
-      npm run prebuild
-      # }
+      if ($env:publish_binary -eq "true") {
+        npm run prebuild
+      }
       true;
 
 deploy: 'off'
