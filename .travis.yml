@@ -1,56 +1,81 @@
-env:
-  matrix:
-    - export NODE_VERSION="6.9"
-    - export NODE_VERSION="5.9"
-    - export NODE_VERSION="4.4"
-    - export NODE_VERSION="0.10"
-matrix:
-  fast_finish: true
-  allow_failures:
-    - env: NODE_VERSION="0.10"
-    - env: NODE_VERSION="iojs"
-before_install:
-  - git clone https://github.com/creationix/nvm.git ./.nvm
-  - source ./.nvm/nvm.sh
-  - nvm install $NODE_VERSION 64
-  - echo $NODE_VERSION
-  - nvm use $NODE_VERSION
-  - if [ $TRAVIS_OS_NAME == "linux" ]; then
-      sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test;
-      sudo apt-get -qq update;
-      sudo apt-get -qq install g++-4.8;
-      export CXX='g++-4.8';
-      sudo apt-get install -qq debhelper autotools-dev cups-ppdc libcups2-dev cups imagemagick ghostscript;
-    fi
-  - "export JOBS=4"
-  - npm install -g node-gyp
-  - BUILD_ONLY=true npm install --build-from-source
-before_script:
-  - git config --global user.name "Ion Lupascu"
-  - git config --global user.email ionlupascu@gmail.com
+---
+notifications:
+  email: false
+language: cpp
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-4.8
+      - g++-4.8-multilib
+      - gcc-multilib
 
-after_script:
-  - node-pre-gyp configure
-  - node-pre-gyp build package
-
-  - node-pre-gyp configure
-  - node-pre-gyp build package --target_arch=ia32
-  - npm test
-
-# Need S3 Upload for Artifacts
-# addons:
-#   artifacts:
-#     debug: true
-#     paths:
-#     - ./build/stage/**/*.tar.gz
-
-git:
-  depth: 1
-branches:
-  only:
-    - master
-
+# Build matrix
 os:
   - linux
   - osx
-script: npm test
+env:
+  global:
+    - secure: 'L+AGMJc5NAsuym+xzB4FWj0c2rCobosixkoxLBhDBVkLiYsMtfS9y1w8Xz0pbWKJnJAH9tfwHluu5aX2qYk2HbreSyNzy8hbPW+9RbSyAQexeiZG4mLuDEz0xvlpCCQBsS1OfMypQk0/JvL4oA9B/xasrpkeVuPI7dwAz2WcFms='
+  matrix:
+    - TRAVIS_NODE_VERSION="6"
+    - TRAVIS_NODE_VERSION="6" ARCH="x86"
+    - BINARY_BUILDER="true" TRAVIS_NODE_VERSION="8"
+    - BINARY_BUILDER="true" TRAVIS_NODE_VERSION="8" ARCH="x86"
+    - TRAVIS_NODE_VERSION="9"
+    - TRAVIS_NODE_VERSION="9" ARCH="x86"
+    - TRAVIS_NODE_VERSION="10"
+matrix:
+  exclude:
+    - os: osx
+      env: TRAVIS_NODE_VERSION="6" ARCH="x86"
+    - os: osx
+      env: BINARY_BUILDER="true" TRAVIS_NODE_VERSION="8" ARCH="x86"
+    - os: osx
+      env: TRAVIS_NODE_VERSION="9" ARCH="x86"
+
+before_install:
+  # download node if testing x86 architecture
+  - nvm install $TRAVIS_NODE_VERSION
+  - >
+    if [[ "$ARCH" == "x86" ]]; then
+      BASE_URL=$(node -p "'https://nodejs.org/dist/' + process.version");
+      X86_FILE=$(node -p "'node-' + process.version + '-' + process.platform + '-x86'");
+      wget $BASE_URL/$X86_FILE.tar.gz;
+      tar -xf $X86_FILE.tar.gz;
+      nvm deactivate;
+      export PATH=`pwd`/$X86_FILE/bin:$PATH;
+    fi;
+  # use g++-4.8 on Linux
+  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then export CXX=g++-4.8; fi
+  - $CXX --version
+
+  # print versions
+  - uname -a
+  - which node; file `which node`
+  - node --version
+  - node -p 'process.platform + "@" + process.arch'
+  - npm --version
+
+  # figure out if we should publish
+  - PUBLISH_BINARY=false
+  - echo $TRAVIS_BRANCH
+  - echo `git describe --tags --always HEAD`
+  - if [[ $(git tag --points-at HEAD) =~ $TRAVIS_BRANCH ]]; then PUBLISH_BINARY=$BINARY_BUILDER; fi;
+  - echo "Publishing native platform Binary Package? ->" $PUBLISH_BINARY
+
+install:
+  - npm install
+  - npm run rebuild
+
+script:
+  - npm run lint
+  - npm test
+
+  # if publishing, do it
+  - >
+    if [[ $PUBLISH_BINARY == true ]]; then
+      echo "building and uploading binaries"
+      npm run prebuild;
+    fi;
