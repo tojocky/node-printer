@@ -80,7 +80,7 @@ script:
 
   # if publishing, do it
   - >
-    # if [[ $PUBLISH_BINARY == true ]]; then
+    if [[ $PUBLISH_BINARY == true ]]; then
       echo "building and uploading binaries";
       npm run prebuild;
-    # fi;
+    fi;
