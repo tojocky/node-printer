@@ -9,6 +9,7 @@
     "email": "ionlupascu@gmail.com"
   },
   "contributors": [
+    "Benjamin Kniffler <bkniffler@me.com>",
     "Name Lastname <email@server.com>"
   ],
   "repository": {
@@ -30,7 +31,7 @@
   },
   "licenses": [
     {
-      "type": "BSD"
+      "type": "MIT"
     }
   ],
   "main": "./lib/printer",
