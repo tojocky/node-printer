@@ -10,6 +10,7 @@ addons:
       - g++-4.8
       - g++-4.8-multilib
       - gcc-multilib
+      - libcups2-dev
 
 # Build matrix
 os:
