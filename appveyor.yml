@@ -44,7 +44,7 @@ build_script:
   - npm run rebuild
 
 test_script:
-  - npm test
+  # - npm test
 
   - ps: >
       if ($env:publish_binary -eq "true") {
