@@ -16,7 +16,8 @@
     "url": "git://github.com/bkniffler/node-printer.git"
   },
   "devDependencies": {
-    "nodeunit": "*"
+    "nodeunit": "*",
+    "prebuild": "^8.1.2"
   },
   "engines": {
     "node": ">= 0.8.0"
