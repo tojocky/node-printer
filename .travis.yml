@@ -30,9 +30,8 @@ matrix:
 before_install:
   # download node if testing x86 architecture
   - if [ $TRAVIS_OS_NAME == "windows" ]; then
-    cinst -y nvs;
-    nvs add $TRAVIS_NODE_VERSION;
-    nvs use $TRAVIS_NODE_VERSION;
+    git clone --branch v1.5.2 --depth 1 https://github.com/jasongin/nvs %LOCALAPPDATA%\nvs
+    set PATH=%LOCALAPPDATA%\nvs;%PATH%
     fi
   - if [ $TRAVIS_OS_NAME != "windows" ]; then
     nvm install $TRAVIS_NODE_VERSION;
