@@ -3,7 +3,6 @@ notifications:
   email: false
 language: cpp
 
-# Build matrix
 os:
   - linux
   - osx
@@ -30,7 +29,8 @@ matrix:
 
 before_install:
   # download node if testing x86 architecture
-  - nvm install $TRAVIS_NODE_VERSION
+  - nvs add $TRAVIS_NODE_VERSION
+  - nvs use $TRAVIS_NODE_VERSION
   #- >
   #  if [[ "$ARCH" == "x86" ]]; then
   #    BASE_URL=$(node -p "'https://nodejs.org/dist/' + process.version");
