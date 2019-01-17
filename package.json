@@ -23,8 +23,8 @@
     "node": ">= 0.8.0"
   },
   "scripts": {
-    "install": "prebuild-install --tag-prefix printer-prebuild@ || node-gyp rebuild",
-    "prebuild": "prebuild --all --force --strip --verbose --tag-prefix printer-prebuild@",
+    "install": "prebuild-install || node-gyp rebuild",
+    "prebuild": "prebuild --all --force --strip --verbose",
     "rebuild": "node-gyp rebuild",
     "test": "nodeunit test"
   },
