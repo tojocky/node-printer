@@ -10,7 +10,13 @@ addons:
       - g++-4.8
       - g++-4.8-multilib
       - gcc-multilib
+      - debhelper
+      - autotools-dev
+      - cups-ppdc
       - libcups2-dev
+      - cups
+      - imagemagick
+      - ghostscript
 
 # Build matrix
 os:
