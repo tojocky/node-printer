@@ -680,7 +680,7 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
 
     std::string data;
     v8::Handle<v8::Value> arg0(iArgs[0]);
-    if (!getStringOrBufferFromV8Value(iArgs.GetIsolate(), arg0, data))
+    if (!getStringOrBufferFromV8Value(arg0, data))
     {
         RETURN_EXCEPTION_STR("Argument 0 must be a string or Buffer");
     }
