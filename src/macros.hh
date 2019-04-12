@@ -1,6 +1,7 @@
 #ifndef NODE_PRINTER_SRC_MACROS_H
 #define NODE_PRINTER_SRC_MACROS_H
 
+#include <nan.h>
 #include <node_version.h>
 
 // NODE_MODULE_VERSION was incremented for v0.11
@@ -53,9 +54,12 @@
 #endif
 
 
+#define V8_STR_UTF8VALUE(name, arg)                                             \
+  v8::String::Utf8Value name(MY_NODE_MODULE_ISOLATE_PRE arg);
+
 #define V8_STR_CONC(left, right)                              \
 	v8::String::Concat(V8_STRING_NEW_UTF8(left), V8_STRING_NEW_UTF8(right))
-		
+
 #define REQUIRE_ARGUMENTS(args, n)                                                   \
     if (args.Length() < (n)) {                                                 \
        RETURN_EXCEPTION_STR("Expected " #n " arguments");                       \
@@ -89,11 +93,11 @@
 
 #define REQUIRE_ARGUMENT_STRING(args, i, var)                                        \
     ARG_CHECK_STRING(args, i);                                                       \
-    v8::String::Utf8Value var(args[i]->ToString());
+    V8_STR_UTF8VALUE(var, args[i]->ToString());
 
 #define REQUIRE_ARGUMENT_STRINGW(args, i, var)                                        \
     ARG_CHECK_STRING(args, i);                                                       \
-    v8::String::Value var(args[i]->ToString());
+    v8::String::Value var(MY_NODE_MODULE_ISOLATE_PRE args[i]->ToString());
 
 
 #define OPTIONAL_ARGUMENT_FUNCTION(i, var)                                     \
@@ -109,7 +113,7 @@
 #define REQUIRE_ARGUMENT_INTEGER(args, i, var)                             \
     int var;                                                                   \
     if (args[i]->IsInt32()) {                                             \
-        var = args[i]->Int32Value();                                           \
+        var = Nan::To<int32_t>(args[i]).FromJust();                             \
     }                                                                          \
     else {                                                                     \
         RETURN_EXCEPTION_STR("Argument " #i " must be an integer");                 \

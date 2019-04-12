@@ -21,6 +21,8 @@
     "grunt-contrib-jshint": "^0.11.0",
     "grunt-node-gyp": "git://github.com/tojocky/grunt-node-gyp.git",
     "grunt-nw-gyp": "git://github.com/tojocky/grunt-nw-gyp.git",
+    "nan": "^2.13.2",
+    "node-pre-gyp": "^0.12.0",
     "nodeunit": "*"
   },
   "engines": {

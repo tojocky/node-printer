@@ -9,6 +9,8 @@
 #include <cups/cups.h>
 #include <cups/ppd.h>
 
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 namespace
 {
     typedef std::map<std::string, int> StatusMapType;
@@ -259,12 +261,13 @@ namespace
 
         /// Add options from v8 object
         CupsOptions(v8::Local<v8::Object> iV8Options): num_options(0) {
+            MY_NODE_MODULE_ISOLATE_DECL
             v8::Local<v8::Array> props = iV8Options->GetPropertyNames();
 
             for(unsigned int i = 0; i < props->Length(); ++i) {
                 v8::Handle<v8::Value> key(props->Get(i));
-                v8::String::Utf8Value keyStr(key->ToString());
-                v8::String::Utf8Value valStr(iV8Options->Get(key)->ToString());
+                V8_STR_UTF8VALUE(keyStr, key->ToString());
+                V8_STR_UTF8VALUE(valStr, iV8Options->Get(key)->ToString());
 
                 num_options = cupsAddOption(*keyStr, *valStr, num_options, &_value);
             }

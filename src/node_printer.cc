@@ -22,9 +22,10 @@ NODE_MODULE(node_printer, initNode);
 
 bool getStringOrBufferFromV8Value(v8::Handle<v8::Value> iV8Value, std::string &oData)
 {
+    MY_NODE_MODULE_ISOLATE_DECL
     if(iV8Value->IsString())
     {
-        v8::String::Utf8Value data_str_v8(iV8Value->ToString());
+        V8_STR_UTF8VALUE(data_str_v8, iV8Value->ToString());
         oData.assign(*data_str_v8, data_str_v8.length());
         return true;
     }
