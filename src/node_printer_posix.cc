@@ -67,7 +67,7 @@ namespace
     /** Parse job info object.
      * @return error string. if empty, then no error
      */
-    std::string parseJobObject(const cups_job_t *job, v8::Handle<v8::Object> result_printer_job)
+    std::string parseJobObject(const cups_job_t *job, v8::Local<v8::Object> result_printer_job)
     {
         MY_NODE_MODULE_ISOLATE_DECL
         //Common fields
@@ -128,7 +128,7 @@ namespace
 
     /** Parses printer driver PPD options
      */
-    void populatePpdOptions(v8::Handle<v8::Object> ppd_options, ppd_file_t  *ppd, ppd_group_t *group)
+    void populatePpdOptions(v8::Local<v8::Object> ppd_options, ppd_file_t  *ppd, ppd_group_t *group)
     {
         int i, j;
         ppd_option_t *option;
@@ -157,7 +157,7 @@ namespace
     /** Parse printer driver options
      * @return error string.
      */
-    std::string parseDriverOptions(const cups_dest_t * printer, v8::Handle<v8::Object> ppd_options)
+    std::string parseDriverOptions(const cups_dest_t * printer, v8::Local<v8::Object> ppd_options)
     {
         const char *filename;
         ppd_file_t *ppd;
@@ -197,7 +197,7 @@ namespace
     /** Parse printer info object
      * @return error string.
      */
-    std::string parsePrinterInfo(const cups_dest_t * printer, v8::Handle<v8::Object> result_printer)
+    std::string parsePrinterInfo(const cups_dest_t * printer, v8::Local<v8::Object> result_printer)
     {
         MY_NODE_MODULE_ISOLATE_DECL
         result_printer->Set(V8_STRING_NEW_UTF8("name"), V8_STRING_NEW_UTF8(printer->name));
@@ -262,7 +262,7 @@ namespace
             v8::Local<v8::Array> props = iV8Options->GetPropertyNames();
 
             for(unsigned int i = 0; i < props->Length(); ++i) {
-                v8::Handle<v8::Value> key(props->Get(i));
+                v8::Local<v8::Value> key(props->Get(i));
                 v8::String::Utf8Value keyStr(key->ToString());
                 v8::String::Utf8Value valStr(iV8Options->Get(key)->ToString());
 
@@ -458,7 +458,7 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
     }
 
     std::string data;
-    v8::Handle<v8::Value> arg0(iArgs[0]);
+    v8::Local<v8::Value> arg0(iArgs[0]);
     if (!getStringOrBufferFromV8Value(arg0, data))
     {
         RETURN_EXCEPTION_STR("Argument 0 must be a string or Buffer");

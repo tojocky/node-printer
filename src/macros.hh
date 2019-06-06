@@ -31,7 +31,7 @@
 #  define MY_NODE_MODULE_ISOLATE_PRE
 #  define MY_NODE_MODULE_ISOLATE_POST
 #  define MY_NODE_MODULE_HANDLESCOPE v8::HandleScope scope;
-#  define MY_NODE_MODULE_CALLBACK(name) v8::Handle<v8::Value> name(const v8::Arguments& iArgs)
+#  define MY_NODE_MODULE_CALLBACK(name) v8::Local<v8::Value> name(const v8::Arguments& iArgs)
 #  define V8_VALUE_NEW(type, value)   v8::type::New(value)
 #  define V8_VALUE_NEW_DEFAULT(type)   v8::type::New()
 #  define V8_STRING_NEW_UTF8(value)   v8::String::New(MY_NODE_MODULE_ISOLATE_PRE value)
@@ -81,7 +81,6 @@
     }                                                                          \
     v8::Local<v8::Function> var = v8::Local<v8::Function>::Cast(args[i]);
 
-
 #define ARG_CHECK_STRING(args, i)                                        \
     if (args.Length() <= (i) || !args[i]->IsString()) {                        \
         RETURN_EXCEPTION_STR("Argument " #i " must be a string");                   \
@@ -89,12 +88,15 @@
 
 #define REQUIRE_ARGUMENT_STRING(args, i, var)                                        \
     ARG_CHECK_STRING(args, i);                                                       \
-    v8::String::Utf8Value var(args[i]->ToString());
+    v8::String::Utf8Value var(args.GetIsolate(), args[i]->ToString(args.GetIsolate()->GetCurrent()));                            \
 
-#define REQUIRE_ARGUMENT_STRINGW(args, i, var)                                        \
+#define REQUIRE_ARGUMENT_STRINGW(args, i, var, context)                              \
     ARG_CHECK_STRING(args, i);                                                       \
-    v8::String::Value var(args[i]->ToString());
-
+    v8::String::Value var(args[i]->ToString(context));                               \
+    
+#define REQUIRE_ARGUMENT_STRINGV8(args, i, var)                            \
+    ARG_CHECK_STRING(args, i);                                                      \
+    v8::Local<v8::String> var = (args[i]->ToString(args.GetIsolate()->GetCurrent()));  \
 
 #define OPTIONAL_ARGUMENT_FUNCTION(i, var)                                     \
     v8::Local<v8::Function> var;                                                       \
@@ -105,11 +107,10 @@
         var = v8::Local<v8::Function>::Cast(args[i]);                                  \
     }
 
-
 #define REQUIRE_ARGUMENT_INTEGER(args, i, var)                             \
     int var;                                                                   \
     if (args[i]->IsInt32()) {                                             \
-        var = args[i]->Int32Value();                                           \
+        var = args[i]->Int32Value((args.GetIsolate()->GetCurrent()->GetCurrentContext())).ToChecked();                                           \
     }                                                                          \
     else {                                                                     \
         RETURN_EXCEPTION_STR("Argument " #i " must be an integer");                 \

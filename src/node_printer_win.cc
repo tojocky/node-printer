@@ -205,7 +205,7 @@ namespace{
         return result;
     }
 
-    void parseJobObject(JOB_INFO_2W *job, v8::Handle<v8::Object> result_printer_job)
+    void parseJobObject(JOB_INFO_2W *job, v8::Local<v8::Object> result_printer_job)
     {
         MY_NODE_MODULE_ISOLATE_DECL
         //Common fields
@@ -306,7 +306,7 @@ namespace{
 
     std::string retrieveAndParseJobs(const LPWSTR iPrinterName,
                                      const DWORD& iTotalJobs,
-                                     v8::Handle<v8::Object> result_printer_jobs,
+                                     v8::Local<v8::Object> result_printer_jobs,
                                      PrinterHandle& iPrinterHandle)
     {
         MY_NODE_MODULE_ISOLATE_DECL
@@ -337,7 +337,7 @@ namespace{
         return std::string("");
     }
 
-    std::string parsePrinterInfo(const PRINTER_INFO_2W *printer, v8::Handle<v8::Object> result_printer, PrinterHandle& iPrinterHandle)
+    std::string parsePrinterInfo(const PRINTER_INFO_2W *printer, v8::Local<v8::Object> result_printer, PrinterHandle& iPrinterHandle)
     {
         MY_NODE_MODULE_ISOLATE_DECL
     #define ADD_V8_STRING_PROPERTY(name, key) if((printer->##key != NULL) && (*printer->##key != L'\0'))    \
@@ -499,7 +499,7 @@ MY_NODE_MODULE_CALLBACK(getPrinter)
 {
     MY_NODE_MODULE_HANDLESCOPE;
     REQUIRE_ARGUMENTS(iArgs, 1);
-    REQUIRE_ARGUMENT_STRINGW(iArgs, 0, printername);
+    REQUIRE_ARGUMENT_STRINGV8(iArgs, 0, printername);
 
     // Open a handle to the printer.
     PrinterHandle printerHandle((LPWSTR)(*printername));
@@ -539,11 +539,12 @@ MY_NODE_MODULE_CALLBACK(getPrinterDriverOptions)
     RETURN_EXCEPTION_STR("not supported on windows");
 }
 
-MY_NODE_MODULE_CALLBACK(getJob)
+MY_NODE_MODULE_CALLBACK(getJob, context)
 {
     MY_NODE_MODULE_HANDLESCOPE;
     REQUIRE_ARGUMENTS(iArgs, 2);
-    REQUIRE_ARGUMENT_STRINGW(iArgs, 0, printername);
+    REQUIRE_ARGUMENT_STRINGV8(iArgs, 0, printername);
+
     REQUIRE_ARGUMENT_INTEGER(iArgs, 1, jobId);
     if(jobId < 0)
     {
@@ -576,11 +577,11 @@ MY_NODE_MODULE_CALLBACK(getJob)
     MY_NODE_MODULE_RETURN_VALUE(result_printer_job);
 }
 
-MY_NODE_MODULE_CALLBACK(setJob)
+MY_NODE_MODULE_CALLBACK(setJob, context)
 {
     MY_NODE_MODULE_HANDLESCOPE;
     REQUIRE_ARGUMENTS(iArgs, 3);
-    REQUIRE_ARGUMENT_STRINGW(iArgs, 0, printername);
+    REQUIRE_ARGUMENT_STRINGV8(iArgs, 0, printername);
     REQUIRE_ARGUMENT_INTEGER(iArgs, 1, jobId);
     REQUIRE_ARGUMENT_STRING(iArgs, 2, jobCommandV8);
     if(jobId < 0)
@@ -666,7 +667,7 @@ MY_NODE_MODULE_CALLBACK(getSupportedPrintFormats)
     MY_NODE_MODULE_RETURN_VALUE(result);
 }
 
-MY_NODE_MODULE_CALLBACK(PrintDirect)
+MY_NODE_MODULE_CALLBACK(PrintDirect, context)
 {
     MY_NODE_MODULE_HANDLESCOPE;
     //TODO: to move in an unique place win and posix input parameters processing
@@ -679,16 +680,16 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
     }
 
     std::string data;
-    v8::Handle<v8::Value> arg0(iArgs[0]);
+    v8::Local<v8::Value> arg0(iArgs[0]);
     if (!getStringOrBufferFromV8Value(arg0, data))
     {
         RETURN_EXCEPTION_STR("Argument 0 must be a string or Buffer");
     }
-
-    REQUIRE_ARGUMENT_STRINGW(iArgs, 1, printername);
-    REQUIRE_ARGUMENT_STRINGW(iArgs, 2, docname);
-    REQUIRE_ARGUMENT_STRINGW(iArgs, 3, type);
-
+    
+        REQUIRE_ARGUMENT_STRINGV8(iArgs, 1, printername);
+        REQUIRE_ARGUMENT_STRINGV8(iArgs, 2, docname);
+        REQUIRE_ARGUMENT_STRINGV8(iArgs, 3, type);
+    
     BOOL     bStatus = true;
     // Open a handle to the printer.
     PrinterHandle printerHandle((LPWSTR)(*printername));

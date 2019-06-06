@@ -2,7 +2,7 @@
 
 #include <node_buffer.h>
 
-void initNode(v8::Handle<v8::Object> exports) {
+void initNode(v8::Local<v8::Object> exports) {
 // only for node
   NODE_SET_METHOD(exports, "getPrinters", getPrinters);
   NODE_SET_METHOD(exports, "getDefaultPrinterName", getDefaultPrinterName);
@@ -20,11 +20,14 @@ NODE_MODULE(node_printer, initNode);
 
 // Helpers
 
-bool getStringOrBufferFromV8Value(v8::Handle<v8::Value> iV8Value, std::string &oData)
+bool getStringOrBufferFromV8Value(v8::Local<v8::Value> iV8Value, std::string &oData)
 {
+    v8::Isolate*  isolate = v8::Isolate::GetCurrent();
+    v8::Local<v8::Context> context = isolate -> GetCurrentContext();
+
     if(iV8Value->IsString())
     {
-        v8::String::Utf8Value data_str_v8(iV8Value->ToString());
+        v8::String::Utf8Value data_str_v8(isolate, iV8Value);
         oData.assign(*data_str_v8, data_str_v8.length());
         return true;
     }
@@ -34,4 +37,11 @@ bool getStringOrBufferFromV8Value(v8::Handle<v8::Value> iV8Value, std::string &o
         return true;
     }
     return false;
+}
+
+bool getStringOrBufferFromV8MaybeLocalString(v8::MaybeLocal<v8::String> iV8MaybeLocal, std::string &oData)
+{
+    
+    v8::Local<v8::String> localString  = iV8MaybeLocal.ToLocalChecked();
+    return getStringOrBufferFromV8Value(localString, oData);
 }
