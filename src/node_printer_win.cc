@@ -317,7 +317,10 @@ namespace{
         {
             std::string error_str("Error on allocating memory for jobs: ");
             error_str += getLastErrorCodeAndMessage();
-            return error_str;
+            v8::Local<v8::Object> result_printer_job = V8_VALUE_NEW_DEFAULT_V_0_11_10(Object);
+            result_printer_job->Set(V8_STRING_NEW_UTF8("error"), V8_STRING_NEW_UTF8(error_str.c_str()));
+            result_printer_jobs->Set(0, result_printer_job);
+            return std::string("");
         }
         DWORD dummy_bytes = 0;
         bError = EnumJobsW(*iPrinterHandle, 0, iTotalJobs, 2, (LPBYTE)jobs.get(), bytes_needed, &dummy_bytes, &totalJobs);
@@ -325,7 +328,10 @@ namespace{
         {
             std::string error_str("Error on EnumJobsW: ");
             error_str += getLastErrorCodeAndMessage();
-            return error_str;
+            v8::Local<v8::Object> result_printer_job = V8_VALUE_NEW_DEFAULT_V_0_11_10(Object);
+            result_printer_job->Set(V8_STRING_NEW_UTF8("error"), V8_STRING_NEW_UTF8(error_str.c_str()));
+            result_printer_jobs->Set(0, result_printer_job);
+            return std::string("");
         }
         JOB_INFO_2W *job = jobs.get();
         for(DWORD i = 0; i < totalJobs; ++i, ++job)
