@@ -16,6 +16,7 @@
     "url": "git://github.com/tojocky/node-printer.git"
   },
   "devDependencies": {
+    "electron-rebuild": "^1.8.5",
     "grunt": "^0.4.5",
     "grunt-contrib-copy": "^0.8.0",
     "grunt-contrib-jshint": "^0.11.0",
@@ -31,7 +32,8 @@
     "install": "node-pre-gyp install --fallback-to-build",
     "test": "nodeunit test",
     "dev": "nf start",
-    "electron": "electron ."
+    "electron": "electron .",
+    "rebuild": "electron-rebuild -f -w yourmodule"
   },
   "binary": {
     "module_name": "node_printer",
