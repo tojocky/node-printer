@@ -30,7 +30,8 @@
     "preinstall": "npm install node-pre-gyp",
     "install": "node-pre-gyp install --fallback-to-build",
     "test": "nodeunit test",
-    "dev": "electron ."
+    "dev": "nf start",
+    "electron": "electron ."
   },
   "binary": {
     "module_name": "node_printer",
@@ -43,8 +44,10 @@
       "type": "BSD"
     }
   ],
-  "main": "./lib/printer",
+  "main": "./main.js",
   "dependencies": {
+    "electron": "^5.0.6",
+    "electron-builder": "^20.44.4",
     "node-pre-gyp": "^0.13.0"
   }
 }
