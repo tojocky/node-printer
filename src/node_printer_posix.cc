@@ -259,14 +259,17 @@ namespace
 
         /// Add options from v8 object
         CupsOptions(v8::Local<v8::Object> iV8Options): num_options(0) {
-            v8::Local<v8::Array> props = iV8Options->GetPropertyNames();
+        	v8::MaybeLocal<v8::Array> maybeProps = iV8Options->GetPropertyNames(iV8Options->GetIsolate()->GetCurrentContext());
 
-            for(unsigned int i = 0; i < props->Length(); ++i) {
-                v8::Handle<v8::Value> key(props->Get(i));
-                v8::String::Utf8Value keyStr(key->ToString());
-                v8::String::Utf8Value valStr(iV8Options->Get(key)->ToString());
+			if(!maybeProps.IsEmpty()) {
+				v8::Local<v8::Array> props = maybeProps.ToLocalChecked();
+				for(unsigned int i = 0; i < props->Length(); ++i) {
+					v8::Handle<v8::Value> key(props->Get(i));
+					v8::String::Utf8Value keyStr(key->ToString());
+					v8::String::Utf8Value valStr(iV8Options->Get(key)->ToString());
 
-                num_options = cupsAddOption(*keyStr, *valStr, num_options, &_value);
+					num_options = cupsAddOption(*keyStr, *valStr, num_options, &_value);
+				}
             }
         }
 
