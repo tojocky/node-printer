@@ -117,10 +117,10 @@ namespace
         double creationTime = ((double)job->creation_time) * 1000;
         double completedTime = ((double)job->completed_time) * 1000;
         double processingTime = ((double)job->processing_time) * 1000;
-
-        result_printer_job->Set(V8_STRING_NEW_UTF8("completedTime"), V8_VALUE_NEW(Date, completedTime));
-        result_printer_job->Set(V8_STRING_NEW_UTF8("creationTime"), V8_VALUE_NEW(Date, creationTime));
-        result_printer_job->Set(V8_STRING_NEW_UTF8("processingTime"), V8_VALUE_NEW(Date, processingTime));
+        
+        result_printer_job->Set(V8_STRING_NEW_UTF8("completedTime"), V8_VALUE_NEW_DATE(Date, creationTime));
+        result_printer_job->Set(V8_STRING_NEW_UTF8("creationTime"), V8_VALUE_NEW_DATE(Date, creationTime));
+        result_printer_job->Set(V8_STRING_NEW_UTF8("processingTime"), V8_VALUE_NEW_DATE(Date, processingTime));
 
         // No error. return an empty string
         return "";
@@ -259,7 +259,7 @@ namespace
 
         /// Add options from v8 object
         CupsOptions(v8::Local<v8::Object> iV8Options): num_options(0) {
-        	v8::MaybeLocal<v8::Array> maybeProps = iV8Options->GetPropertyNames(iV8Options->GetIsolate()->GetCurrentContext());
+        	v8::MaybeLocal<v8::Array> maybeProps = iV8Options->GetPropertyNames(MY_NODE_MODULE_CONTEXT);
 
 			if(!maybeProps.IsEmpty()) {
 				v8::Local<v8::Array> props = maybeProps.ToLocalChecked();

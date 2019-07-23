@@ -2,18 +2,20 @@
 #define NODE_PRINTER_SRC_MACROS_H
 
 #include <node_version.h>
-
 // NODE_MODULE_VERSION was incremented for v0.11
 
 
 #if NODE_VERSION_AT_LEAST(0, 11, 9)
 #  define MY_NODE_MODULE_ISOLATE_DECL v8::Isolate* isolate = v8::Isolate::GetCurrent();
+#  define MY_NODE_MODULE_CONTEXT    v8::Isolate::GetCurrent()->GetCurrentContext()
+#  define MY_NODE_MODULE_CONTEXT_PRE    MY_NODE_MODULE_CONTEXT,
 #  define MY_NODE_MODULE_ISOLATE      isolate
 #  define MY_NODE_MODULE_ISOLATE_PRE  isolate, 
 #  define MY_NODE_MODULE_ISOLATE_POST , isolate 
 #  define MY_NODE_MODULE_HANDLESCOPE MY_NODE_MODULE_ISOLATE_DECL v8::HandleScope scope(MY_NODE_MODULE_ISOLATE)
 #  define MY_NODE_MODULE_CALLBACK(name) void name(const v8::FunctionCallbackInfo<v8::Value>& iArgs)
 #  define V8_VALUE_NEW(type, value)   v8::type::New(MY_NODE_MODULE_ISOLATE_PRE value)
+#  define V8_VALUE_NEW_DATE(type, value)   v8::Date::New(MY_NODE_MODULE_CONTEXT_PRE value).FromMaybe(v8::Date::New(MY_NODE_MODULE_CONTEXT_PRE 0).ToLocalChecked())
 #  define V8_VALUE_NEW_DEFAULT(type)   v8::type::New(MY_NODE_MODULE_ISOLATE)
 #  define V8_STRING_NEW_UTF8(value)   v8::String::NewFromUtf8(MY_NODE_MODULE_ISOLATE_PRE value)
 #  define V8_STRING_NEW_2BYTES(value)   v8::String::NewFromTwoByte(MY_NODE_MODULE_ISOLATE_PRE value)
@@ -33,6 +35,7 @@
 #  define MY_NODE_MODULE_HANDLESCOPE v8::HandleScope scope;
 #  define MY_NODE_MODULE_CALLBACK(name) v8::Handle<v8::Value> name(const v8::Arguments& iArgs)
 #  define V8_VALUE_NEW(type, value)   v8::type::New(value)
+#  define V8_VALUE_NEW_DATE(type, value)   v8::Date::New(value)
 #  define V8_VALUE_NEW_DEFAULT(type)   v8::type::New()
 #  define V8_STRING_NEW_UTF8(value)   v8::String::New(MY_NODE_MODULE_ISOLATE_PRE value)
 #  define V8_STRING_NEW_2BYTES(value)   v8::String::New(MY_NODE_MODULE_ISOLATE_PRE value)
