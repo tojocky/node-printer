@@ -289,14 +289,15 @@ namespace
 
         /// Add options from v8 object
         CupsOptions(v8::Local<v8::Object> iV8Options): num_options(0) {
+                MY_NODE_MODULE_ISOLATE_DECL
         	v8::MaybeLocal<v8::Array> maybeProps = iV8Options->GetPropertyNames(MY_NODE_MODULE_CONTEXT);
 
 			if(!maybeProps.IsEmpty()) {
 				v8::Local<v8::Array> props = maybeProps.ToLocalChecked();
 				for(unsigned int i = 0; i < props->Length(); ++i) {
 					v8::Local<v8::Value> key(props->Get(i));
-					v8::String::Utf8Value keyStr(key->ToString());
-					v8::String::Utf8Value valStr(iV8Options->Get(key)->ToString());
+					v8::String::Utf8Value keyStr(MY_NODE_MODULE_ISOLATE, key->ToString(MY_NODE_MODULE_ISOLATE));
+					v8::String::Utf8Value valStr(MY_NODE_MODULE_ISOLATE, iV8Options->Get(key)->ToString(MY_NODE_MODULE_ISOLATE));
 
 					num_options = cupsAddOption(*keyStr, *valStr, num_options, &_value);
 				}
