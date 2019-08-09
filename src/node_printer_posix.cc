@@ -67,7 +67,7 @@ namespace
     /** Parse job info object.
      * @return error string. if empty, then no error
      */
-    std::string parseJobObject(const cups_job_t *job, v8::Handle<v8::Object> result_printer_job)
+    std::string parseJobObject(const cups_job_t *job, v8::Local<v8::Object> result_printer_job)
     {
         MY_NODE_MODULE_ISOLATE_DECL
         //Common fields
@@ -128,37 +128,67 @@ namespace
 
     /** Parses printer driver PPD options
      */
-    void populatePpdOptions(v8::Handle<v8::Object> ppd_options, ppd_file_t  *ppd, ppd_group_t *group)
+    void populatePpdOptions(v8::Local<v8::Object> driver_options, ppd_file_t  *ppd, ppd_group_t *group)
     {
         int i, j;
         ppd_option_t *option;
         ppd_choice_t *choice;
         ppd_group_t *subgroup;
 
-        for (i = group->num_options, option = group->options; i > 0; --i, ++option)
-        {
-            MY_NODE_MODULE_ISOLATE_DECL
+        MY_NODE_MODULE_ISOLATE_DECL
+        v8::Local<v8::Object> ppd_options = v8::Local<v8::Object>::Cast(driver_options->Get(V8_STRING_NEW_UTF8("options")));
+        v8::Local<v8::Object> group_details = v8::Local<v8::Object>::Cast(driver_options->Get(V8_STRING_NEW_UTF8("groups")));
+
+        v8::Local<v8::Object> group_opts = V8_VALUE_NEW_DEFAULT_V_0_11_10(Object);
+        group_details->Set(V8_STRING_NEW_UTF8(group->text), group_opts);
+                
+        for (i = group->num_options, option = group->options; i > 0; --i, ++option) {
             v8::Local<v8::Object> ppd_suboptions = V8_VALUE_NEW_DEFAULT_V_0_11_10(Object);
             for (j = option->num_choices, choice = option->choices;
                  j > 0;
-                 --j, ++choice)
-            {
-                ppd_suboptions->Set(V8_STRING_NEW_UTF8(choice->choice), V8_VALUE_NEW_V_0_11_10(Boolean, static_cast<bool>(choice->marked)));
+                 --j, ++choice) {
+                v8::Local<v8::Object> ppd_opt = V8_VALUE_NEW_DEFAULT_V_0_11_10(Object);
+                ppd_opt->Set(
+                    V8_STRING_NEW_UTF8("text"),
+                    V8_STRING_NEW_UTF8(choice->text)
+                );
+                ppd_opt->Set(
+                    V8_STRING_NEW_UTF8("marked"),
+                    V8_VALUE_NEW_V_0_11_10(Boolean, static_cast<bool>(choice->marked))
+                );
+                ppd_suboptions->Set(
+                    V8_STRING_NEW_UTF8(choice->choice), 
+                    ppd_opt
+                );
             }
 
-            ppd_options->Set(V8_STRING_NEW_UTF8(option->keyword), ppd_suboptions);
-        }
+            v8::Local<v8::Object> ppd_suboptions_obj = V8_VALUE_NEW_DEFAULT_V_0_11_10(Object);
+            ppd_suboptions_obj->Set(
+                V8_STRING_NEW_UTF8("text"), 
+                V8_STRING_NEW_UTF8(option->text)
+            );
+            ppd_suboptions_obj->Set(
+                V8_STRING_NEW_UTF8("values"), 
+                ppd_suboptions
+            );
+            ppd_suboptions_obj->Set(
+                V8_STRING_NEW_UTF8("belongs-to"),
+                V8_STRING_NEW_UTF8(group->name)
+            );
 
+            ppd_options->Set(V8_STRING_NEW_UTF8(option->keyword), ppd_suboptions_obj);
+            group_opts->Set(V8_STRING_NEW_UTF8(option->keyword), ppd_suboptions_obj);
+        }
+        
         for (i = group->num_subgroups, subgroup = group->subgroups; i > 0; --i, ++subgroup) {
-            populatePpdOptions(ppd_options, ppd, subgroup);
+            populatePpdOptions(driver_options, ppd, subgroup);
         }
     }
 
     /** Parse printer driver options
      * @return error string.
      */
-    std::string parseDriverOptions(const cups_dest_t * printer, v8::Handle<v8::Object> ppd_options)
-    {
+    std::string parseDriverOptions(const cups_dest_t * printer, v8::Local<v8::Object> ppd_options) {
         const char *filename;
         ppd_file_t *ppd;
         ppd_group_t *group;
@@ -197,7 +227,7 @@ namespace
     /** Parse printer info object
      * @return error string.
      */
-    std::string parsePrinterInfo(const cups_dest_t * printer, v8::Handle<v8::Object> result_printer)
+    std::string parsePrinterInfo(const cups_dest_t * printer, v8::Local<v8::Object> result_printer)
     {
         MY_NODE_MODULE_ISOLATE_DECL
         result_printer->Set(V8_STRING_NEW_UTF8("name"), V8_STRING_NEW_UTF8(printer->name));
@@ -259,14 +289,15 @@ namespace
 
         /// Add options from v8 object
         CupsOptions(v8::Local<v8::Object> iV8Options): num_options(0) {
+                MY_NODE_MODULE_ISOLATE_DECL
         	v8::MaybeLocal<v8::Array> maybeProps = iV8Options->GetPropertyNames(MY_NODE_MODULE_CONTEXT);
 
 			if(!maybeProps.IsEmpty()) {
 				v8::Local<v8::Array> props = maybeProps.ToLocalChecked();
 				for(unsigned int i = 0; i < props->Length(); ++i) {
-					v8::Handle<v8::Value> key(props->Get(i));
-					v8::String::Utf8Value keyStr(key->ToString());
-					v8::String::Utf8Value valStr(iV8Options->Get(key)->ToString());
+					v8::Local<v8::Value> key(props->Get(i));
+					v8::String::Utf8Value keyStr(MY_NODE_MODULE_ISOLATE, key->ToString(MY_NODE_MODULE_ISOLATE));
+					v8::String::Utf8Value valStr(MY_NODE_MODULE_ISOLATE, iV8Options->Get(key)->ToString(MY_NODE_MODULE_ISOLATE));
 
 					num_options = cupsAddOption(*keyStr, *valStr, num_options, &_value);
 				}
@@ -355,6 +386,8 @@ MY_NODE_MODULE_CALLBACK(getPrinterDriverOptions)
     int printers_size = cupsGetDests(&printers);
     printer = cupsGetDest(*printername, NULL, printers_size, printers);
     v8::Local<v8::Object> driver_options = V8_VALUE_NEW_DEFAULT_V_0_11_10(Object);
+    driver_options->Set(V8_STRING_NEW_UTF8("options"), V8_VALUE_NEW_DEFAULT_V_0_11_10(Object));
+    driver_options->Set(V8_STRING_NEW_UTF8("groups"), V8_VALUE_NEW_DEFAULT_V_0_11_10(Object));
     if(printer != NULL)
     {
         parseDriverOptions(printer, driver_options);
@@ -461,7 +494,7 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
     }
 
     std::string data;
-    v8::Handle<v8::Value> arg0(iArgs[0]);
+    v8::Local<v8::Value> arg0(iArgs[0]);
     if (!getStringOrBufferFromV8Value(arg0, data))
     {
         RETURN_EXCEPTION_STR("Argument 0 must be a string or Buffer");

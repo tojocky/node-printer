@@ -92,7 +92,7 @@
 
 #define REQUIRE_ARGUMENT_STRING(args, i, var)                                        \
     ARG_CHECK_STRING(args, i);                                                       \
-    v8::String::Utf8Value var(args[i]->ToString());
+    v8::String::Utf8Value var(args.GetIsolate(), args[i]->ToString(args.GetIsolate()->GetCurrent()));
 
 #define REQUIRE_ARGUMENT_STRINGW(args, i, var)                                        \
     ARG_CHECK_STRING(args, i);                                                       \
@@ -112,7 +112,7 @@
 #define REQUIRE_ARGUMENT_INTEGER(args, i, var)                             \
     int var;                                                                   \
     if (args[i]->IsInt32()) {                                             \
-        var = args[i]->Int32Value();                                           \
+        var = args[i]->Int32Value(args.GetIsolate()->GetCurrent()->GetCurrentContext()).ToChecked();                                           \
     }                                                                          \
     else {                                                                     \
         RETURN_EXCEPTION_STR("Argument " #i " must be an integer");                 \
