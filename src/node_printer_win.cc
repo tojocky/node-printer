@@ -205,7 +205,7 @@ namespace{
         return result;
     }
 
-    void parseJobObject(JOB_INFO_2W *job, v8::Handle<v8::Object> result_printer_job)
+    void parseJobObject(JOB_INFO_2W *job, v8::Local<v8::Object> result_printer_job)
     {
         MY_NODE_MODULE_ISOLATE_DECL
         //Common fields
@@ -306,7 +306,7 @@ namespace{
 
     std::string retrieveAndParseJobs(const LPWSTR iPrinterName,
                                      const DWORD& iTotalJobs,
-                                     v8::Handle<v8::Object> result_printer_jobs,
+                                     v8::Local<v8::Object> result_printer_jobs,
                                      PrinterHandle& iPrinterHandle)
     {
         MY_NODE_MODULE_ISOLATE_DECL
@@ -343,7 +343,7 @@ namespace{
         return std::string("");
     }
 
-    std::string parsePrinterInfo(const PRINTER_INFO_2W *printer, v8::Handle<v8::Object> result_printer, PrinterHandle& iPrinterHandle)
+    std::string parsePrinterInfo(const PRINTER_INFO_2W *printer, v8::Local<v8::Object> result_printer, PrinterHandle& iPrinterHandle)
     {
         MY_NODE_MODULE_ISOLATE_DECL
     #define ADD_V8_STRING_PROPERTY(name, key) if((printer->##key != NULL) && (*printer->##key != L'\0'))    \
@@ -685,7 +685,7 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
     }
 
     std::string data;
-    v8::Handle<v8::Value> arg0(iArgs[0]);
+    v8::Local<v8::Value> arg0(iArgs[0]);
     if (!getStringOrBufferFromV8Value(arg0, data))
     {
         RETURN_EXCEPTION_STR("Argument 0 must be a string or Buffer");

@@ -9,6 +9,8 @@
 #include <cups/cups.h>
 #include <cups/ppd.h>
 
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 namespace
 {
     typedef std::map<std::string, int> StatusMapType;
@@ -67,7 +69,7 @@ namespace
     /** Parse job info object.
      * @return error string. if empty, then no error
      */
-    std::string parseJobObject(const cups_job_t *job, v8::Handle<v8::Object> result_printer_job)
+    std::string parseJobObject(const cups_job_t *job, v8::Local<v8::Object> result_printer_job)
     {
         MY_NODE_MODULE_ISOLATE_DECL
         //Common fields
@@ -118,9 +120,9 @@ namespace
         double completedTime = ((double)job->completed_time) * 1000;
         double processingTime = ((double)job->processing_time) * 1000;
 
-        result_printer_job->Set(V8_STRING_NEW_UTF8("completedTime"), V8_VALUE_NEW(Date, completedTime));
-        result_printer_job->Set(V8_STRING_NEW_UTF8("creationTime"), V8_VALUE_NEW(Date, creationTime));
-        result_printer_job->Set(V8_STRING_NEW_UTF8("processingTime"), V8_VALUE_NEW(Date, processingTime));
+        result_printer_job->Set(V8_STRING_NEW_UTF8("completedTime"), Nan::New<v8::Date>(completedTime).ToLocalChecked());
+        result_printer_job->Set(V8_STRING_NEW_UTF8("creationTime"), Nan::New<v8::Date>(creationTime).ToLocalChecked());
+        result_printer_job->Set(V8_STRING_NEW_UTF8("processingTime"), Nan::New<v8::Date>(processingTime).ToLocalChecked());
 
         // No error. return an empty string
         return "";
@@ -128,7 +130,7 @@ namespace
 
     /** Parses printer driver PPD options
      */
-    void populatePpdOptions(v8::Handle<v8::Object> ppd_options, ppd_file_t  *ppd, ppd_group_t *group)
+    void populatePpdOptions(v8::Local<v8::Object> ppd_options, ppd_file_t  *ppd, ppd_group_t *group)
     {
         int i, j;
         ppd_option_t *option;
@@ -157,7 +159,7 @@ namespace
     /** Parse printer driver options
      * @return error string.
      */
-    std::string parseDriverOptions(const cups_dest_t * printer, v8::Handle<v8::Object> ppd_options)
+    std::string parseDriverOptions(const cups_dest_t * printer, v8::Local<v8::Object> ppd_options)
     {
         const char *filename;
         ppd_file_t *ppd;
@@ -197,7 +199,7 @@ namespace
     /** Parse printer info object
      * @return error string.
      */
-    std::string parsePrinterInfo(const cups_dest_t * printer, v8::Handle<v8::Object> result_printer)
+    std::string parsePrinterInfo(const cups_dest_t * printer, v8::Local<v8::Object> result_printer)
     {
         MY_NODE_MODULE_ISOLATE_DECL
         result_printer->Set(V8_STRING_NEW_UTF8("name"), V8_STRING_NEW_UTF8(printer->name));
@@ -259,12 +261,12 @@ namespace
 
         /// Add options from v8 object
         CupsOptions(v8::Local<v8::Object> iV8Options): num_options(0) {
-            v8::Local<v8::Array> props = iV8Options->GetPropertyNames();
+            v8::Local<v8::Array> props = Nan::GetPropertyNames(iV8Options).ToLocalChecked();
 
             for(unsigned int i = 0; i < props->Length(); ++i) {
-                v8::Handle<v8::Value> key(props->Get(i));
-                v8::String::Utf8Value keyStr(key->ToString());
-                v8::String::Utf8Value valStr(iV8Options->Get(key)->ToString());
+                v8::Local<v8::Value> key(props->Get(i));
+                Nan::Utf8String keyStr(key->ToString(Nan::GetCurrentContext()).FromMaybe(v8::Local<v8::String>()));
+                Nan::Utf8String valStr(iV8Options->Get(key)->ToString(Nan::GetCurrentContext()).FromMaybe(v8::Local<v8::String>()));
 
                 num_options = cupsAddOption(*keyStr, *valStr, num_options, &_value);
             }
@@ -458,7 +460,7 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
     }
 
     std::string data;
-    v8::Handle<v8::Value> arg0(iArgs[0]);
+    v8::Local<v8::Value> arg0(iArgs[0]);
     if (!getStringOrBufferFromV8Value(arg0, data))
     {
         RETURN_EXCEPTION_STR("Argument 0 must be a string or Buffer");

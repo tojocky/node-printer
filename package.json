@@ -42,5 +42,8 @@
       "type": "BSD"
     }
   ],
-  "main": "./lib/printer"
+  "main": "./lib/printer",
+  "dependencies": {
+    "nan": "^2.14.0"
+  }
 }
