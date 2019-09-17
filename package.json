@@ -2,7 +2,7 @@
   "name": "printer",
   "description": "Node.js printer bindings",
   "version": "0.3.0",
-  "homepage": "http://github.com/thiagoelg/node-printer",
+  "homepage": "http://github.com/tojocky/node-printer",
   "author": {
     "name": "Ion Lupascu",
     "url": "http://program-support.co.uk/",
@@ -13,7 +13,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/thiagoelg/node-printer.git"
+    "url": "git://github.com/tojocky/node-printer.git"
   },
   "devDependencies": {
     "grunt": "^0.4.5",
@@ -34,7 +34,7 @@
   "binary": {
     "module_name": "node_printer",
     "module_path": "./lib/",
-    "host": "https://github.com/thiagoelg/node-printer/releases/download/",
+    "host": "https://github.com/tojocky/node-printer/releases/download/",
     "remote_path": "{version}"
   },
   "licenses": [
