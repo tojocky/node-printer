@@ -4,16 +4,16 @@
 
 void initNode(v8::Local<v8::Object> exports) {
 // only for node
-    NODE_SET_METHOD(exports, "getPrinters", getPrinters);
-    NODE_SET_METHOD(exports, "getDefaultPrinterName", getDefaultPrinterName);
-    NODE_SET_METHOD(exports, "getPrinter", getPrinter);
-    NODE_SET_METHOD(exports, "getPrinterDriverOptions", getPrinterDriverOptions);
-    NODE_SET_METHOD(exports, "getJob", getJob);
-    NODE_SET_METHOD(exports, "setJob", setJob);
-    NODE_SET_METHOD(exports, "printDirect", PrintDirect);
-    NODE_SET_METHOD(exports, "printFile", PrintFile);
-    NODE_SET_METHOD(exports, "getSupportedPrintFormats", getSupportedPrintFormats);
-    NODE_SET_METHOD(exports, "getSupportedJobCommands", getSupportedJobCommands);
+    MY_MODULE_SET_METHOD(exports, "getPrinters", getPrinters);
+    MY_MODULE_SET_METHOD(exports, "getDefaultPrinterName", getDefaultPrinterName);
+    MY_MODULE_SET_METHOD(exports, "getPrinter", getPrinter);
+    MY_MODULE_SET_METHOD(exports, "getPrinterDriverOptions", getPrinterDriverOptions);
+    MY_MODULE_SET_METHOD(exports, "getJob", getJob);
+    MY_MODULE_SET_METHOD(exports, "setJob", setJob);
+    MY_MODULE_SET_METHOD(exports, "printDirect", PrintDirect);
+    MY_MODULE_SET_METHOD(exports, "printFile", PrintFile);
+    MY_MODULE_SET_METHOD(exports, "getSupportedPrintFormats", getSupportedPrintFormats);
+    MY_MODULE_SET_METHOD(exports, "getSupportedJobCommands", getSupportedJobCommands);
 }
 
 NODE_MODULE(node_printer, initNode);
@@ -24,7 +24,7 @@ bool getStringOrBufferFromV8Value(v8::Local<v8::Value> iV8Value, std::string &oD
 {
     if(iV8Value->IsString())
     {
-        Nan::Utf8String data_str_v8(iV8Value->ToString(Nan::GetCurrentContext()).FromMaybe(v8::Local<v8::String>()));
+        Nan::Utf8String data_str_v8(V8_LOCAL_STRING_FROM_VALUE(iV8Value));
         oData.assign(*data_str_v8, data_str_v8.length());
         return true;
     }

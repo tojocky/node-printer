@@ -11,10 +11,10 @@ $version = $args[0]
 
 echo "Building Electron Version -> $version"
 
-node-gyp configure --target=$version --arch=x64 --dist-url=https://atom.io/download/atom-shell --module_name=node_printer --module_path=../lib/
-node-gyp build --target=$version --arch=x64 --dist-url=https://atom.io/download/atom-shell --module_name=node_printer --module_path=../lib/
-node-pre-gyp package --runtime=electron --target=$version --target_arch=x64
+# Build Electron Windows 64bit
+node_modules\.bin\node-pre-gyp.cmd configure --target=$version --arch=x64 --dist-url=https://electronjs.org/headers --module_name=node_printer
+node_modules\.bin\node-pre-gyp.cmd build package --runtime=electron --target=$version --target_arch=x64 --build-from-source
 
-node-gyp configure --target=$version --arch=ia32 --dist-url=https://atom.io/download/atom-shell --module_name=node_printer --module_path=../lib/
-node-gyp build --target=$version --arch=ia32 --dist-url=https://atom.io/download/atom-shell --module_name=node_printer --module_path=../lib/
-node-pre-gyp package --runtime=electron --target=$version --target_arch=ia32
+# Build Electron Windows 32bit
+node_modules\.bin\node-pre-gyp.cmd configure --target=$version --arch=ia32 --dist-url=https://electronjs.org/headers --module_name=node_printer
+node_modules\.bin\node-pre-gyp.cmd build package --runtime=electron --target=$version --target_arch=ia32 --build-from-source

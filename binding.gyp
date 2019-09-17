@@ -1,7 +1,7 @@
 {
-  'variables': {
-    'module_name%': 'node_printer',
-    'module_path%': './lib/'
+  "variables": {
+    "module_name%": "node_printer",
+    "module_path%": "lib"
   },
   'targets': [
     {
@@ -26,7 +26,7 @@
         "<!(node -e \"require('nan')\")"
       ],
       'cflags_cc+': [
-        "-Wno-cast-function-type"
+        "-Wno-deprecated-declarations"
       ],
       'conditions': [
         # common exclusions
@@ -51,9 +51,9 @@
             #'-lcups -lgssapi_krb5 -lkrb5 -lk5crypto -lcom_err -lz -lpthread -lm -lcrypt -lz'
           ],
           'link_settings': {
-              'libraries': [
-                  '<!(cups-config --libs)'
-              ]
+            'libraries': [
+              '<!(cups-config --libs)'
+            ]
           }
         }]
       ]

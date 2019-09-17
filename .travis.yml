@@ -1,20 +1,31 @@
 env:
   matrix:
-    - export NODE_VERSION="6.9"
-    - export NODE_VERSION="5.9"
-    - export NODE_VERSION="4.4"
-    - export NODE_VERSION="0.10"
+    - export NODE_VERSION="0.10.48"
+    - export NODE_VERSION="0.12.18"
+    - export NODE_VERSION="4.9.1"
+    - export NODE_VERSION="5.9.1"
+    - export NODE_VERSION="6.17.1"
+    - export NODE_VERSION="8.16.1"
+    - export NODE_VERSION="10.16.0"
+    - export NODE_VERSION="11.15.0"
+    - export NODE_VERSION="12.10.0"
 matrix:
   fast_finish: true
   allow_failures:
-    - env: NODE_VERSION="0.10"
-    - env: NODE_VERSION="iojs"
+    - env: export NODE_VERSION="0.10.48"
+    - env: export NODE_VERSION="0.12.18"
+
+before_script:
+  - git config --global user.name "Ion Lupascu"
+  - git config --global user.email ionlupascu@gmail.com
+
 before_install:
   - git clone https://github.com/creationix/nvm.git ./.nvm
   - source ./.nvm/nvm.sh
-  - nvm install $NODE_VERSION 64
-  - echo $NODE_VERSION
-  - nvm use $NODE_VERSION
+  - nvm install 12 64
+  - nvm use 12
+  - npm -v
+  - node -v
   - if [ $TRAVIS_OS_NAME == "linux" ]; then
       sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test;
       sudo apt-get -qq update;
@@ -23,29 +34,25 @@ before_install:
       sudo apt-get install -qq debhelper autotools-dev cups-ppdc libcups2-dev cups imagemagick ghostscript;
     fi
   - "export JOBS=4"
-  - npm install -g node-gyp
+  - npm install -g node-gyp node-pre-gyp
   - BUILD_ONLY=true npm install --build-from-source
-before_script:
-  - git config --global user.name "Ion Lupascu"
-  - git config --global user.email ionlupascu@gmail.com
 
-after_script:
-  - node-pre-gyp configure
-  - node-pre-gyp build package
-
-  - node-pre-gyp configure
-  - node-pre-gyp build package --target_arch=ia32
-  - npm test
+script:
+  - node-pre-gyp configure --target=$NODE_VERSION
+  - node-pre-gyp build package --target=$NODE_VERSION --target_arch=x64
+  - node-pre-gyp configure --target=$NODE_VERSION
+  - node-pre-gyp build package --target=$NODE_VERSION --target_arch=ia32  
 
 # Need S3 Upload for Artifacts
-# addons:
-#   artifacts:
-#     debug: true
-#     paths:
-#     - ./build/stage/**/*.tar.gz
+addons:
+  artifacts:
+    debug: true
+    paths:
+    - ./build/stage/**/*.tar.gz
 
 git:
   depth: 1
+
 branches:
   only:
     - master
@@ -53,4 +60,3 @@ branches:
 os:
   - linux
   - osx
-script: npm test
