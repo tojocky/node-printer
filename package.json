@@ -1,7 +1,7 @@
 {
   "name": "printer",
   "description": "Node.js printer bindings",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "homepage": "http://github.com/thiagoelg/node-printer",
   "author": {
     "name": "Ion Lupascu",
