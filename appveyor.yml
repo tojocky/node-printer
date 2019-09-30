@@ -16,7 +16,10 @@ init:
   - git config --global user.name "Eko Eryanto"
   - git config --global user.email ekoeryanto@gmail.com
 
-# Get the latest stable version of Node 0.STABLE.latest
+environment: 
+  UTO:
+    secure: AA2zX0xeCPV5EgMld2KE8msF3xBOiiva546EWDGT8BFqkb/83qj/X3uHT0q9p29b
+
 install:
   - ps: Install-Product node 12 x64
   - cmd: SET PATH=c:\python27;%PATH%
@@ -24,9 +27,9 @@ install:
   - cmd: SET BUILD_ONLY=true
   - cmd: npm install
   - cmd: echo 'Building for node'
-  - cmd: npm run prebuild -- -u ${TOTO}
+  - cmd: npm run prebuild -- -u %UTO%
   - cmd: echo 'Building for electron'
-  - cmd: npm run prebuild -- -t electron -u ${TOTO}
+  - cmd: npm run prebuild -- -t electron -u %UTO%
 
 test_script:
   - node --version
