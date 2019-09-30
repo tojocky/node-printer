@@ -20,7 +20,7 @@ init:
 
 environment: 
   UTO:
-    secure: AA2zX0xeCPV5EgMld2KE8msF3xBOiiva546EWDGT8BFqkb/83qj/X3uHT0q9p29b
+    secure: LCgKqXmOMGn//dRIygDqFdZY2SRk+sPWBX5rHxSWbO8ORW59m8PtxJu9hfq/fHEI
   matrix:
     - PREBUILD_RUNTIME: 'electron'
     - PREBUILD_RUNTIME: 'node'
