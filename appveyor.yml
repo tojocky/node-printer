@@ -52,3 +52,4 @@ branches:
 
 cache:
   - '%APPDATA%\npm-cache'
+  - '%USERPROFILE%\.node-gyp'
