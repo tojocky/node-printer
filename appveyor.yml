@@ -19,6 +19,9 @@ init:
 environment: 
   UTO:
     secure: AA2zX0xeCPV5EgMld2KE8msF3xBOiiva546EWDGT8BFqkb/83qj/X3uHT0q9p29b
+  matrix:
+    - PREBUILD_RUNTIME: 'electron'
+    - PREBUILD_RUNTIME: 'node'
 
 install:
   - ps: Install-Product node 12 x64
@@ -27,9 +30,13 @@ install:
   - cmd: SET BUILD_ONLY=true
   - cmd: npm install
   - cmd: echo 'Building for node'
-  - cmd: npm run prebuild -- -u %UTO%
-  - cmd: echo 'Building for electron'
-  - cmd: npm run prebuild -- -t electron -u %UTO%
+  - cmd: 
+  
+  - cmd: npx prebuild --all --force --strip -u %UTO%
+  - cmd: echo "Building for %PREBUILD_RUNTIME% 32"
+  - cmd: npx prebuild --all --force --strip --target %PREBUILD_RUNTIME% --arch ia32 -u %UTO%
+  - cmd: echo "Building for %PREBUILD_RUNTIME% 64"
+  - cmd: npx prebuild --all --force --strip --target %PREBUILD_RUNTIME% --arch x64 -u %UTO%
 
 test_script:
   - node --version
