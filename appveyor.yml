@@ -13,44 +13,20 @@ clone_folder: c:\p
 # fix lineendings in Windows
 init:
   - git config --global core.autocrlf input
-  - git config --global user.name "Ion Lupascu"
-  - git config --global user.email ionlupascu@gmail.com
-
-# what combinations to test
-environment:
-  matrix:
-    # Node.js
-    - nodejs_version: "0.10.48"
-    - nodejs_version: "0.12.18"
-    - nodejs_version: "4.9.1"
-    - nodejs_version: "5.9.1"
-    - nodejs_version: "6.17.1"
-    - nodejs_version: "8.16.1"
-    - nodejs_version: "10.16.0"
-    - nodejs_version: "11.15.0"
-    - nodejs_version: "12.10.0"
-      build_electron: "true"
-
-matrix:
-  fast_finish: true
-  allow_failures:
-    - nodejs_version: "0.10.48"
-    - nodejs_version: "0.12.18"
+  - git config --global user.name "Eko Eryanto"
+  - git config --global user.email ekoeryanto@gmail.com
 
 # Get the latest stable version of Node 0.STABLE.latest
 install:
-  - ps: Install-Product node 12.6 x64
+  - ps: Install-Product node 12 x64
   - cmd: SET PATH=c:\python27;%PATH%
   - cmd: SET JOBS=4
   - cmd: SET BUILD_ONLY=true
-  - cmd: npm install node-gyp node-pre-gyp
-  - cmd: echo 'Building for node version '
-  - cmd: echo %nodejs_version%
-  - cmd: node_modules\.bin\node-pre-gyp.cmd configure --target=%nodejs_version%
-  - cmd: node_modules\.bin\node-pre-gyp.cmd build package --target=%nodejs_version% --target_arch=x64
-  - cmd: node_modules\.bin\node-pre-gyp.cmd configure --target=%nodejs_version%
-  - cmd: node_modules\.bin\node-pre-gyp.cmd build package --target=%nodejs_version% --target_arch=ia32
-  - ps: ./tools/buildWindows.ps1
+  - cmd: npm install
+  - cmd: echo 'Building for node'
+  - cmd: npm run prebuild -- -u ${TOTO}
+  - cmd: echo 'Building for electron'
+  - cmd: npm run prebuild -- -t electron -u ${TOTO}
 
 test_script:
   - node --version
@@ -59,8 +35,11 @@ test_script:
 build: off
 
 artifacts:
-  - path: 'build\stage\**\*.tar.gz'
+  - path: 'prebuilds\**\*.tar.gz'
 
 branches:
   only:
-    - master
+    - release
+
+cache:
+  - '%APPDATA%\npm-cache'
