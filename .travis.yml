@@ -1,6 +1,8 @@
 sudo: false
 dist: xenial
-compiler: clang
+compiler: 
+  - clang
+  - gcc
 language: node_js
 
 node_js:
@@ -25,8 +27,8 @@ before_script:
 before_install:
   - export JOBS=4
   - export BUILD_ONLY=true 
-  - export CC=clang
-  - export CXX=clang++
+  - export CXX=gcc
+  - if [ "$TRAVIS_OS_NAME" != "windows" ]; then export CXX=clang++; export CC=clang; fi
   - export npm_config_clang=1
   - export npm_config_build_from_source=true
   - export JOBS=4
