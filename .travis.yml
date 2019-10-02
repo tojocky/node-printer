@@ -1,3 +1,6 @@
+sudo: false
+dist: xenial
+compiler: clang
 language: node_js
 
 node_js:
@@ -7,9 +10,9 @@ env:
   global:
     secure: jCoNwlW6HlzBcgRnGsdYQCtxSv77iTMbZvEili1A7SIgZjT9rCeBSp+VcjR0yx6aw3J1A+ktBkryqk0mlE6dHpRNbw9va/NQnGhxydGuKQvq2obq9loBzWuJeQ+ZZM2XrOH16yOPC8v2KxxKTtqZi1JFqHB6E6dIgDVwFierg9gSl3ZCb2Ri+W+pZ3nVId8WNgHr/YWaarMaNCq+7+Zw8/DwEZ+KEEu99PpG2RSiyv5gCnHVP6CxUxg46JFjTnZMTt4xLJAwrxryorOH9JoClZbXkEqbtzIuTurGhiFHcNV0WiJEqiil0Ihbd7Qi4JruzdXDweAeRmib/OBp6DwADPkEYrx5TVseyrpJAKokqEhbNNRjN/yFDqf0ZA4pXBHcDtYmoVVElnbTK2nJSzUyNLbGbLlEy/H86N7cKTqXlm5wd8Z6Ol1Mr7kqWl4FZO+R0zG7vYDWPGzDE8oHEA+yDsC3GLLn4wbmYmG2thHZIMs18XdlG3wj6Tbc6tKsqAZyqHqsY4BVwxDj+YSSyE84BP/rFutQ0rh5jbPcjSQ8/dTOSxcDVSCzKMUMMUvRGaPYzN9TeKT+AUVcyQNhQGkOwaYKBJCxm/ADR+dGMtfC3qE2hObgOq6nvGolKiG2GfjdRN/VYLPfq7FU/BpsDQ15m0BPDZmaudDe06f2NBOqj88=
   matrix:
-  - export BUILD_RT="(node x86)"
+  - export BUILD_RT="(node ia32)"
   - export BUILD_RT="(node x64)"
-  - export BUILD_RT="(electron x86)"
+  - export BUILD_RT="(electron ia32)"
   - export BUILD_RT="(electron x64)"
 
 matrix:
@@ -20,21 +23,16 @@ before_script:
 - git config --global user.email ekoeryanto@gmail.com
 
 before_install:
-- |
-  if [ $TRAVIS_OS_NAME == "linux" ]
-    then
-      sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-      sudo apt-get -qq update
-      sudo apt-get install -qq debhelper autotools-dev cups-ppdc libcups2-dev cups imagemagick libc6-dev-i386 ghostscript g++-4.8 gcc-multilib g++-multilib
-      export npm_config_build_from_source=true
-  fi
-- export JOBS=4
-- export BUILD_ONLY=true 
+  - export JOBS=4
+  - export BUILD_ONLY=true 
+  - export CC=clang
+  - export CXX=clang++
+  - export npm_config_clang=1
+  - export npm_config_build_from_source=true
+  - export JOBS=4
 
 script:
-- export TARACH=$([[ $TRAVIS_OS_NAME == "linux" && "${BUILD_RT[1]}" == "x86" ]] && echo "x86" || echo "ia32")
-- echo build for $TARACH
-- npx prebuild --all --force --strip --target ${BUILD_RT[0]} --arch $TARACH -u $UTO
+- npx prebuild --all --force --strip --target ${BUILD_RT[0]} --arch ${BUILD_RT[1]} -u $UTO
 
 git:
   depth: 1
@@ -47,3 +45,15 @@ os:
   - linux
   - windows
   - osx
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - build-essential
+      - gcc-4.9-multilib
+      - g++-4.9-multilib
+      - cups-ppdc 
+      - libcups2-dev
+      - cups
