@@ -30,7 +30,7 @@ before_install:
   - export npm_config_build_from_source=true
 
 script:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" && "${BUILD_RT[1]]}" == "ia32" ]; then BUILD_RT[1] = "x86"; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" && "${BUILD_RT[1]}" == "ia32" ]]; then BUILD_RT[1] = "x86"; fi
   - npx prebuild --all --force --strip --target ${BUILD_RT[0]} --arch ${BUILD_RT[1]} -u $UTO
 
 git:
