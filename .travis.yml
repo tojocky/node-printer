@@ -41,7 +41,6 @@ branches:
 os:
   - linux
   - osx
-  - windows
 
 addons:
   apt:
