@@ -19,6 +19,8 @@ env:
     - export BUILD_RT="(node x64)"
     - export BUILD_RT="(electron ia32)"
     - export BUILD_RT="(electron x64)"
+    - export BUILD_RT="(node-webkit ia32)"
+    - export BUILD_RT="(node-webkit x64)"
 
 matrix:
   fast_finish: true

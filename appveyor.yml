@@ -24,6 +24,7 @@ environment:
   matrix:
     - PREBUILD_RUNTIME: 'electron'
     - PREBUILD_RUNTIME: 'node'
+    - PREBUILD_RUNTIME: 'node-webkit'
 
 matrix:
   fast_finish: true
@@ -33,7 +34,7 @@ install:
   - cmd: SET PATH=c:\python27;%PATH%
   - cmd: SET JOBS=4
   - cmd: SET BUILD_ONLY=true
-  - cmd: npm install
+  - cmd: npm ci --build-from-source
   - cmd: echo "Building for %PREBUILD_RUNTIME%"
   - cmd: npx prebuild --all --force --strip --target %PREBUILD_RUNTIME% -u %UTO%
 
@@ -42,9 +43,6 @@ test_script:
   - npm --version
 
 build: off
-
-artifacts:
-  - path: 'prebuilds\**\*.tar.gz'
 
 branches:
   only:
