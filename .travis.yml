@@ -1,12 +1,14 @@
 sudo: false
 dist: xenial
-compiler: clang
 language: node_js
-
 node_js:
-- 12
+  - 12
 
 env:
+  - CXX=g++-4.8
+  - JOBS=4
+  - BUILD_ONLY=true 
+  - npm_config_build_from_source=true
   global:
     secure: jCoNwlW6HlzBcgRnGsdYQCtxSv77iTMbZvEili1A7SIgZjT9rCeBSp+VcjR0yx6aw3J1A+ktBkryqk0mlE6dHpRNbw9va/NQnGhxydGuKQvq2obq9loBzWuJeQ+ZZM2XrOH16yOPC8v2KxxKTtqZi1JFqHB6E6dIgDVwFierg9gSl3ZCb2Ri+W+pZ3nVId8WNgHr/YWaarMaNCq+7+Zw8/DwEZ+KEEu99PpG2RSiyv5gCnHVP6CxUxg46JFjTnZMTt4xLJAwrxryorOH9JoClZbXkEqbtzIuTurGhiFHcNV0WiJEqiil0Ihbd7Qi4JruzdXDweAeRmib/OBp6DwADPkEYrx5TVseyrpJAKokqEhbNNRjN/yFDqf0ZA4pXBHcDtYmoVVElnbTK2nJSzUyNLbGbLlEy/H86N7cKTqXlm5wd8Z6Ol1Mr7kqWl4FZO+R0zG7vYDWPGzDE8oHEA+yDsC3GLLn4wbmYmG2thHZIMs18XdlG3wj6Tbc6tKsqAZyqHqsY4BVwxDj+YSSyE84BP/rFutQ0rh5jbPcjSQ8/dTOSxcDVSCzKMUMMUvRGaPYzN9TeKT+AUVcyQNhQGkOwaYKBJCxm/ADR+dGMtfC3qE2hObgOq6nvGolKiG2GfjdRN/VYLPfq7FU/BpsDQ15m0BPDZmaudDe06f2NBOqj88=
   matrix:
@@ -22,13 +24,6 @@ before_script:
 - git config --global user.name "Eko Eryanto"
 - git config --global user.email ekoeryanto@gmail.com
 
-before_install:
-  - export JOBS=4
-  - export BUILD_ONLY=true 
-  - export CXX=gcc
-  - export npm_config_clang=1
-  - export npm_config_build_from_source=true
-
 script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" && "${BUILD_RT[1]}" == "ia32" ]]; then BUILD_RT[1] = "x86"; fi
   - npx prebuild --all --force --strip --target ${BUILD_RT[0]} --arch ${BUILD_RT[1]} -u $UTO
@@ -43,15 +38,14 @@ branches:
 os:
   - linux
   - osx
+  - windows
 
 addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
     packages:
-      - build-essential
-      - gcc-4.9-multilib
-      - g++-4.9-multilib
+      - g++-4.8
       - cups-ppdc 
       - libcups2-dev
       - cups
