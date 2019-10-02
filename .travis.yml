@@ -36,3 +36,7 @@ git:
 branches:
   only:
   - release
+
+os:
+  - linux
+  - windows
