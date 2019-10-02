@@ -30,7 +30,8 @@ before_script:
 - git config --global user.email ekoeryanto@gmail.com
 
 script:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" && "${BUILD_RT[1]}" == "ia32" ]]; then BUILD_RT[1] = "x86"; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" && "${BUILD_RT[1]}" == "ia32" ]]; then BUILD_RT[1]="x86" ; fi
+  - echo Building for ${BUILD_RT[0]} ${BUILD_RT[1]}
   - npx prebuild --all --force --strip --target ${BUILD_RT[0]} --arch ${BUILD_RT[1]} -u $UTO
 
 git:
