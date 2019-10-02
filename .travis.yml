@@ -28,8 +28,13 @@ before_install:
   - export JOBS=4
   - export BUILD_ONLY=true 
   - export CXX=gcc
-  - if [ "$TRAVIS_OS_NAME" != "windows" ]; then export CXX=clang++; export CC=clang; fi
-  - export npm_config_clang=1
+  - |
+    if [ "$TRAVIS_OS_NAME" != "windows" ]
+      then
+        export CXX=clang++
+        export CC=clang
+        export npm_config_clang=1
+    fi
   - export npm_config_build_from_source=true
   - export JOBS=4
 
