@@ -36,7 +36,8 @@ install:
   - cmd: SET BUILD_ONLY=true
   - cmd: npm ci --build-from-source
   - cmd: echo "Building for %PREBUILD_RUNTIME%"
-  - cmd: npx prebuild --all --force --strip -r %PREBUILD_RUNTIME% -u %UTO%
+  - cmd: npx prebuild --strip -r %PREBUILD_RUNTIME% -t 5.0.0 -u %UTO%
+  - cmd: npx prebuild --strip -r %PREBUILD_RUNTIME% -t 6.0.0 -u %UTO%
 
 test_script:
   - node --version
