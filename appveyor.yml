@@ -3,10 +3,6 @@
 # build version format
 version: "{build}"
 
-platform:
-  - x86
-  - x64
-
 image: Visual Studio 2017
 
 # Set a known clone folder
@@ -31,12 +27,17 @@ install:
   - cmd: SET JOBS=4
   - cmd: SET BUILD_ONLY=true
   - cmd: npm ci --build-from-source
-  - cmd: npx prebuild --strip -r electron -t 5.0.11 -u %UTO%
-  - cmd: npx prebuild --strip -r electron -t 6.0.12 -u %UTO%
-  - cmd: npx prebuild --strip -r node-webkit -t 0.37.4 -u %UTO%
-  - cmd: npx prebuild --strip -r node-webkit -t 0.41.3 -u %UTO%
-  - cmd: npx prebuild --strip -r node -t 12.12.0 -u %UTO%
-
+  - cmd: npx prebuild --strip -r electron -t 5.0.11 --arch x64
+  - cmd: npx prebuild --strip -r electron -t 6.0.12 --arch x64
+  - cmd: npx prebuild --strip -r node-webkit -t 0.37.4 --arch x64
+  - cmd: npx prebuild --strip -r node-webkit -t 0.41.3 --arch x64
+  - cmd: npx prebuild --strip -r node -t 12.12.0 --arch x64
+  - cmd: npx prebuild --strip -r electron -t 5.0.11 --arch ia32
+  - cmd: npx prebuild --strip -r electron -t 6.0.12 --arch ia32
+  - cmd: npx prebuild --strip -r node-webkit -t 0.37.4 --arch ia32
+  - cmd: npx prebuild --strip -r node-webkit -t 0.41.3 --arch ia32
+  - cmd: npx prebuild --strip -r node -t 12.12.0 --arch ia32
+  - cmd: npx prebuild -u %UTO%
 test_script:
   - node --version
   - npm --version
