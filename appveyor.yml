@@ -5,6 +5,7 @@ version: "{build}"
 
 platform: 
   - x64
+  - x86
 
 image: Visual Studio 2017
 
@@ -25,21 +26,16 @@ matrix:
   fast_finish: true
 
 install:
-  - ps: Install-Product node 12 x64
+  - ps: Install-Product node 12 $env:PLATFORM
   - cmd: SET PATH=c:\python27;%PATH%
   - cmd: SET JOBS=4
   - cmd: SET BUILD_ONLY=true
   - cmd: npm ci --build-from-source
-  - cmd: npx prebuild --strip -r electron -t 5.0.11 --arch x64
-  - cmd: npx prebuild --strip -r electron -t 6.0.12 --arch x64
-  - cmd: npx prebuild --strip -r node-webkit -t 0.37.4 --arch x64
-  - cmd: npx prebuild --strip -r node-webkit -t 0.41.3 --arch x64
-  - cmd: npx prebuild --strip -r node -t 12.12.0 --arch x64
-  - cmd: npx prebuild --strip -r electron -t 5.0.11 --arch ia32
-  - cmd: npx prebuild --strip -r electron -t 6.0.12 --arch ia32
-  - cmd: npx prebuild --strip -r node-webkit -t 0.37.4 --arch ia32
-  - cmd: npx prebuild --strip -r node-webkit -t 0.41.3 --arch ia32
-  - cmd: npx prebuild --strip -r node -t 12.12.0 --arch ia32
+  - cmd: npx prebuild --strip -r electron -t 5.0.11
+  - cmd: npx prebuild --strip -r electron -t 6.0.12
+  - cmd: npx prebuild --strip -r node-webkit -t 0.37.4
+  - cmd: npx prebuild --strip -r node-webkit -t 0.41.3
+  - cmd: npx prebuild --strip -r node -t 12.12.0
   - cmd: npx prebuild -u %UTO%
 test_script:
   - node --version
