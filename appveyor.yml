@@ -21,10 +21,6 @@ init:
 environment: 
   UTO:
     secure: LCgKqXmOMGn//dRIygDqFdZY2SRk+sPWBX5rHxSWbO8ORW59m8PtxJu9hfq/fHEI
-  matrix:
-    - PREBUILD_RUNTIME: 'electron'
-    - PREBUILD_RUNTIME: 'node'
-    - PREBUILD_RUNTIME: 'node-webkit'
 
 matrix:
   fast_finish: true
