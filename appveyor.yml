@@ -3,7 +3,8 @@
 # build version format
 version: "{build}"
 
-platform: x64
+platform: 
+  - x64
 
 image: Visual Studio 2017
 
@@ -24,7 +25,7 @@ matrix:
   fast_finish: true
 
 install:
-  - ps: Install-Product node 12
+  - ps: Install-Product node 12 x64
   - cmd: SET PATH=c:\python27;%PATH%
   - cmd: SET JOBS=4
   - cmd: SET BUILD_ONLY=true
