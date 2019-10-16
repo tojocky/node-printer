@@ -22,7 +22,7 @@ before_script:
 script:
   - npx prebuild --strip -r electron -t 5.0.11 -u $UTO
   - npx prebuild --strip -r electron -t 6.0.12 -u $UTO
-  - npx prebuild --strip -r node-webkit -t 0.37.4 -u %UTO%
+  # - npx prebuild --strip -r node-webkit -t 0.37.4 -u %UTO%
   - npx prebuild --strip -r node-webkit -t 0.41.3 -u %UTO%
   - npx prebuild --strip -r node -t 12.12.0 -u $UTO
 
