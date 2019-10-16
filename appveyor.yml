@@ -36,7 +36,7 @@ install:
   - cmd: npx prebuild --strip -r electron -t 6.0.12 --arch %TP% -u %UTO%
   - cmd: npx prebuild --strip -r node-webkit -t 0.37.4 --arch %TP% -u %UTO%
   - cmd: npx prebuild --strip -r node-webkit -t 0.41.3 --arch %TP% -u %UTO%
-  - cmd: npx prebuild --strip -r node -t 12.12.0 --arch %TP% -u %UTO%
+  - cmd: npx prebuild --strip --all --arch %TP% -u %UTO%
 test_script:
   - node --version
   - npm --version
