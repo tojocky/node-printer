@@ -3,6 +3,8 @@
 # build version format
 version: "{build}"
 
+platform: x64
+
 image: Visual Studio 2017
 
 # Set a known clone folder
