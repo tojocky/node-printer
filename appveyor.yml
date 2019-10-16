@@ -32,12 +32,12 @@ install:
   - cmd: SET BUILD_ONLY=true
   - cmd: npm ci --build-from-source
   - ps: $buildTarget = if($env:PLATFORM -eq 'x86'){'ia32'}else{$env:PLATFORM}
-  - cmd: npx prebuild --strip -r electron -t 5.0.11 --arch $buildTarget
-  - cmd: npx prebuild --strip -r electron -t 6.0.12 --arch $buildTarget
-  - cmd: npx prebuild --strip -r node-webkit -t 0.37.4 --arch $buildTarget
-  - cmd: npx prebuild --strip -r node-webkit -t 0.41.3 --arch $buildTarget
-  - cmd: npx prebuild --strip -r node -t 12.12.0 --arch $buildTarget
-  - cmd: npx prebuild -u %UTO%
+  - ps: npx prebuild --strip -r electron -t 5.0.11 --arch $buildTarget
+  - ps: npx prebuild --strip -r electron -t 6.0.12 --arch $buildTarget
+  - ps: npx prebuild --strip -r node-webkit -t 0.37.4 --arch $buildTarget
+  - ps: npx prebuild --strip -r node-webkit -t 0.41.3 --arch $buildTarget
+  - ps: npx prebuild --strip -r node -t 12.12.0 --arch $buildTarget
+  - ps: npx prebuild -u %UTO%
 test_script:
   - node --version
   - npm --version
