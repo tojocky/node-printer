@@ -39,7 +39,7 @@ install:
   - cmd: npx prebuild --strip -r node-webkit -t 0.37.4 --arch ia32
   - cmd: npx prebuild --strip -r node-webkit -t 0.41.3 --arch ia32
   - cmd: npx prebuild --strip -r node -t 12.12.0 --arch ia32
-  - cmd: npx prebuild -u %UTO%
+  - cmd: npx prebuild --upload-all %UTO%
 test_script:
   - node --version
   - npm --version
