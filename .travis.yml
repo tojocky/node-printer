@@ -58,6 +58,7 @@ script:
 
 os:
   - linux
+  - osx
 
 addons:
   apt:
