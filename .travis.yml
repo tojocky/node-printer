@@ -44,9 +44,9 @@ node_js:
 env:
   global:
     - JOBS=4
-    - CXX='g++-4.8'
 
 before_script:
+- if [[ $TRAVIS_OS_NAME == "linux" ]]; then export CXX='g++-4.8'; fi
 - git config --global user.name "Eko Eryanto"
 - git config --global user.email ekoeryanto@gmail.com
 
