@@ -51,8 +51,10 @@ before_script:
 - git config --global user.email ekoeryanto@gmail.com
 
 script:
-  - npx prebuild -t 12.12.0 --arch ia32 -u $PREBUILD_TOKEN
-  - npx prebuild -t 12.12.0 -u $PREBUILD_TOKEN
+  - npx prebuild --strip --all -r electron --arch ia32 -u $PREBUILD_TOKEN
+  - npx prebuild --strip --all -r electron --arch x64 -u $PREBUILD_TOKEN
+  - npx prebuild --strip --all --arch ia32 -u $PREBUILD_TOKEN
+  - npx prebuild --strip --all --arch x64 -u $PREBUILD_TOKEN
 
 os:
   - linux
