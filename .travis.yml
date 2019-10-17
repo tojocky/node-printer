@@ -21,10 +21,8 @@ before_script:
 
 script:
   - npx prebuild --strip -r electron --all -u $UTO
-  - npx prebuild --strip -r node-webkit --all -u %UTO%
   - npx prebuild --strip --all -u $UTO
   - npx prebuild --strip -r electron --all -u $UTO --arch ia32
-  - npx prebuild --strip -r node-webkit --all -u %UTO% --arch ia32
   - npx prebuild --strip --all -u $UTO --arch ia32
 
 git:
