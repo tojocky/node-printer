@@ -7,7 +7,6 @@ env:
     - JOBS=4
     - BUILD_ONLY=true 
     - npm_config_build_from_source=true
-    - CXX='g++-4.8'
     - secure: jCoNwlW6HlzBcgRnGsdYQCtxSv77iTMbZvEili1A7SIgZjT9rCeBSp+VcjR0yx6aw3J1A+ktBkryqk0mlE6dHpRNbw9va/NQnGhxydGuKQvq2obq9loBzWuJeQ+ZZM2XrOH16yOPC8v2KxxKTtqZi1JFqHB6E6dIgDVwFierg9gSl3ZCb2Ri+W+pZ3nVId8WNgHr/YWaarMaNCq+7+Zw8/DwEZ+KEEu99PpG2RSiyv5gCnHVP6CxUxg46JFjTnZMTt4xLJAwrxryorOH9JoClZbXkEqbtzIuTurGhiFHcNV0WiJEqiil0Ihbd7Qi4JruzdXDweAeRmib/OBp6DwADPkEYrx5TVseyrpJAKokqEhbNNRjN/yFDqf0ZA4pXBHcDtYmoVVElnbTK2nJSzUyNLbGbLlEy/H86N7cKTqXlm5wd8Z6Ol1Mr7kqWl4FZO+R0zG7vYDWPGzDE8oHEA+yDsC3GLLn4wbmYmG2thHZIMs18XdlG3wj6Tbc6tKsqAZyqHqsY4BVwxDj+YSSyE84BP/rFutQ0rh5jbPcjSQ8/dTOSxcDVSCzKMUMMUvRGaPYzN9TeKT+AUVcyQNhQGkOwaYKBJCxm/ADR+dGMtfC3qE2hObgOq6nvGolKiG2GfjdRN/VYLPfq7FU/BpsDQ15m0BPDZmaudDe06f2NBOqj88=
 
 before_script:
@@ -36,7 +35,8 @@ addons:
     sources:
       - ubuntu-toolchain-r-test
     packages:
-      - g++-4.8
+      - gcc-multilib
+      - g++-multilib
       - cups-ppdc 
       - libcups2-dev
       - cups
