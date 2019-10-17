@@ -61,6 +61,8 @@ script:
   - npx prebuild --strip --all --arch ia32 -u $PREBUILD_TOKEN
   - npx prebuild --strip --all --arch x64 -u $PREBUILD_TOKEN
 
+tags: true
+
 os:
   - linux
   - osx
