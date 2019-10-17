@@ -24,6 +24,10 @@ addons:
     packages:
       - g++
       - g++-multilib
+      - debhelper
+      - autotools-dev
       - cups-ppdc 
       - libcups2-dev
       - cups
+      - imagemagick
+      - ghostscript
