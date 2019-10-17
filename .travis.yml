@@ -52,6 +52,7 @@ before_script:
 
 script:
   - npx prebuild -t 12.12.0 --arch ia32 -u $PREBUILD_TOKEN
+  - npx prebuild -t 12.12.0 -u $PREBUILD_TOKEN
 
 os:
   - linux
