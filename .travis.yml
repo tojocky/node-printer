@@ -28,6 +28,9 @@ addons:
       - autotools-dev
       - cups-ppdc 
       - libcups2-dev
+      - ibcups2-dev:i386
+      - libcupsimage2-dev:i386
+      - libtiff-dev:i386
       - cups
       - imagemagick
       - ghostscript
