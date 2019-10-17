@@ -1,36 +1,73 @@
-language: node_js
-node_js:
-  - 12
-
 env:
-  global:
-    - JOBS=4
-    - BUILD_ONLY=true 
-
+  matrix:
+    - export NODE_VERSION="12"
+matrix:
+  fast_finish: true
+before_install:
+  - git clone --depth=1 https://github.com/creationix/nvm.git ./.nvm
+  - source ./.nvm/nvm.sh
+  - nvm install $NODE_VERSION 64
+  - echo $NODE_VERSION
+  - nvm use $NODE_VERSION
+  - if [ $TRAVIS_OS_NAME == "linux" ]; then
+      sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test;
+      sudo apt-get -qq update;
+      sudo apt-get -qq install g++-4.8;
+      export CXX='g++-4.8';
+      sudo apt-get install -qq debhelper autotools-dev cups-ppdc libcups2-dev cups imagemagick ghostscript;
+    fi
+  - "export JOBS=4"
 before_script:
-- git config --global user.name "Eko Eryanto"
-- git config --global user.email ekoeryanto@gmail.com
+  - git config --global user.name "Ion Lupascu"
+  - git config --global user.email ionlupascu@gmail.com
 
-script:
-  - npx prebuild -t 12.12.0 --arch ia32 -u $PREBUILD_TOKEN
+# Need S3 Upload for Artifacts
+# addons:
+#   artifacts:
+#     debug: true
+#     paths:
+#     - ./build/stage/**/*.tar.gz
+
 
 os:
   - linux
+  # - osx
 
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-    packages:
-      - g++
-      - g++-multilib
-      - debhelper
-      - autotools-dev
-      - cups-ppdc 
-      - libcups2-dev
-      - libcups2-dev:i386
-      - libcupsimage2-dev:i386
-      - libtiff-dev:i386
-      - cups
-      - imagemagick
-      - ghostscript
+script: npx prebuild -t 12.12.0 --arch ia32 -u $PREBUILD_TOKEN
+
+
+# language: node_js
+# node_js:
+#   - 12
+
+# env:
+#   global:
+#     - JOBS=4
+
+# before_script:
+# - git config --global user.name "Eko Eryanto"
+# - git config --global user.email ekoeryanto@gmail.com
+
+# script:
+#   - npx prebuild -t 12.12.0 --arch ia32 -u $PREBUILD_TOKEN
+
+# os:
+#   - linux
+
+# addons:
+#   apt:
+#     sources:
+#       - ubuntu-toolchain-r-test
+#     packages:
+#       - g++-multilib
+#       - gcc-multilib
+#       - debhelper
+#       - autotools-dev
+#       - cups-ppdc 
+#       - libcups2-dev
+#       - libcups2-dev:i386
+#       - libcupsimage2-dev:i386
+#       - libtiff-dev:i386
+#       - cups
+#       - imagemagick
+#       - ghostscript
