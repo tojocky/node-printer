@@ -20,6 +20,7 @@ before_install:
 before_script:
   - git config --global user.name "Ion Lupascu"
   - git config --global user.email ionlupascu@gmail.com
+  - npm ci
 
 # Need S3 Upload for Artifacts
 # addons:
