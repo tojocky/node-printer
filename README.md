@@ -1,4 +1,4 @@
-node-printer
+Node Printer Prebuild
 ============
 Native bind printers on POSIX and Windows OS from Node.js, iojs and node-webkit.
 <table>
@@ -12,13 +12,13 @@ Native bind printers on POSIX and Windows OS from Node.js, iojs and node-webkit.
   <tbody>
     <tr>
       <td align="center">
-        <a href="https://travis-ci.org/tojocky/node-printer"><img src="https://travis-ci.org/tojocky/node-printer.svg?branch=master"></a>
+        <a href="https://travis-ci.org/ekoeryanto/node-printer"><img src="https://travis-ci.org/ekoeryanto/node-printer.svg?branch=release"></a>
       </td>
       <td align="center">
-        <a href="https://ci.appveyor.com/project/tojocky/node-printer"><img src="https://ci.appveyor.com/api/projects/status/9y800f36wla35ee7?svg=true"></a>
+        <a href="https://ci.appveyor.com/project/ekoeryanto/node-printer"><img src="https://ci.appveyor.com/api/projects/status/2bw9nrwmivv9fa96/branch/release?svg=true"></a>
       </td>
       <td align="center">
-        <a href="https://david-dm.org/tojocky/node-printer"><img src="https://david-dm.org/tojocky/node-printer.svg"></a>
+        <a href="https://david-dm.org/ekoeryanto/node-printer"><img src="https://david-dm.org/ekoeryanto/node-printer.svg"></a>
       </td>
     </tr>
   </tbody>
