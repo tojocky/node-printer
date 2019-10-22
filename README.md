@@ -1,6 +1,6 @@
 Node Printer Prebuild
 ============
-Native bind printers on POSIX and Windows OS from Node.js, iojs and node-webkit.
+Native bind printers on POSIX and Windows OS from Node.js, electron and node-webkit.
 <table>
   <thead>
     <tr>
@@ -51,47 +51,9 @@ I was involved in a project where I need to print from Node.JS. This is the reas
 
 
 ### How to install:
-Make sure you have Python 2.x installed on your system. Windows users will also require Visual Studio (2013 Express is a good fit)
-
-from [npmjs.org](https://www.npmjs.org/package/printer)
-
-#### Prebuilt node builds
 ```
-npm install printer --target_arch=ia32
-npm install printer --target_arch=x64
+npm install @pake/node-printer
 ```
-
-#### Prebuilt electron builds
-Say you are installing 1.4.5 electron. Please check the [Releases](https://github.com/tojocky/node-printer/releases) for supported Electron versions
-```
-npm install printer --runtime=electron --target=1.4.5 --target_arch=x64
-npm install printer --runtime=electron --target=1.4.5 --target_arch=ia32
-```
-
-#### For building after install
-```
-npm install -g node-gyp
-npm install printer --msvs_version=2013  --build-from-source=node_printer
-```
-
-or [direct from git](https://www.npmjs.org/doc/cli/npm-install.html):
-
-    npm install git+https://github.com/tojocky/node-printer.git
-if you want to to run in [nwjs](http://nwjs.io/) then rebuild the module with [nw-gyp](https://github.com/nwjs/nw-gyp):
-```
-npm install -g nw-gyp
-cd node_modules/printer
-nw-gyp rebuild
-```
-For specific distribution `--dist-url` node-gyp parameter should be used. Example for electron:
-```
-node-gyp rebuild --target=0.37.4 --arch=x64 --dist-url=https://atom.io/download/atom-shell
-```
-
-Ubuntu User :
-You need to install libcups2-dev package
-`sudo apt-get install libcups2-dev`
-
 
 ### How to use:
 
