@@ -1,6 +1,9 @@
 Node Printer Prebuild
 ============
 Native bind printers on POSIX and Windows OS from Node.js, electron and node-webkit.
+
+> It just works with Node 12 because of @thiagoelg in his [PR](https://github.com/tojocky/node-printer/pull/261)
+
 <table>
   <thead>
     <tr>
