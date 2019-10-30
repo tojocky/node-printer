@@ -1,62 +1,83 @@
-env:
-  matrix:
-    - export NODE_VERSION="0.10.48"
-    - export NODE_VERSION="0.12.18"
-    - export NODE_VERSION="4.9.1"
-    - export NODE_VERSION="5.9.1"
-    - export NODE_VERSION="6.17.1"
-    - export NODE_VERSION="8.16.1"
-    - export NODE_VERSION="10.16.0"
-    - export NODE_VERSION="11.15.0"
-    - export NODE_VERSION="12.10.0"
-matrix:
-  fast_finish: true
-  allow_failures:
-    - env: export NODE_VERSION="0.10.48"
-    - env: export NODE_VERSION="0.12.18"
-
-before_script:
-  - git config --global user.name "Ion Lupascu"
-  - git config --global user.email ionlupascu@gmail.com
-
-before_install:
-  - git clone https://github.com/creationix/nvm.git ./.nvm
-  - source ./.nvm/nvm.sh
-  - nvm install 12 64
-  - nvm use 12
-  - npm -v
-  - node -v
-  - if [ $TRAVIS_OS_NAME == "linux" ]; then
-      sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test;
-      sudo apt-get -qq update;
-      sudo apt-get -qq install g++-4.8;
-      export CXX='g++-4.8';
-      sudo apt-get install -qq debhelper autotools-dev cups-ppdc libcups2-dev cups imagemagick ghostscript;
-    fi
-  - "export JOBS=4"
-  - npm install -g node-gyp node-pre-gyp
-  - BUILD_ONLY=true npm install --build-from-source
-
-script:
-  - node-pre-gyp configure --target=$NODE_VERSION
-  - node-pre-gyp build package --target=$NODE_VERSION --target_arch=x64
-  - node-pre-gyp configure --target=$NODE_VERSION
-  - node-pre-gyp build package --target=$NODE_VERSION --target_arch=ia32  
+# env:
+#   matrix:
+#     - export NODE_VERSION="12"
+# matrix:
+#   fast_finish: true
+# before_install:
+#   - git clone --depth=1 https://github.com/creationix/nvm.git ./.nvm
+#   - source ./.nvm/nvm.sh
+#   - nvm install $NODE_VERSION 64
+#   - echo $NODE_VERSION
+#   - nvm use $NODE_VERSION
+#   - if [ $TRAVIS_OS_NAME == "linux" ]; then
+#       sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test;
+#       sudo apt-get -qq update;
+#       sudo apt-get -qq install g++-4.8 libc6-dev-i386 libcups2:i386 libcups2-dev:i386  linux-libc-dev linux-libc-dev:i386 gcc-4.8-multilib g++-4.8-multilib;
+#       export CXX='g++-4.8';
+#       sudo apt-get install -qq debhelper autotools-dev cups-ppdc libcups2-dev cups imagemagick ghostscript;
+#     fi
+#   - "export JOBS=4"
+# before_script:
+#   - git config --global user.name "Ion Lupascu"
+#   - git config --global user.email ionlupascu@gmail.com
+#   - npm ci
 
 # Need S3 Upload for Artifacts
-addons:
-  artifacts:
-    debug: true
-    paths:
-    - ./build/stage/**/*.tar.gz
+# addons:
+#   artifacts:
+#     debug: true
+#     paths:
+#     - ./build/stage/**/*.tar.gz
 
-git:
-  depth: 1
+
+# os:
+#   - linux
+#   # - osx
+
+# script: npx prebuild -t 12.12.0 --arch ia32 -u $PREBUILD_TOKEN
+
+
+language: node_js
+node_js:
+  - 12
 
 branches:
   only:
-    - master
+  - master
+  
+env:
+  global:
+    - JOBS=4
+
+cache:
+  npm: true
+  directories:
+    - $HOME/.npm/_prebuilds
+
+before_script:
+- if [[ $TRAVIS_OS_NAME == "linux" ]]; then export CXX='g++-4.8'; fi
+- git config --global user.name "Thiago Lugli"
+- git config --global user.email thiagoelg@gmail.com
+
+script:
+  - npx prebuild --strip --all -r electron --arch ia32 -u $PREBUILD_TOKEN
+  - npx prebuild --strip --all -r electron --arch x64 -u $PREBUILD_TOKEN
+  - npx prebuild --strip --all --arch ia32 -u $PREBUILD_TOKEN
+  - npx prebuild --strip --all --arch x64 -u $PREBUILD_TOKEN
 
 os:
   - linux
   - osx
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-4.8-multilib
+      - gcc-4.8-multilib
+      - libcups2-dev
+      - libcups2-dev:i386
+      - libc6-dev-i386
+      - linux-libc-dev 
+      - linux-libc-dev:i386

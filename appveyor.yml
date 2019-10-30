@@ -3,7 +3,9 @@
 # build version format
 version: "{build}"
 
-platform: x64
+platform: 
+  - x64
+  - x86
 
 image: Visual Studio 2017
 
@@ -13,54 +15,36 @@ clone_folder: c:\p
 # fix lineendings in Windows
 init:
   - git config --global core.autocrlf input
-  - git config --global user.name "Ion Lupascu"
-  - git config --global user.email ionlupascu@gmail.com
+  - git config --global user.name "Thiago Lugli"
+  - git config --global user.email thiagoelg@gmail.com
 
-# what combinations to test
-environment:
-  matrix:
-    # Node.js
-    - nodejs_version: "0.10.48"
-    - nodejs_version: "0.12.18"
-    - nodejs_version: "4.9.1"
-    - nodejs_version: "5.9.1"
-    - nodejs_version: "6.17.1"
-    - nodejs_version: "8.16.1"
-    - nodejs_version: "10.16.0"
-    - nodejs_version: "11.15.0"
-    - nodejs_version: "12.10.0"
-      build_electron: "true"
+environment: 
+  UTO:
+    secure: x7hTGMqkrEgGiJOYv8dDmwXfey7rYHQ6IlRPF7y9PY3Xyj6WxMOEvxQrAMY53DdE
 
 matrix:
   fast_finish: true
-  allow_failures:
-    - nodejs_version: "0.10.48"
-    - nodejs_version: "0.12.18"
 
-# Get the latest stable version of Node 0.STABLE.latest
 install:
-  - ps: Install-Product node 12.6 x64
+  - ps: Install-Product node 12 $env:PLATFORM
   - cmd: SET PATH=c:\python27;%PATH%
   - cmd: SET JOBS=4
   - cmd: SET BUILD_ONLY=true
-  - cmd: npm install node-gyp node-pre-gyp
-  - cmd: echo 'Building for node version '
-  - cmd: echo %nodejs_version%
-  - cmd: node_modules\.bin\node-pre-gyp.cmd configure --target=%nodejs_version%
-  - cmd: node_modules\.bin\node-pre-gyp.cmd build package --target=%nodejs_version% --target_arch=x64
-  - cmd: node_modules\.bin\node-pre-gyp.cmd configure --target=%nodejs_version%
-  - cmd: node_modules\.bin\node-pre-gyp.cmd build package --target=%nodejs_version% --target_arch=ia32
-  - ps: ./tools/buildWindows.ps1
-
+  - cmd: npm ci --build-from-source
+  - cmd: if %PLATFORM% EQU "x86" (SET TP="ia32") else (set TP="x64")
+  - cmd: npx prebuild --strip -r electron --all --arch %TP% -u %UTO%
+  - cmd: npx prebuild --strip -r node-webkit --all --arch %TP% -u %UTO%
+  - cmd: npx prebuild --strip --all --arch %TP% -u %UTO%
 test_script:
   - node --version
   - npm --version
 
 build: off
 
-artifacts:
-  - path: 'build\stage\**\*.tar.gz'
-
 branches:
   only:
     - master
+
+cache:
+  - '%APPDATA%\npm-cache'
+  - '%USERPROFILE%\.node-gyp'
