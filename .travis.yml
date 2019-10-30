@@ -43,8 +43,6 @@ node_js:
 
 branches:
   only:
-  - release
-  - prebuild
   - master
   
 env:

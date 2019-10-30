@@ -43,8 +43,6 @@ build: off
 
 branches:
   only:
-    - release
-    - prebuild
     - master
 
 cache:
