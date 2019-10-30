@@ -44,6 +44,8 @@ build: off
 branches:
   only:
     - release
+    - prebuild
+    - master
 
 cache:
   - '%APPDATA%\npm-cache'
