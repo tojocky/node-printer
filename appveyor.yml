@@ -20,7 +20,7 @@ init:
 
 environment: 
   UTO:
-    secure: LCgKqXmOMGn//dRIygDqFdZY2SRk+sPWBX5rHxSWbO8ORW59m8PtxJu9hfq/fHEI
+    secure: x7hTGMqkrEgGiJOYv8dDmwXfey7rYHQ6IlRPF7y9PY3Xyj6WxMOEvxQrAMY53DdE
 
 matrix:
   fast_finish: true
