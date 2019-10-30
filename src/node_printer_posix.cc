@@ -264,9 +264,9 @@ namespace
             v8::Local<v8::Array> props = Nan::GetPropertyNames(iV8Options).ToLocalChecked();
 
             for(unsigned int i = 0; i < props->Length(); ++i) {
-                v8::Local<v8::Value> key(props->Get(i));
+                v8::Local<v8::Value> key(Nan::Get(props, i).ToLocalChecked());
                 Nan::Utf8String keyStr(V8_LOCAL_STRING_FROM_VALUE(key));
-                Nan::Utf8String valStr(V8_LOCAL_STRING_FROM_VALUE(iV8Options->Get(key)));
+                Nan::Utf8String valStr(V8_LOCAL_STRING_FROM_VALUE(Nan::Get(iV8Options, key).ToLocalChecked()));
 
                 num_options = cupsAddOption(*keyStr, *valStr, num_options, &_value);
             }
