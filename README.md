@@ -4,6 +4,8 @@ Native bind printers on POSIX and Windows OS from Node.js, electron and node-web
 
 > It just works with Node 12 because of @thiagoelg in his [PR](https://github.com/tojocky/node-printer/pull/261)
 
+> Prebuild and CI integration courtesy of @ekoeryanto in his [FORK](https://github.com/ekoeryanto/node-printer)
+
 <table>
   <thead>
     <tr>
@@ -15,20 +17,23 @@ Native bind printers on POSIX and Windows OS from Node.js, electron and node-web
   <tbody>
     <tr>
       <td align="center">
-        <a href="https://travis-ci.org/ekoeryanto/node-printer"><img src="https://travis-ci.org/ekoeryanto/node-printer.svg?branch=release"></a>
+        <a href="https://travis-ci.org/thiagoelg/node-printer"><img src="https://travis-ci.org/thiagoelg/node-printer.svg?branch=master"></a>
       </td>
       <td align="center">
-        <a href="https://ci.appveyor.com/project/ekoeryanto/node-printer"><img src="https://ci.appveyor.com/api/projects/status/2bw9nrwmivv9fa96/branch/release?svg=true"></a>
+        <a href="https://ci.appveyor.com/project/thiagoelg/node-printer"><img src="https://ci.appveyor.com/api/projects/status/re16g0ikobhl9ghq/branch/master?svg=true"></a>
       </td>
       <td align="center">
-        <a href="https://david-dm.org/ekoeryanto/node-printer"><img src="https://david-dm.org/ekoeryanto/node-printer.svg"></a>
+        <a href="https://david-dm.org/thiagoelg/node-printer"><img src="https://david-dm.org/thiagoelg/node-printer.svg"></a>
       </td>
     </tr>
   </tbody>
 </table>
 
-If you have a problem, ask question to [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/tojocky/node-printer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) or find/create a new [Github issue](https://github.com/tojocky/node-printer/issues)
+If you have a problem, ask question to [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/tojocky/node-printer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) or find/create a new [Github issue](https://github.com/thiagoelg/node-printer/issues)
 
+___
+### **Below is the original README**
+___
 ### Reason:
 
 I was involved in a project where I need to print from Node.JS. This is the reason why I created this project and I want to share my code with others.
@@ -55,7 +60,7 @@ I was involved in a project where I need to print from Node.JS. This is the reas
 
 ### How to install:
 ```
-npm install @pake/node-printer
+npm install @thiagoelg/node-printer
 ```
 
 ### How to use:
@@ -67,6 +72,9 @@ See [examples](https://github.com/tojocky/node-printer/tree/master/examples)
 * Ion Lupascu, ionlupascu@gmail.com
 
 ### Contibutors:
+
+* Thiago Lugli, @thiagoelg
+* Eko Eryanto, @ekoeryanto
 
 Feel free to download, test and propose new futures
 

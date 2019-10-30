@@ -15,8 +15,8 @@ clone_folder: c:\p
 # fix lineendings in Windows
 init:
   - git config --global core.autocrlf input
-  - git config --global user.name "Eko Eryanto"
-  - git config --global user.email ekoeryanto@gmail.com
+  - git config --global user.name "Thiag Lugli"
+  - git config --global user.email thiagoelg@gmail.com
 
 environment: 
   UTO:

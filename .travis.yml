@@ -56,8 +56,8 @@ cache:
 
 before_script:
 - if [[ $TRAVIS_OS_NAME == "linux" ]]; then export CXX='g++-4.8'; fi
-- git config --global user.name "Eko Eryanto"
-- git config --global user.email ekoeryanto@gmail.com
+- git config --global user.name "Thiago Lugli"
+- git config --global user.email thiagoelg@gmail.com
 
 script:
   - npx prebuild --strip --all -r electron --arch ia32 -u $PREBUILD_TOKEN
