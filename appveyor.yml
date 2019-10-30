@@ -31,7 +31,7 @@ install:
   - cmd: SET JOBS=4
   - cmd: SET BUILD_ONLY=true
   - cmd: npm ci --build-from-source
-  - cmd: if %PLATFORM% EQU "x86" (SET TP="ia32") else (set TP="x64")
+  - cmd: if %PLATFORM% EQU "x86" (SET TP=ia32) else (set TP=x64)
   - cmd: npx prebuild --strip -r electron --all --arch %TP% -u %UTO%
   - cmd: npx prebuild --strip -r node-webkit --all --arch %TP% -u %UTO%
   - cmd: npx prebuild --strip --all --arch %TP% -u %UTO%
