@@ -27,7 +27,7 @@
     "node": ">= 0.8.0"
   },
   "scripts": {
-    "preinstall": "npm install node-pre-gyp",
+    "preinstall": "npm install node-gyp node-pre-gyp",
     "install": "node-pre-gyp install --fallback-to-build",
     "test": "nodeunit test"
   },
@@ -42,5 +42,10 @@
       "type": "BSD"
     }
   ],
-  "main": "./lib/printer"
+  "main": "./lib/printer",
+  "dependencies": {
+    "nan": "^2.14.0",
+    "node-gyp": "^5.0.3",
+    "node-pre-gyp": "^0.13.0"
+  }
 }
