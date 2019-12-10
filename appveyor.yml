@@ -20,7 +20,6 @@ init:
 environment:
   matrix:
     # Node.js
-    - nodejs_version: "0.10.48"
     - nodejs_version: "0.12.18"
     - nodejs_version: "4.9.1"
     - nodejs_version: "5.9.1"
@@ -29,12 +28,12 @@ environment:
     - nodejs_version: "10.16.0"
     - nodejs_version: "11.15.0"
     - nodejs_version: "12.10.0"
+    - nodejs_version: "13.3.0"
       build_electron: "true"
 
 matrix:
   fast_finish: true
   allow_failures:
-    - nodejs_version: "0.10.48"
     - nodejs_version: "0.12.18"
 
 # Get the latest stable version of Node 0.STABLE.latest
@@ -43,7 +42,7 @@ install:
   - cmd: SET PATH=c:\python27;%PATH%
   - cmd: SET JOBS=4
   - cmd: SET BUILD_ONLY=true
-  - cmd: npm install node-gyp node-pre-gyp
+  - cmd: npm install
   - cmd: echo 'Building for node version '
   - cmd: echo %nodejs_version%
   - cmd: node_modules\.bin\node-pre-gyp.cmd configure --target=%nodejs_version%
