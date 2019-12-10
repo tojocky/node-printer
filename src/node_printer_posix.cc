@@ -73,10 +73,10 @@ namespace
     {
         MY_NODE_MODULE_ISOLATE_DECL
         //Common fields
-        result_printer_job->Set(V8_STRING_NEW_UTF8("id"), V8_VALUE_NEW(Number, job->id));
-        result_printer_job->Set(V8_STRING_NEW_UTF8("name"), V8_STRING_NEW_UTF8(job->title));
-        result_printer_job->Set(V8_STRING_NEW_UTF8("printerName"), V8_STRING_NEW_UTF8(job->dest));
-        result_printer_job->Set(V8_STRING_NEW_UTF8("user"), V8_STRING_NEW_UTF8(job->user));
+        MY_NODE_SET_OBJECT_PROP(result_printer_job, "id", V8_VALUE_NEW(Number, job->id));
+        MY_NODE_SET_OBJECT_PROP(result_printer_job, "name", V8_STRING_NEW_UTF8(job->title));
+        MY_NODE_SET_OBJECT_PROP(result_printer_job, "printerName", V8_STRING_NEW_UTF8(job->dest));
+        MY_NODE_SET_OBJECT_PROP(result_printer_job, "user", V8_STRING_NEW_UTF8(job->user));
         std::string job_format(job->format);
 
         // Try to parse the data format, otherwise will write the unformatted one
@@ -89,16 +89,16 @@ namespace
             }
         }
 
-        result_printer_job->Set(V8_STRING_NEW_UTF8("format"), V8_STRING_NEW_UTF8(job_format.c_str()));
-        result_printer_job->Set(V8_STRING_NEW_UTF8("priority"), V8_VALUE_NEW(Number, job->priority));
-        result_printer_job->Set(V8_STRING_NEW_UTF8("size"), V8_VALUE_NEW(Number, job->size));
+        MY_NODE_SET_OBJECT_PROP(result_printer_job, "format", V8_STRING_NEW_UTF8(job_format.c_str()));
+        MY_NODE_SET_OBJECT_PROP(result_printer_job, "priority", V8_VALUE_NEW(Number, job->priority));
+        MY_NODE_SET_OBJECT_PROP(result_printer_job, "size", V8_VALUE_NEW(Number, job->size));
         v8::Local<v8::Array> result_printer_job_status = V8_VALUE_NEW_DEFAULT(Array);
         int i_status = 0;
         for(StatusMapType::const_iterator itStatus = getJobStatusMap().begin(); itStatus != getJobStatusMap().end(); ++itStatus)
         {
             if(job->state == itStatus->second)
             {
-                result_printer_job_status->Set(i_status++, V8_STRING_NEW_UTF8(itStatus->first.c_str()));
+                MY_NODE_SET_OBJECT(result_printer_job_status, i_status++, V8_STRING_NEW_UTF8(itStatus->first.c_str()));
                 // only one status could be on posix
                 break;
             }
@@ -108,10 +108,10 @@ namespace
             // A new status? report as unsupported
             std::ostringstream s;
             s << "unsupported job status: " << job->state;
-            result_printer_job_status->Set(i_status++, V8_STRING_NEW_UTF8(s.str().c_str()));
+            MY_NODE_SET_OBJECT(result_printer_job_status, i_status++, V8_STRING_NEW_UTF8(s.str().c_str()));
         }
 
-        result_printer_job->Set(V8_STRING_NEW_UTF8("status"), result_printer_job_status);
+        MY_NODE_SET_OBJECT_PROP(result_printer_job, "status", result_printer_job_status);
 
         //Specific fields
         // Ecmascript store time in milliseconds, but time_t in seconds
@@ -120,9 +120,9 @@ namespace
         double completedTime = ((double)job->completed_time) * 1000;
         double processingTime = ((double)job->processing_time) * 1000;
 
-        result_printer_job->Set(V8_STRING_NEW_UTF8("completedTime"), Nan::New<v8::Date>(completedTime).ToLocalChecked());
-        result_printer_job->Set(V8_STRING_NEW_UTF8("creationTime"), Nan::New<v8::Date>(creationTime).ToLocalChecked());
-        result_printer_job->Set(V8_STRING_NEW_UTF8("processingTime"), Nan::New<v8::Date>(processingTime).ToLocalChecked());
+        MY_NODE_SET_OBJECT_PROP(result_printer_job, "completedTime", Nan::New<v8::Date>(completedTime).ToLocalChecked());
+        MY_NODE_SET_OBJECT_PROP(result_printer_job, "creationTime", Nan::New<v8::Date>(creationTime).ToLocalChecked());
+        MY_NODE_SET_OBJECT_PROP(result_printer_job, "processingTime", Nan::New<v8::Date>(processingTime).ToLocalChecked());
 
         // No error. return an empty string
         return "";
@@ -145,10 +145,10 @@ namespace
                  j > 0;
                  --j, ++choice)
             {
-                ppd_suboptions->Set(V8_STRING_NEW_UTF8(choice->choice), V8_VALUE_NEW(Boolean, static_cast<bool>(choice->marked)));
+                MY_NODE_SET_OBJECT_PROP(ppd_suboptions, choice->choice, V8_VALUE_NEW(Boolean, static_cast<bool>(choice->marked)));
             }
 
-            ppd_options->Set(V8_STRING_NEW_UTF8(option->keyword), ppd_suboptions);
+            MY_NODE_SET_OBJECT_PROP(ppd_options, option->keyword, ppd_suboptions);
         }
 
         for (i = group->num_subgroups, subgroup = group->subgroups; i > 0; --i, ++subgroup) {
@@ -202,21 +202,23 @@ namespace
     std::string parsePrinterInfo(const cups_dest_t * printer, v8::Local<v8::Object> result_printer)
     {
         MY_NODE_MODULE_ISOLATE_DECL
-        result_printer->Set(V8_STRING_NEW_UTF8("name"), V8_STRING_NEW_UTF8(printer->name));
-        result_printer->Set(V8_STRING_NEW_UTF8("isDefault"), V8_VALUE_NEW(Boolean, static_cast<bool>(printer->is_default)));
+        MY_NODE_SET_OBJECT_PROP(result_printer, "name", V8_STRING_NEW_UTF8(printer->name));
+        MY_NODE_SET_OBJECT_PROP(result_printer, "isDefault", V8_VALUE_NEW(Boolean, static_cast<bool>(printer->is_default)));
 
         if(printer->instance)
         {
-            result_printer->Set(V8_STRING_NEW_UTF8("instance"), V8_STRING_NEW_UTF8(printer->instance));
+            MY_NODE_SET_OBJECT_PROP(result_printer, "instance", V8_STRING_NEW_UTF8(printer->instance));
         }
 
         v8::Local<v8::Object> result_printer_options = V8_VALUE_NEW_DEFAULT(Object);
         cups_option_t *dest_option = printer->options;
+
         for(int j = 0; j < printer->num_options; ++j, ++dest_option)
         {
-            result_printer_options->Set(V8_STRING_NEW_UTF8(dest_option->name), V8_STRING_NEW_UTF8(dest_option->value));
+            MY_NODE_SET_OBJECT_PROP(result_printer_options, dest_option->name, V8_STRING_NEW_UTF8(dest_option->value));
         }
-        result_printer->Set(V8_STRING_NEW_UTF8("options"), result_printer_options);
+
+        MY_NODE_SET_OBJECT_PROP(result_printer, "options", result_printer_options);
         // Get printer jobs
         cups_job_t * jobs;
         int totalJobs = cupsGetJobs(&jobs, printer->name, 0 /*0 means all users*/, CUPS_WHICHJOBS_ACTIVE);
@@ -235,9 +237,9 @@ namespace
                     // got an error? break then.
                     break;
                 }
-                result_priner_jobs->Set(jobi, result_printer_job);
+                MY_NODE_SET_OBJECT(result_priner_jobs, jobi, result_printer_job);
             }
-            result_printer->Set(V8_STRING_NEW_UTF8("jobs"), result_priner_jobs);
+            MY_NODE_SET_OBJECT_PROP(result_printer, "jobs", result_priner_jobs);
         }
         cupsFreeJobs(totalJobs, jobs);
         return error_str;
@@ -264,9 +266,9 @@ namespace
             v8::Local<v8::Array> props = Nan::GetPropertyNames(iV8Options).ToLocalChecked();
 
             for(unsigned int i = 0; i < props->Length(); ++i) {
-                v8::Local<v8::Value> key(props->Get(i));
+                v8::Local<v8::Value> key(MY_NODE_GET_OBJECT(props, i));
                 Nan::Utf8String keyStr(V8_LOCAL_STRING_FROM_VALUE(key));
-                Nan::Utf8String valStr(V8_LOCAL_STRING_FROM_VALUE(iV8Options->Get(key)));
+                Nan::Utf8String valStr(V8_LOCAL_STRING_FROM_VALUE(MY_NODE_GET_OBJECT(iV8Options, key)));
 
                 num_options = cupsAddOption(*keyStr, *valStr, num_options, &_value);
             }
@@ -294,7 +296,7 @@ MY_NODE_MODULE_CALLBACK(getPrinters)
             // got an error? break then
             break;
         }
-        result->Set(i, result_printer);
+        MY_NODE_SET_OBJECT(result, i, result_printer);
     }
     cupsFreeDests(printers_size, printers);
     if(!error_str.empty())
@@ -380,7 +382,7 @@ MY_NODE_MODULE_CALLBACK(getJob)
     int totalJobs = cupsGetJobs(&jobs, *printername, 0 /*0 means all users*/, CUPS_WHICHJOBS_ALL);
     if(totalJobs > 0)
     {
-        int jobi =0;
+        int jobi = 0;
         cups_job_t * job = jobs;
         for(; jobi < totalJobs; ++jobi, ++job)
         {
@@ -432,7 +434,7 @@ MY_NODE_MODULE_CALLBACK(getSupportedJobCommands)
     MY_NODE_MODULE_HANDLESCOPE;
     v8::Local<v8::Array> result = V8_VALUE_NEW_DEFAULT(Array);
     int i = 0;
-    result->Set(i++, V8_STRING_NEW_UTF8("CANCEL"));
+    MY_NODE_SET_OBJECT(result, i++, V8_STRING_NEW_UTF8("CANCEL"));
     MY_NODE_MODULE_RETURN_VALUE(result);
 }
 
@@ -443,7 +445,7 @@ MY_NODE_MODULE_CALLBACK(getSupportedPrintFormats)
     int i = 0;
     for(FormatMapType::const_iterator itFormat = getPrinterFormatMap().begin(); itFormat != getPrinterFormatMap().end(); ++itFormat)
     {
-        result->Set(i++, V8_STRING_NEW_UTF8(itFormat->first.c_str()));
+        MY_NODE_SET_OBJECT(result, i++, V8_STRING_NEW_UTF8(itFormat->first.c_str()));
     }
     MY_NODE_MODULE_RETURN_VALUE(result);
 }

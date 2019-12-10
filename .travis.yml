@@ -1,6 +1,5 @@
 env:
   matrix:
-    - export NODE_VERSION="0.10.48"
     - export NODE_VERSION="0.12.18"
     - export NODE_VERSION="4.9.1"
     - export NODE_VERSION="5.9.1"
@@ -9,10 +8,10 @@ env:
     - export NODE_VERSION="10.16.0"
     - export NODE_VERSION="11.15.0"
     - export NODE_VERSION="12.10.0"
+    - export NODE_VERSION="13.3.0"
 matrix:
   fast_finish: true
   allow_failures:
-    - env: export NODE_VERSION="0.10.48"
     - env: export NODE_VERSION="0.12.18"
 
 before_script:
