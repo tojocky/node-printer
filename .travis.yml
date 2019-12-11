@@ -22,6 +22,7 @@ before_install:
   - git clone https://github.com/creationix/nvm.git ./.nvm
   - source ./.nvm/nvm.sh
   - nvm install 12 64
+  - npm install -g node-pre-gyp-github
   - nvm use 12
   - npm -v
   - node -v

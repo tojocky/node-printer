@@ -43,6 +43,7 @@ install:
   - cmd: SET JOBS=4
   - cmd: SET BUILD_ONLY=true
   - cmd: npm install
+  - cmd: npm install -g node-pre-gyp-github
   - cmd: echo 'Building for node version '
   - cmd: echo %nodejs_version%
   - cmd: node_modules\.bin\node-pre-gyp.cmd configure --target=%nodejs_version%
