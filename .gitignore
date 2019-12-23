@@ -7,3 +7,4 @@ node_modules/*
 *.swp
 *.log
 package-lock.json
+yarn.lock

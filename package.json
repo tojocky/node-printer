@@ -28,7 +28,7 @@
   },
   "scripts": {
     "preinstall": "npm install node-gyp node-pre-gyp",
-    "install": "node-pre-gyp install --fallback-to-build",
+    "install": "node-pre-gyp install --fallback-to-build --build-from-source",
     "npg": "node-pre-gyp",
     "npg-clean": "node-pre-gyp clean",
     "npg-build": "node-pre-gyp build",
