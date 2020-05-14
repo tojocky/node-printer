@@ -1,7 +1,7 @@
 {
   "name": "@thiagoelg/node-printer",
   "description": "Node.js printer bindings",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "homepage": "https://github.com/thiagoelg/node-printer",
   "author": {
     "name": "Ion Lupascu",
@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "nodeunit": "*",
-    "prebuild": "^9.1.1",
+    "prebuild": "^10.0.0",
     "prebuild-ci": "^3.1.0"
   },
   "engines": {
@@ -44,7 +44,7 @@
   ],
   "main": "./lib/printer",
   "dependencies": {
-    "nan": "^2.14.0",
-    "prebuild-install": "^5.3.2"
+    "nan": "^2.14.1",
+    "prebuild-install": "^5.3.3"
   }
 }
