@@ -45,6 +45,6 @@
   "main": "./lib/printer",
   "dependencies": {
     "nan": "^2.14.1",
-    "prebuild-install": "^5.3.3"
+    "prebuild-install": "^5.3.4"
   }
 }
