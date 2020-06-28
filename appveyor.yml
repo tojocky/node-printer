@@ -15,12 +15,12 @@ clone_folder: c:\p
 # fix lineendings in Windows
 init:
   - git config --global core.autocrlf input
-  - git config --global user.name "Thiago Lugli"
-  - git config --global user.email thiagoelg@gmail.com
+  - git config --global user.name "Ion Lupascu"
+  - git config --global user.email ionlupascu@gmail.com
 
 environment: 
   UTO:
-    secure: x7hTGMqkrEgGiJOYv8dDmwXfey7rYHQ6IlRPF7y9PY3Xyj6WxMOEvxQrAMY53DdE
+    secure: <secure_token_generated_from_appveyor>
 
 matrix:
   fast_finish: true
