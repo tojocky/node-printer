@@ -1,44 +1,40 @@
 {
   "name": "printer",
   "description": "Node.js printer bindings",
-  "version": "0.4.0",
-  "homepage": "http://github.com/tojocky/node-printer",
+  "version": "0.5.3",
+  "homepage": "https://github.com/tojocky/node-printer",
   "author": {
     "name": "Ion Lupascu",
     "url": "http://program-support.co.uk/",
     "email": "ionlupascu@gmail.com"
   },
   "contributors": [
-    "Name Lastname <email@server.com>"
+    "Thiago Lugli @thiagoelg",
+    "Eko Eryanto @ekoeryanto"
   ],
   "repository": {
     "type": "git",
     "url": "https://github.com/tojocky/node-printer.git"
   },
   "devDependencies": {
-    "grunt": "^1.0.4",
-    "grunt-contrib-copy": "^1.0.0",
-    "grunt-contrib-jshint": "^2.1.0",
-    "grunt-node-gyp": "git://github.com/tojocky/grunt-node-gyp.git",
-    "grunt-nw-gyp": "git://github.com/tojocky/grunt-nw-gyp.git",
-    "nodeunit": "*"
+    "nodeunit": "*",
+    "prebuild": "^10.0.0",
+    "prebuild-ci": "^3.1.0"
   },
   "engines": {
-    "node": ">= 0.8.0"
+    "node": ">= 4.0.0"
   },
   "scripts": {
-    "preinstall": "npm install node-gyp node-pre-gyp",
-    "install": "node-pre-gyp install --fallback-to-build",
-    "npg": "node-pre-gyp",
-    "npg-clean": "node-pre-gyp clean",
-    "npg-build": "node-pre-gyp build",
+    "install": "prebuild-install || node-gyp rebuild",
+    "prebuild": "prebuild --all --force --strip --verbose",
+    "rebuild": "node-gyp rebuild",
     "test": "nodeunit test"
   },
   "binary": {
     "module_name": "node_printer",
     "module_path": "./lib/",
     "host": "https://github.com/tojocky/node-printer/releases/download/",
-    "remote_path": "{version}"
+    "remote_path": "v{version}"
   },
   "licenses": [
     {
@@ -47,8 +43,7 @@
   ],
   "main": "./lib/printer",
   "dependencies": {
-    "nan": "^2.14.0",
-    "node-gyp": "^6.0.1",
-    "node-pre-gyp": "^0.14.0"
+    "nan": "^2.14.1",
+    "prebuild-install": "^5.3.4"
   }
 }
