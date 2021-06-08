@@ -31,6 +31,7 @@
     return
 
 #  define RETURN_EXCEPTION_STR(msg) RETURN_EXCEPTION(V8_STRING_NEW_UTF8(msg))
+#  define RETURN_EXCEPTION_STR_POSIX(msg) RETURN_EXCEPTION(V8_STRING_NEW_UTF8_POSIX(msg))
 #  define MY_NODE_MODULE_RETURN_VALUE(value)   iArgs.GetReturnValue().Set(value);   \
     return
 #  define MY_NODE_MODULE_RETURN_UNDEFINED()   return
@@ -46,6 +47,7 @@
 #  define RETURN_EXCEPTION(msg) return v8::ThrowException(Nan::Error(msg)) 
 
 #  define RETURN_EXCEPTION_STR(msg) RETURN_EXCEPTION(V8_STRING_NEW_UTF8(msg))
+#  define RETURN_EXCEPTION_STR_POSIX(msg) RETURN_EXCEPTION(V8_STRING_NEW_UTF8(msg))
 #  define MY_NODE_MODULE_RETURN_VALUE(value)   return scope.Close(value)
 #  define MY_NODE_MODULE_RETURN_UNDEFINED()   return scope.Close(v8::Undefined())
 #endif

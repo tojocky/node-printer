@@ -300,7 +300,7 @@ MY_NODE_MODULE_CALLBACK(getPrinters)
     if(!error_str.empty())
     {
         // got an error? return the error then
-        RETURN_EXCEPTION_STR(error_str.c_str());
+        RETURN_EXCEPTION_STR_POSIX(error_str.c_str());
     }
     MY_NODE_MODULE_RETURN_VALUE(result);
 }
@@ -339,7 +339,7 @@ MY_NODE_MODULE_CALLBACK(getPrinter)
     if(printer == NULL)
     {
         // printer not found
-        RETURN_EXCEPTION_STR("Printer not found");
+        RETURN_EXCEPTION_STR_POSIX("Printer not found");
     }
     MY_NODE_MODULE_RETURN_VALUE(result_printer);
 }
@@ -362,7 +362,7 @@ MY_NODE_MODULE_CALLBACK(getPrinterDriverOptions)
     if(printer == NULL)
     {
         // printer not found
-        RETURN_EXCEPTION_STR("Printer not found");
+        RETURN_EXCEPTION_STR_POSIX("Printer not found");
     }
     MY_NODE_MODULE_RETURN_VALUE(driver_options);
 }
@@ -398,7 +398,7 @@ MY_NODE_MODULE_CALLBACK(getJob)
     if(jobFound == NULL)
     {
         // printer not found
-        RETURN_EXCEPTION_STR("Printer job not found");
+        RETURN_EXCEPTION_STR_POSIX("Printer job not found");
     }
     MY_NODE_MODULE_RETURN_VALUE(result_printer_job);
 }
@@ -412,7 +412,7 @@ MY_NODE_MODULE_CALLBACK(setJob)
     REQUIRE_ARGUMENT_STRING(iArgs, 2, jobCommandV8);
     if(jobId < 0)
     {
-        RETURN_EXCEPTION_STR("Wrong job number");
+        RETURN_EXCEPTION_STR_POSIX("Wrong job number");
     }
     std::string jobCommandStr(*jobCommandV8);
     bool result_ok = false;
@@ -422,7 +422,7 @@ MY_NODE_MODULE_CALLBACK(setJob)
     }
     else
     {
-        RETURN_EXCEPTION_STR("wrong job command. use getSupportedJobCommands to see the possible commands");
+        RETURN_EXCEPTION_STR_POSIX("wrong job command. use getSupportedJobCommands to see the possible commands");
     }
     MY_NODE_MODULE_RETURN_VALUE(V8_VALUE_NEW(Boolean, result_ok));
 }
@@ -456,14 +456,14 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
     // can be string or buffer
     if(iArgs.Length() <= 0)
     {
-        RETURN_EXCEPTION_STR("Argument 0 missing");
+        RETURN_EXCEPTION_STR_POSIX("Argument 0 missing");
     }
 
     std::string data;
     v8::Local<v8::Value> arg0(iArgs[0]);
     if (!getStringOrBufferFromV8Value(arg0, data))
     {
-        RETURN_EXCEPTION_STR("Argument 0 must be a string or Buffer");
+        RETURN_EXCEPTION_STR_POSIX("Argument 0 must be a string or Buffer");
     }
 
     REQUIRE_ARGUMENT_STRING(iArgs, 1, printername);
@@ -475,7 +475,7 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
     FormatMapType::const_iterator itFormat = getPrinterFormatMap().find(type_str);
     if(itFormat == getPrinterFormatMap().end())
     {
-        RETURN_EXCEPTION_STR("unsupported format type");
+        RETURN_EXCEPTION_STR_POSIX("unsupported format type");
     }
     type_str = itFormat->second;
 
@@ -483,18 +483,18 @@ MY_NODE_MODULE_CALLBACK(PrintDirect)
 
     int job_id = cupsCreateJob(CUPS_HTTP_DEFAULT, *printername, *docname, options.getNumOptions(), options.get());
     if(job_id == 0) {
-        RETURN_EXCEPTION_STR(cupsLastErrorString());
+        RETURN_EXCEPTION_STR_POSIX(cupsLastErrorString());
     }
 
     if(HTTP_CONTINUE != cupsStartDocument(CUPS_HTTP_DEFAULT, *printername, job_id, *docname, type_str.c_str(), 1 /*last document*/)) {
-        RETURN_EXCEPTION_STR(cupsLastErrorString());
+        RETURN_EXCEPTION_STR_POSIX(cupsLastErrorString());
     }
 
     /* cupsWriteRequestData can be called as many times as needed */
     //TODO: to split big buffer
     if (HTTP_CONTINUE != cupsWriteRequestData(CUPS_HTTP_DEFAULT, data.c_str(), data.size())) {
         cupsFinishDocument(CUPS_HTTP_DEFAULT, *printername);
-        RETURN_EXCEPTION_STR(cupsLastErrorString());
+        RETURN_EXCEPTION_STR_POSIX(cupsLastErrorString());
     }
 
     cupsFinishDocument(CUPS_HTTP_DEFAULT, *printername);
@@ -510,7 +510,7 @@ MY_NODE_MODULE_CALLBACK(PrintFile)
     // can be string or buffer
     if(iArgs.Length() <= 0)
     {
-        RETURN_EXCEPTION_STR("Argument 0 missing");
+        RETURN_EXCEPTION_STR_POSIX("Argument 0 missing");
     }
 
     REQUIRE_ARGUMENT_STRING(iArgs, 0, filename);
