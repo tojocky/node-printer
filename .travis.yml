@@ -60,10 +60,11 @@ before_script:
 - git config --global user.email thiagoelg@gmail.com
 
 script:
-  - npx prebuild --strip --all -r electron --arch ia32 -u $PREBUILD_TOKEN
-  - npx prebuild --strip --all -r electron --arch x64 -u $PREBUILD_TOKEN
-  - npx prebuild --strip --all --arch ia32 -u $PREBUILD_TOKEN
-  - npx prebuild --strip --all --arch x64 -u $PREBUILD_TOKEN
+  - npm install -g prebuild
+  - prebuild --strip --all -r electron --arch ia32 -u $PREBUILD_TOKEN
+  - prebuild --strip --all -r electron --arch x64 -u $PREBUILD_TOKEN
+  - prebuild --strip --all --arch ia32 -u $PREBUILD_TOKEN
+  - prebuild --strip --all --arch x64 -u $PREBUILD_TOKEN
 
 os:
   - linux
