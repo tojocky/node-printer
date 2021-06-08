@@ -17,7 +17,7 @@ Native bind printers on POSIX and Windows OS from Node.js, electron and node-web
   <tbody>
     <tr>
       <td align="center">
-        <a href="https://travis-ci.org/thiagoelg/node-printer"><img src="https://travis-ci.org/thiagoelg/node-printer.svg?branch=master"></a>
+        <a href="https://travis-ci.com/thiagoelg/node-printer"><img src="https://travis-ci.com/thiagoelg/node-printer.svg?branch=master"></a>
       </td>
       <td align="center">
         <a href="https://ci.appveyor.com/project/thiagoelg/node-printer"><img src="https://ci.appveyor.com/api/projects/status/re16g0ikobhl9ghq/branch/master?svg=true"></a>
