@@ -18,6 +18,7 @@
     "url": "git://github.com/thiagoelg/node-printer.git"
   },
   "devDependencies": {
+    "node-abi": "^2.30.0",
     "nodeunit": "*",
     "prebuild": "^10.0.1",
     "prebuild-ci": "^3.1.0"
