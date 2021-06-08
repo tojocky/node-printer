@@ -12,26 +12,18 @@
 #  define MY_NODE_MODULE_HANDLESCOPE MY_NODE_MODULE_ISOLATE_DECL Nan::HandleScope scope
 #  define V8_VALUE_NEW(type, value)   v8::type::New(MY_NODE_MODULE_ISOLATE, value)
 #  define V8_VALUE_NEW_DEFAULT(type)   v8::type::New(MY_NODE_MODULE_ISOLATE)
-#  if NODE_MODULE_VERSION > 73
+#  if NODE_MODULE_VERSION >= 73
 #   define V8_STRING_NEW_UTF8(value)   v8::String::NewFromUtf8(MY_NODE_MODULE_ISOLATE, value).ToLocalChecked()
 #   define V8_STRING_NEW_2BYTES(value)   v8::String::NewFromTwoByte(MY_NODE_MODULE_ISOLATE, value).ToLocalChecked()
 #  else
 #    define V8_STRING_NEW_UTF8(value)   v8::String::NewFromUtf8(MY_NODE_MODULE_ISOLATE, value)
 #    define V8_STRING_NEW_2BYTES(value)   v8::String::NewFromTwoByte(MY_NODE_MODULE_ISOLATE, value)
 #  endif
-#  if NODE_MODULE_VERSION >= 73
-#   define V8_STRING_NEW_UTF8_POSIX(value)   v8::String::NewFromUtf8(MY_NODE_MODULE_ISOLATE, value).ToLocalChecked()
-#   define V8_STRING_NEW_2BYTES_POSIX(value)   v8::String::NewFromTwoByte(MY_NODE_MODULE_ISOLATE, value).ToLocalChecked()
-#  else
-#    define V8_STRING_NEW_UTF8_POSIX(value)   v8::String::NewFromUtf8(MY_NODE_MODULE_ISOLATE, value)
-#    define V8_STRING_NEW_2BYTES_POSIX(value)   v8::String::NewFromTwoByte(MY_NODE_MODULE_ISOLATE, value)
-#  endif
 
 #  define RETURN_EXCEPTION(msg)  isolate->ThrowException(Nan::Error(msg));    \
     return
 
 #  define RETURN_EXCEPTION_STR(msg) RETURN_EXCEPTION(V8_STRING_NEW_UTF8(msg))
-#  define RETURN_EXCEPTION_STR_POSIX(msg) RETURN_EXCEPTION(V8_STRING_NEW_UTF8_POSIX(msg))
 #  define MY_NODE_MODULE_RETURN_VALUE(value)   iArgs.GetReturnValue().Set(value);   \
     return
 #  define MY_NODE_MODULE_RETURN_UNDEFINED()   return
@@ -47,7 +39,6 @@
 #  define RETURN_EXCEPTION(msg) return v8::ThrowException(Nan::Error(msg)) 
 
 #  define RETURN_EXCEPTION_STR(msg) RETURN_EXCEPTION(V8_STRING_NEW_UTF8(msg))
-#  define RETURN_EXCEPTION_STR_POSIX(msg) RETURN_EXCEPTION(V8_STRING_NEW_UTF8(msg))
 #  define MY_NODE_MODULE_RETURN_VALUE(value)   return scope.Close(value)
 #  define MY_NODE_MODULE_RETURN_UNDEFINED()   return scope.Close(v8::Undefined())
 #endif
